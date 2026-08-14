@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Tables
   const recentActivityTableBody = document.querySelector('#recentActivityTable tbody');
   const historyTableBody = document.querySelector('#historyTable tbody');
+  const leadsTableBody = document.querySelector('#leadsTable tbody');
   
   // Settings Form
   const settingsForm = document.getElementById('settingsForm');
@@ -212,15 +213,60 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
         });
 
-        // Add action button listeners
-        document.querySelectorAll('.cv-text-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => showCvText(e.target.getAttribute('data-id')));
-        });
+        // Render Leads Table
+        leadsTableBody.innerHTML = '';
+        const leads = data.documentLog.filter(row => row.paymentStatus && row.paymentStatus !== 'free');
+        if (leads.length === 0) {
+          leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay leads registrados aún.</td></tr>';
+        } else {
+          leads.forEach(row => {
+            const contact = row.expertContact 
+              ? `<strong>${escapeHtml(row.expertContact.email)}</strong><br><small style="color:var(--text-light);">${escapeHtml(row.expertContact.phone)}</small>` 
+              : '<span style="color:var(--text-light);">Descarga Directa (IA)</span>';
+            
+            let statusBadge = '';
+            if (row.paymentStatus === 'completed_ai') {
+              statusBadge = '<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado por IA</span>';
+            } else if (row.paymentStatus === 'pending_expert') {
+              statusBadge = '<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>';
+            } else if (row.paymentStatus === 'completed_expert') {
+              statusBadge = '<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Completado</span>';
+            } else {
+              statusBadge = `<span class="badge">${row.paymentStatus}</span>`;
+            }
 
-        document.querySelectorAll('.complete-expert-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => completeExpertReview(e.target.getAttribute('data-id')));
-        });
+            let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
+            if (row.paymentStatus === 'pending_expert') {
+              actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Completar e Ingresar Pago</button>`;
+            }
+
+            leadsTableBody.innerHTML += `
+              <tr>
+                <td><strong>${escapeHtml(row.filename)}</strong></td>
+                <td>${row.paymentStatus.includes('expert') ? 'Experto Humano ($25)' : 'IA Instantánea ($1)'}</td>
+                <td>${formatDate(row.uploadedAt)}</td>
+                <td>${contact}</td>
+                <td>${statusBadge}</td>
+                <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
+                <td>
+                  <div class="actions-cell">
+                    ${actionBtn}
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+        }
       }
+
+      // Add action button listeners
+      document.querySelectorAll('.cv-text-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => showCvText(e.target.getAttribute('data-id')));
+      });
+
+      document.querySelectorAll('.complete-expert-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => completeExpertReview(e.target.getAttribute('data-id')));
+      });
 
     } catch (err) {
       console.error(err);

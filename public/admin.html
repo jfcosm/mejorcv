@@ -231,6 +231,7 @@
     <!-- Navigation Tabs -->
     <div class="admin-tabs">
       <button class="admin-tab active" data-target="panelStats">Estadísticas</button>
+      <button class="admin-tab" data-target="panelLeads">Leads y Solicitudes</button>
       <button class="admin-tab" data-target="panelDocs">Historial de CVs</button>
       <button class="admin-tab" data-target="panelSettings">Configuración y Prompts</button>
     </div>
@@ -297,6 +298,34 @@
                 <th>Tipo Pago</th>
                 <th>Contacto Experto</th>
                 <th>IP</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel Leads: Customer leads table -->
+    <section class="admin-panel" id="panelLeads">
+      <div class="card" style="padding: 24px;">
+        <h3 style="margin-bottom: 8px;">Leads de Clientes (Optimización Solicitada)</h3>
+        <p style="color: var(--text-medium); font-size: 14px; margin-bottom: 20px;">
+          Aquí se listan todos los usuarios que han solicitado mejorar su currículum. La optimización por IA se procesa de forma automática, mientras que las de Experto requieren contacto manual y cobro offline.
+        </p>
+        <div class="table-container">
+          <table id="leadsTable">
+            <thead>
+              <tr>
+                <th>Archivo CV</th>
+                <th>Tipo de Servicio</th>
+                <th>Fecha Solicitud</th>
+                <th>Contacto (Email / Tel)</th>
+                <th>Estado del Lead</th>
+                <th>Puntaje CV</th>
                 <th>Acciones</th>
               </tr>
             </thead>
