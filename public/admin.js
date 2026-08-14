@@ -143,6 +143,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Helper to render copy email and whatsapp quick action buttons
+  function renderContactColumn(expertContact) {
+    if (!expertContact) return '<span style="color:var(--text-light);">-</span>';
+    
+    const emailEscaped = escapeHtml(expertContact.email);
+    const phoneEscaped = escapeHtml(expertContact.phone);
+    const cleanPhone = expertContact.phone.replace(/[^0-9]/g, '');
+    
+    return `
+      <div style="display:flex; flex-direction:column; gap:4px; white-space:nowrap;">
+        <span style="font-weight: 600;">${emailEscaped}</span>
+        <span style="font-size: 11px; color: var(--text-light);">${phoneEscaped}</span>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:2px 6px; font-size:10px; min-height:auto; width:auto; border-radius:4px; display:inline-flex; align-items:center; gap:4px; margin-top:0;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copiar
+          </button>
+          ${cleanPhone ? `
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-secondary btn-sm" style="padding:2px 6px; font-size:10px; min-height:auto; width:auto; border-radius:4px; display:inline-flex; align-items:center; gap:4px; text-decoration:none; color:#25d366; border-color:rgba(37, 211, 102, 0.3); margin-top:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 1.981 14.117.957 11.5.957c-5.442 0-9.866 4.372-9.87 9.802 0 1.672.43 3.302 1.256 4.745L1.87 20.894l5.777-1.74zm11.233-5.395c-.29-.144-1.711-.834-1.977-.929-.266-.094-.46-.142-.653.143-.194.286-.75.929-.918 1.12-.167.19-.335.213-.625.069-2.91-1.44-4.004-2.61-4.78-3.92-.2-.34-.02-.52.15-.69.15-.15.34-.39.51-.59.17-.19.23-.33.34-.55.11-.22.05-.41-.02-.55-.08-.144-.653-1.547-.895-2.12-.236-.563-.496-.486-.68-.496-.18-.01-.387-.01-.594-.01-.207 0-.544.077-.83.387-.285.31-1.088 1.047-1.088 2.551 0 1.505 1.11 2.96 1.26 3.16.15.19 2.186 3.3 5.297 4.62 1.63.69 2.905 1.1 3.905 1.41 1.01.32 1.93.27 2.65.17.8-.11 1.71-.69 1.95-1.33.24-.63.24-1.18.17-1.3-.07-.113-.266-.206-.557-.35z"/></svg>
+              WhatsApp
+            </a>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
   // 5. Load stats and history tables
   async function loadStats() {
     try {
@@ -184,9 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         historyTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No se han subido currículums aún.</td></tr>';
       } else {
         data.documentLog.forEach(row => {
-          const contact = row.expertContact 
-            ? `${escapeHtml(row.expertContact.email)}<br><small class="text-light">${escapeHtml(row.expertContact.phone)}</small>` 
-            : '-';
+          const contact = renderContactColumn(row.expertContact);
           
           let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
           
@@ -221,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           leads.forEach(row => {
             const contact = row.expertContact 
-              ? `<strong>${escapeHtml(row.expertContact.email)}</strong><br><small style="color:var(--text-light);">${escapeHtml(row.expertContact.phone)}</small>` 
+              ? renderContactColumn(row.expertContact) 
               : '<span style="color:var(--text-light);">Descarga Directa (IA)</span>';
             
             let statusBadge = '';
@@ -266,6 +292,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.querySelectorAll('.complete-expert-btn').forEach(btn => {
         btn.addEventListener('click', (e) => completeExpertReview(e.target.getAttribute('data-id')));
+      });
+
+      // Add copy email listeners
+      document.querySelectorAll('.copy-email-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Avoid triggering any row/container parent click behaviors
+          const email = e.currentTarget.getAttribute('data-email');
+          navigator.clipboard.writeText(email).then(() => {
+            const originalText = e.currentTarget.innerHTML;
+            e.currentTarget.innerHTML = '¡Copiado!';
+            setTimeout(() => {
+              e.currentTarget.innerHTML = originalText;
+            }, 1500);
+          }).catch(err => console.error('Could not copy email:', err));
+        });
       });
 
     } catch (err) {
