@@ -1,0 +1,857 @@
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const AdmZip = require('adm-zip');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Configurations
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_PATH = path.join(DATA_DIR, 'db.json');
+const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Helper functions for Database
+function readDb() {
+  try {
+    return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  } catch (err) {
+    return { visits: 0, analyses: [] };
+  }
+}
+
+function writeDb(data) {
+  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
+
+function readConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  } catch (err) {
+    // Default fallback
+    return {
+      adminPassword: "admin",
+      geminiApiKey: "",
+      priceAi: 1.0,
+      priceExpert: 25.0,
+      captchaEnabled: true,
+      rateLimitPerHour: 5,
+      evaluationPrompt: "Eres un experto reclutador y especialista en optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos criterios:\n1. Compatibilidad ATS (estructura, palabras clave).\n2. Claridad en capacidades, talentos y certificaciones.\n3. Extensión (idealmente <= 2 páginas).\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": {\n    \"score\": (número de 0 a 100),\n    \"feedback\": \"Retroalimentación detallada sobre ATS\"\n  },\n  \"skillsClarity\": {\n    \"score\": (número de 0 a 100),\n    \"feedback\": \"Retroalimentación sobre habilidades/certificaciones\"\n  },\n  \"lengthCheck\": {\n    \"passed\": (true o false),\n    \"feedback\": \"Análisis de extensión del documento\"\n  },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
+      optimizationPrompt: "Eres un redactor profesional y experto en marca personal. Toma el siguiente currículum vitae y genera una versión optimizada, con redacción persuasiva, palabras clave estratégicas para filtros ATS, y una estructura impecable. Mantén la información veraz del usuario pero exprésala de la manera más profesional y atractiva posible. Devuelve el currículum optimizado completo formateado en Markdown limpio."
+    };
+  }
+}
+
+function writeConfig(data) {
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
+
+// Active admin sessions in memory
+const activeSessions = new Map();
+
+// Captcha System (Stateless with AES encryption)
+const CAPTCHA_SECRET = crypto.randomBytes(32).toString('hex');
+
+function generateCaptcha() {
+  const num1 = Math.floor(Math.random() * 9) + 1;
+  const num2 = Math.floor(Math.random() * 9) + 1;
+  const operations = ['+', '-', '*'];
+  const operation = operations[Math.floor(Math.random() * operations.length)];
+  let answer;
+  let text;
+  
+  if (operation === '+') {
+    answer = num1 + num2;
+    text = `¿Cuánto es ${num1} + ${num2}?`;
+  } else if (operation === '-') {
+    const max = Math.max(num1, num2);
+    const min = Math.min(num1, num2);
+    answer = max - min;
+    text = `¿Cuánto es ${max} - ${min}?`;
+  } else {
+    answer = num1 * num2;
+    text = `¿Cuánto es ${num1} × ${num2}?`;
+  }
+  
+  const width = 180;
+  const height = 50;
+  let noise = '';
+  // Random lines
+  for (let i = 0; i < 4; i++) {
+    const x1 = Math.floor(Math.random() * width);
+    const y1 = Math.floor(Math.random() * height);
+    const x2 = Math.floor(Math.random() * width);
+    const y2 = Math.floor(Math.random() * height);
+    noise += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#10b981" stroke-width="1" opacity="0.3" />`;
+  }
+  // Random dots
+  for (let i = 0; i < 15; i++) {
+    const cx = Math.floor(Math.random() * width);
+    const cy = Math.floor(Math.random() * height);
+    const r = Math.floor(Math.random() * 2) + 0.5;
+    noise += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#9ca3af" opacity="0.4" />`;
+  }
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <rect width="100%" height="100%" fill="#f9fafb" rx="6" stroke="#e5e7eb" stroke-width="1"/>
+    ${noise}
+    <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold" fill="#111827" letter-spacing="1">
+      ${text}
+    </text>
+  </svg>`;
+
+  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 min
+  const data = JSON.stringify({ answer: String(answer), expiresAt });
+  
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.alloc(32, CAPTCHA_SECRET.substring(0, 32)), Buffer.alloc(16));
+  let token = cipher.update(data, 'utf8', 'hex');
+  token += cipher.final('hex');
+  
+  return { svg, token };
+}
+
+function verifyCaptcha(token, userInput) {
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.alloc(32, CAPTCHA_SECRET.substring(0, 32)), Buffer.alloc(16));
+    let decrypted = decipher.update(token, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    const parsed = JSON.parse(decrypted);
+    
+    if (Date.now() > parsed.expiresAt) {
+      return false; // Expired
+    }
+    return String(userInput).trim() === String(parsed.answer);
+  } catch (err) {
+    return false; // Decrypt failed
+  }
+}
+
+// IP rate limiter
+const ipRequests = {};
+function isRateLimited(ip, limit) {
+  const now = Date.now();
+  const oneHourAgo = now - 60 * 60 * 1000;
+  
+  if (!ipRequests[ip]) {
+    ipRequests[ip] = [];
+  } else {
+    ipRequests[ip] = ipRequests[ip].filter(ts => ts > oneHourAgo);
+  }
+  
+  if (ipRequests[ip].length >= limit) {
+    return true;
+  }
+  
+  ipRequests[ip].push(now);
+  return false;
+}
+
+// ODT parser helper
+function parseOdt(buffer) {
+  try {
+    const zip = new AdmZip(buffer);
+    const contentXml = zip.readAsText('content.xml');
+    const matches = contentXml.match(/<text:[ph][^>]*>([\s\S]*?)<\/text:[ph]>/g);
+    if (!matches) return "";
+    return matches.map(match => {
+      return match.replace(/<[^>]+>/g, '').trim();
+    }).filter(txt => txt.length > 0).join('\n');
+  } catch (err) {
+    console.error("Error reading ODT:", err);
+    throw new Error("No se pudo leer el archivo ODT.");
+  }
+}
+
+// Gemini API integration
+async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
+  const key = apiKey || process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error("Falta la configuración de Gemini API Key en el servidor. Contacte al administrador.");
+  }
+  
+  const model = "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  
+  const payload = {
+    contents: [
+      {
+        parts: [
+          { text: promptContent }
+        ]
+      }
+    ]
+  };
+  
+  if (systemInstruction) {
+    payload.systemInstruction = {
+      parts: [
+        { text: systemInstruction }
+      ]
+    };
+  }
+  
+  if (responseJson) {
+    payload.generationConfig = {
+      responseMimeType: "application/json"
+    };
+  }
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Gemini error payload:", errorText);
+    throw new Error(`Gemini API respondió con código ${response.status}`);
+  }
+  
+  const responseData = await response.json();
+  try {
+    return responseData.candidates[0].content.parts[0].text;
+  } catch (err) {
+    console.error("Failed to parse candidates in response:", responseData);
+    throw new Error("Respuesta estructurada inválida de Gemini.");
+  }
+}
+
+// Express middlewares
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Multer storage in memory
+const upload = multer({
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// Increment visits on main load
+app.use((req, res, next) => {
+  if (req.method === 'GET' && (req.path === '/' || req.path === '/index.html')) {
+    const db = readDb();
+    db.visits = (db.visits || 0) + 1;
+    writeDb(db);
+  }
+  next();
+});
+
+// Captcha endpoint
+app.get('/api/captcha', (req, res) => {
+  const config = readConfig();
+  if (!config.captchaEnabled) {
+    return res.json({ enabled: false });
+  }
+  const captcha = generateCaptcha();
+  res.json({ enabled: true, svg: captcha.svg, token: captcha.token });
+});
+
+// Language detection helper
+function detectLanguage(text) {
+  const englishWords = ['experience', 'education', 'skills', 'developer', 'engineer', 'manager', 'software', 'project', 'present', 'about', 'summary', 'languages'];
+  const spanishWords = ['experiencia', 'educación', 'habilidades', 'desarrollador', 'ingeniero', 'gerente', 'software', 'proyecto', 'actualidad', 'presente', 'sobre', 'resumen', 'idiomas'];
+  
+  const lowerText = text.toLowerCase();
+  let enCount = 0;
+  let esCount = 0;
+  
+  englishWords.forEach(word => {
+    const regex = new RegExp('\\b' + word + '\\b', 'g');
+    const matches = lowerText.match(regex);
+    if (matches) enCount += matches.length;
+  });
+  
+  spanishWords.forEach(word => {
+    const regex = new RegExp('\\b' + word + '\\b', 'g');
+    const matches = lowerText.match(regex);
+    if (matches) esCount += matches.length;
+  });
+  
+  return enCount > esCount ? 'en' : 'es';
+}
+
+// Analyze document
+app.post('/api/analyze', upload.single('cv'), async (req, res) => {
+  try {
+    const config = readConfig();
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+
+    // 1. IP Rate Limiting Check
+    if (isRateLimited(clientIp, config.rateLimitPerHour)) {
+      return res.status(429).json({ error: "Límite de solicitudes excedido para tu IP. Intenta más tarde." });
+    }
+
+    // 2. Captcha Validation
+    if (config.captchaEnabled) {
+      const captchaToken = req.body.captchaToken;
+      const captchaAnswer = req.body.captchaAnswer;
+      if (!captchaToken || !captchaAnswer || !verifyCaptcha(captchaToken, captchaAnswer)) {
+        return res.status(400).json({ error: "Código captcha inválido o vencido." });
+      }
+    }
+
+    // 3. File Validation
+    if (!req.file) {
+      return res.status(400).json({ error: "Por favor, sube un archivo de Currículum." });
+    }
+
+    const filename = req.file.originalname;
+    const ext = path.extname(filename).toLowerCase();
+    const validExtensions = ['.pdf', '.docx', '.odt', '.txt'];
+    if (!validExtensions.includes(ext)) {
+      return res.status(400).json({ error: "Formato de archivo inválido. Solo se admiten .pdf, .docx, .odt y .txt" });
+    }
+
+    // 4. Text Extraction
+    let extractedText = "";
+    if (ext === '.txt') {
+      extractedText = req.file.buffer.toString('utf8');
+    } else if (ext === '.pdf') {
+      const parsedPdf = await pdfParse(req.file.buffer);
+      extractedText = parsedPdf.text;
+    } else if (ext === '.docx') {
+      const docxResult = await mammoth.extractRawText({ buffer: req.file.buffer });
+      extractedText = docxResult.value;
+    } else if (ext === '.odt') {
+      extractedText = parseOdt(req.file.buffer);
+    }
+
+    if (!extractedText || extractedText.trim().length === 0) {
+      return res.status(400).json({ error: "El archivo no contiene texto legible." });
+    }
+
+    // Auto-detect the CV's language
+    const lang = detectLanguage(extractedText);
+
+    // 5. Call Gemini API to Analyze (with high-fidelity Mock fallback if key is missing)
+    let evaluation = {};
+    const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
+    
+    if (!key) {
+      console.log(`No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language: ${lang}`);
+      const linesCount = extractedText.split('\n').length;
+      const pageCount = Math.max(1, Math.ceil(linesCount / 40));
+      const passedLength = pageCount <= 2;
+      
+      let ats = 65;
+      if (extractedText.toLowerCase().includes('react') || extractedText.toLowerCase().includes('node') || extractedText.toLowerCase().includes('javascript')) ats += 15;
+      if (extractedText.toLowerCase().includes('desarrollador') || extractedText.toLowerCase().includes('ingeniero') || extractedText.toLowerCase().includes('developer')) ats += 10;
+      ats = Math.min(ats, 95);
+
+      let skills = 60;
+      if (extractedText.toLowerCase().includes('certificación') || extractedText.toLowerCase().includes('aws') || extractedText.toLowerCase().includes('scrum') || extractedText.toLowerCase().includes('docker') || extractedText.toLowerCase().includes('certification')) skills += 25;
+      skills = Math.min(skills, 92);
+
+      let metrics = 50;
+      if (extractedText.match(/\d+%/g) || extractedText.match(/\d+\s*(USD|dólares|millones|dollars|percent)/gi)) metrics += 30;
+      metrics = Math.min(metrics, 95);
+
+      let action = 55;
+      if (extractedText.toLowerCase().includes('lideré') || extractedText.toLowerCase().includes('desarrollé') || extractedText.toLowerCase().includes('optimicé') || extractedText.toLowerCase().includes('diseñé') || extractedText.toLowerCase().includes('led') || extractedText.toLowerCase().includes('developed') || extractedText.toLowerCase().includes('optimized') || extractedText.toLowerCase().includes('designed')) action += 30;
+      action = Math.min(action, 95);
+
+      let hasLinks = extractedText.toLowerCase().includes('linkedin') || extractedText.toLowerCase().includes('github') || extractedText.toLowerCase().includes('http');
+
+      const toStars = (score) => Math.max(1, Math.min(5, Math.round(score / 20)));
+      const stars = Math.max(1, Math.min(5, Math.round((ats + skills + metrics + action) / 4 / 20)));
+
+      if (lang === 'en') {
+        evaluation = {
+          stars: stars,
+          summary: `Resume analyzed in Demo Mode (without configured Gemini API key).`,
+          atsCompatibility: {
+            stars: toStars(ats),
+            feedback: "General clean layout with **identifiable sections**. It is recommended to inject more direct keywords."
+          },
+          skillsClarity: {
+            stars: toStars(skills),
+            feedback: "Your technical skills are well-listed. Highlight your **official certifications** in the header section."
+          },
+          lengthCheck: {
+            stars: passedLength ? 5 : 2,
+            feedback: `Estimated length of **${pageCount} page(s)**. ${passedLength ? 'Complies with standard length recommendations.' : 'We recommend reducing content to fit in 2 pages.'}`
+          },
+          quantifiableMetrics: {
+            stars: toStars(metrics),
+            feedback: metrics > 70 
+              ? "Excellent inclusion of **quantifiable metrics and impact** in your previous professional roles." 
+              : "Most of the bullet points describe simple tasks rather than **measurable results** (percentages, revenue, timeframes)."
+          },
+          actionVerbs: {
+            stars: toStars(action),
+            feedback: action > 70
+              ? "Superb usage of **strong action verbs** (e.g. led, designed, implemented)."
+              : "We suggest replacing passive voice sentences with **first-person action verbs** to present yourself as highly assertive."
+          },
+          contactLinks: {
+            stars: hasLinks ? 5 : 2,
+            feedback: hasLinks
+              ? "Presence of clean contact details and **professional hyperlinks** (LinkedIn or GitHub) verified."
+              : "Basic contact details found, but lacks **direct links to active professional portfolios**."
+          },
+          grammarSpelling: {
+            stars: 5,
+            feedback: "Proper professional tone, grammatical consistency, and **no visible spelling mistakes** on first scan."
+          },
+          detailedExplanation: `[DEMO MODE - NO REAL API KEY CONFIGURED]\n\nYour resume has been evaluated with a rating of ${stars} out of 5 stars based on the 7 core quality criteria.\n\nTo improve your resume effectively:\n- Use active action verbs at the start of each bullet point (e.g., 'Led', 'Implemented', 'Optimized').\n- Ensure you quantify your achievements whenever possible (e.g., 'reduced processing time by 20%').\n- Keep distinct, standard sections: Professional Summary, Work Experience, Skills, Education.\n\nConfigure your API Key in the admin settings panel to get real-time evaluations and personalized optimization tips by Gemini.`
+        };
+      } else {
+        evaluation = {
+          stars: stars,
+          summary: `CV analizado en modo demostración (sin API Key de Gemini configurada).`,
+          atsCompatibility: {
+            stars: toStars(ats),
+            feedback: "Estructura general limpia con **secciones identificables**. Se sugiere añadir palabras clave más directas."
+          },
+          skillsClarity: {
+            stars: toStars(skills),
+            feedback: "Tus habilidades técnicas están bien listadas. Resalta tus **certificaciones oficiales** en la cabecera."
+          },
+          lengthCheck: {
+            stars: passedLength ? 5 : 2,
+            feedback: `Extensión estimada de **${pageCount} página(s)**. ${passedLength ? 'Cumple con el límite recomendado.' : 'Excede las 2 páginas.'}`
+          },
+          quantifiableMetrics: {
+            stars: toStars(metrics),
+            feedback: metrics > 70 
+              ? "Excelente uso de **logros y métricas cuantificables** en tus roles laborales anteriores." 
+              : "La mayoría de las viñetas describen tareas en lugar de **impacto cuantitativo** (porcentajes, montos, plazos)."
+          },
+          actionVerbs: {
+            stars: toStars(action),
+            feedback: action > 70
+              ? "Uso idóneo de **verbos de acción e impacto** (ej. lideré, diseñé, ejecuté)."
+              : "Se sugiere cambiar descripciones pasivas por **verbos en primera persona** para sonar más asertivo."
+          },
+          contactLinks: {
+            stars: hasLinks ? 5 : 2,
+            feedback: hasLinks
+              ? "Presencia de datos básicos e **hipervínculos profesionales** (LinkedIn o Portafolio) detectada."
+              : "Se encontraron datos de contacto pero faltan **enlaces directos a redes profesionales**."
+          },
+          grammarSpelling: {
+            stars: 5,
+            feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles** en primera lectura."
+          },
+          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los 7 criterios clave de calidad.\n\nPara mejorar tu CV de manera efectiva:\n- Añade verbos de acción en tu experiencia laboral (ej. 'Lideré', 'Implementé', 'Optimicé').\n- Asegúrate de cuantificar tus resultados en lo posible (ej. 'reducción de tiempos en un 20%').\n- Mantén secciones bien delimitadas: Experiencia, Educación, Habilidades.\n\nConfigura tu API Key en la sección del administrador para obtener análisis y consejos detallados por IA.`
+        };
+      }
+    } else {
+      const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      const analysisRaw = await callGemini(
+        config.geminiApiKey,
+        config.evaluationPrompt,
+        `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM DEL USUARIO A ANALIZAR:\n\n${extractedText}`,
+        true // Expect JSON
+      );
+      try {
+        evaluation = JSON.parse(analysisRaw);
+      } catch (parseErr) {
+        console.error("Could not parse Gemini JSON response directly, raw response was:", analysisRaw);
+        evaluation = {
+          stars: 3,
+          summary: "Evaluación procesada con incidencias menores en el formato.",
+          atsCompatibility: { stars: 3, feedback: "Ajustar estructura general." },
+          skillsClarity: { stars: 3, feedback: "Hacer más visibles certificaciones." },
+          lengthCheck: { stars: 4, feedback: "Extensión aceptable." },
+          quantifiableMetrics: { stars: 2, feedback: "Incluir más logros medibles." },
+          actionVerbs: { stars: 3, feedback: "Usar verbos activos." },
+          contactLinks: { stars: 4, feedback: "Información de contacto presente." },
+          grammarSpelling: { stars: 3, feedback: "Revisar tiempos verbales." },
+          detailedExplanation: analysisRaw
+        };
+      }
+    }
+
+    // 6. Log entry to db
+    const db = readDb();
+    const analysisId = crypto.randomUUID();
+    const logEntry = {
+      id: analysisId,
+      filename: filename,
+      fileSize: req.file.size,
+      fileType: ext,
+      uploadedAt: new Date().toISOString(),
+      ip: clientIp,
+      rating: evaluation.stars || 3,
+      evaluation: evaluation,
+      originalText: extractedText,
+      optimizedText: null,
+      paymentStatus: 'free',
+      paymentMethod: null,
+      expertContact: null,
+      lang: lang
+    };
+    db.analyses.push(logEntry);
+    writeDb(db);
+
+    res.json({
+      success: true,
+      analysisId: analysisId,
+      evaluation: evaluation
+    });
+
+  } catch (err) {
+    console.error("Error during /api/analyze:", err);
+    res.status(500).json({ error: err.message || "Error al procesar el currículum." });
+  }
+});
+
+// Payment simulation route
+app.post('/api/payment/simulate', async (req, res) => {
+  try {
+    const { analysisId, tier, paymentMethod, contact } = req.body;
+    if (!analysisId || !tier) {
+      return res.status(400).json({ error: "Datos de pago incompletos." });
+    }
+
+    const db = readDb();
+    const analysis = db.analyses.find(a => a.id === analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: "Análisis no encontrado." });
+    }
+
+    if (tier === 'ai') {
+      // Perform instant AI optimization using Gemini (with high-fidelity Mock fallback if key is missing)
+      const config = readConfig();
+      const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
+      let optimizedText = "";
+
+      if (!key) {
+        console.log("No Gemini API key found for optimization. Running in high-fidelity Demo Mock Mode.");
+        if (analysis.lang === 'en') {
+          optimizedText = `# ${analysis.filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
+
+## Professional Summary
+Highly skilled Software Engineer with over 5 years of experience in the full software development lifecycle. Proficient in designing robust architectures and efficient APIs using modern tools. Experienced in performance tuning and leading development teams in agile environments.
+
+---
+
+## Key Professional Experience
+
+### Senior Developer / Specialist | Industry Leader
+* **Led** the backend architecture design and development, reducing service latency by **30%**.
+* **Coordinated** full migration from legacy interfaces to responsive, dynamic architectures, enhancing user retention.
+* **Synchronized** and deployed continuous integration and deployment (CI/CD) pipelines, decreasing deployment times.
+
+---
+
+## Technical Skills & Competencies
+* **Backend Development:** Node.js, Express, RESTful APIs, JavaScript (ES6+), TypeScript.
+* **Frontend Development:** React, HTML5, CSS3.
+* **Database & Cloud:** PostgreSQL, MongoDB, AWS Services.
+* **Tools & Methodologies:** Git, Docker, CI/CD, Scrum, Kanban.
+
+---
+
+## Education & Certifications
+* **Bachelor's Degree** | Software Engineering / Computer Science
+* **AWS Certified Solutions Architect** | AWS Cloud Platform
+* **Certified ScrumMaster (CSM)** | Agile Project Management
+
+> [!NOTE]
+> *This document was optimized with active keywords and formatted in markdown for easy adjustments.*`;
+        } else {
+          optimizedText = `# ${analysis.filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZADO POR CINTIA
+
+## Resumen Profesional
+Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas con más de 5 años de trayectoria en el ciclo completo de software. Altamente capacitado en el diseño de arquitecturas robustas y APIs eficientes utilizando tecnologías modernas. Con experiencia en la optimización de rendimientos y el liderazgo de equipos de desarrollo bajo metodologías ágiles.
+
+---
+
+## Experiencia Profesional Destacada
+
+### Desarrollador / Especialista Senior | Empresa Líder
+* **Lideré** el diseño y desarrollo de la arquitectura del backend, reduciendo la latencia de respuesta de los servicios en un **30%**.
+* **Coordiné** la migración tecnológica integral de interfaces obsoletas a arquitecturas dinámicas y responsivas, optimizando la retención del usuario final.
+* **Sincronicé** e implementé flujos de integración y despliegue continuo (CI/CD), automatizando la puesta en producción y disminuyendo los tiempos de entrega.
+
+---
+
+## Habilidades Técnicas y Competencias
+* **Desarrollo Backend:** Node.js, Express, RESTful APIs, JavaScript (ES6+), TypeScript.
+* **Desarrollo Frontend:** React, HTML5, CSS3 modernos (flexbox, grid).
+* **Bases de Datos & Cloud:** PostgreSQL, MongoDB, AWS Services.
+* **Herramientas & Procesos:** Git, Docker, CI/CD, Scrum, Kanban, Pruebas Unitarias.
+
+---
+
+## Educación y Certificaciones
+* **Licenciatura Universitaria** | Ingeniería de Software / Civil Informática
+* **AWS Certified Solutions Architect** | AWS Cloud Platform
+* **Certified ScrumMaster (CSM)** | Gestión de Proyectos Ágiles
+
+> [!NOTE]
+> *Este documento ha sido optimizado con inyección de palabras clave activas e impacto directo para filtros ATS (Applicant Tracking Systems) y está formateado en markdown para su fácil edición.*`;
+        }
+      } else {
+        let languageInstruction = "";
+        if (analysis.lang === 'en') {
+          languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido en INGLÉS (English) ya que el usuario seleccionó este idioma.";
+        }
+        const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+        optimizedText = await callGemini(
+          config.geminiApiKey,
+          config.optimizationPrompt + languageInstruction,
+          `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${analysis.originalText}`,
+          false // Expect markdown/text
+        );
+      }
+
+      analysis.paymentStatus = 'completed_ai';
+      analysis.paymentMethod = paymentMethod || 'paypal';
+      analysis.optimizedText = optimizedText;
+      
+      writeDb(db);
+      res.json({
+        success: true,
+        tier: 'ai',
+        optimizedText: optimizedText
+      });
+    } else if (tier === 'expert') {
+      if (!contact || !contact.email || !contact.phone) {
+        return res.status(400).json({ error: "Para optimización manual, debes dejar correo y celular." });
+      }
+      
+      analysis.paymentStatus = 'pending_expert'; // Needs expert manual evaluation
+      analysis.paymentMethod = paymentMethod || 'paypal';
+      analysis.expertContact = {
+        email: contact.email,
+        phone: contact.phone
+      };
+
+      writeDb(db);
+      res.json({
+        success: true,
+        tier: 'expert',
+        message: "Pago registrado con éxito. Un experto te contactará en un plazo máximo de 24-48 horas."
+      });
+    } else {
+      res.status(400).json({ error: "Tier de pago inválido." });
+    }
+
+  } catch (err) {
+    console.error("Error during /api/payment/simulate:", err);
+    res.status(500).json({ error: err.message || "Error al procesar el pago." });
+  }
+});
+
+// Public settings endpoint
+app.get('/api/config', (req, res) => {
+  const config = readConfig();
+  res.json({
+    optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
+    optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
+    priceAi: config.priceAi || 1.0,
+    priceExpert: config.priceExpert || 25.0
+  });
+});
+
+// Register Expert review request (no online payments)
+app.post('/api/expert-request', async (req, res) => {
+  try {
+    const { analysisId, email, phone } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: "ID de análisis faltante." });
+    }
+    if (!email && !phone) {
+      return res.status(400).json({ error: "Debe proporcionar correo o teléfono de contacto." });
+    }
+    
+    const db = readDb();
+    const idx = db.analyses.findIndex(a => a.id === analysisId);
+    if (idx === -1) {
+      return res.status(404).json({ error: "Análisis no encontrado." });
+    }
+    
+    db.analyses[idx].paymentStatus = 'pending_expert';
+    db.analyses[idx].expertContact = { email, phone };
+    writeDb(db);
+    
+    res.json({
+      success: true,
+      message: "Solicitud registrada con éxito. Un experto se contactará a la brevedad."
+    });
+  } catch (err) {
+    console.error("Error in expert-request:", err);
+    res.status(500).json({ error: "Error interno al procesar la solicitud." });
+  }
+});
+
+
+// Retrieve optimized CV for completed AI sessions (useful on refresh/recovery)
+app.get('/api/analysis/:id', (req, res) => {
+  const db = readDb();
+  const analysis = db.analyses.find(a => a.id === req.params.id);
+  if (!analysis) {
+    return res.status(404).json({ error: "Análisis no encontrado." });
+  }
+  res.json({
+    id: analysis.id,
+    filename: analysis.filename,
+    rating: analysis.rating,
+    evaluation: analysis.evaluation,
+    paymentStatus: analysis.paymentStatus,
+    optimizedText: analysis.optimizedText,
+    expertContact: analysis.expertContact
+  });
+});
+
+// Admin Authorization Middleware
+function requireAdminAuth(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token || !activeSessions.has(token)) {
+    return res.status(401).json({ error: "No autorizado." });
+  }
+  const expiresAt = activeSessions.get(token);
+  if (Date.now() > expiresAt) {
+    activeSessions.delete(token);
+    return res.status(401).json({ error: "Sesión expirada." });
+  }
+  // Extend session
+  activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000);
+  next();
+}
+
+// Admin login
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  const config = readConfig();
+  if (password === config.adminPassword) {
+    const token = crypto.randomBytes(32).toString('hex');
+    activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000); // 2 hours
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ error: "Contraseña incorrecta." });
+  }
+});
+
+// Admin logout
+app.post('/api/admin/logout', (req, res) => {
+  const token = req.headers['authorization'];
+  if (token) {
+    activeSessions.delete(token);
+  }
+  res.json({ success: true });
+});
+
+// Admin stats
+app.get('/api/admin/stats', requireAdminAuth, (req, res) => {
+  const db = readDb();
+  const config = readConfig();
+  
+  // Calculate total counts
+  const totalVisits = db.visits || 0;
+  const analysesList = db.analyses || [];
+  
+  const totalAnalyses = analysesList.length;
+  const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
+  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
+  const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
+  const paidExpert = paidExpertPending + paidExpertCompleted;
+
+  const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
+
+  // Return statistics and table details (omit raw text in table list for performance)
+  const documentLog = analysesList.map(a => ({
+    id: a.id,
+    filename: a.filename,
+    fileSize: a.fileSize,
+    fileType: a.fileType,
+    uploadedAt: a.uploadedAt,
+    ip: a.ip,
+    rating: a.rating,
+    paymentStatus: a.paymentStatus,
+    expertContact: a.expertContact
+  })).reverse(); // Return latest first
+
+  res.json({
+    stats: {
+      totalVisits,
+      totalAnalyses,
+      paidAi,
+      paidExpertPending,
+      paidExpertCompleted,
+      totalRevenue
+    },
+    documentLog
+  });
+});
+
+// Mark expert review as completed
+app.post('/api/admin/expert-complete', requireAdminAuth, (req, res) => {
+  const { analysisId } = req.body;
+  if (!analysisId) return res.status(400).json({ error: "ID faltante" });
+  
+  const db = readDb();
+  const idx = db.analyses.findIndex(a => a.id === analysisId);
+  if (idx === -1) return res.status(404).json({ error: "No encontrado" });
+  
+  db.analyses[idx].paymentStatus = 'completed_expert';
+  writeDb(db);
+  
+  res.json({ success: true });
+});
+
+// Get admin settings
+app.get('/api/admin/settings', requireAdminAuth, (req, res) => {
+  const config = readConfig();
+  // Don't send plain password hash if we don't want, but for simplicity we return settings
+  // Omit the password for security or return it. Since this is an admin session, we can return it or mask it.
+  const secureConfig = { ...config };
+  // Hide actual API key characters partially for safety in display, but we can return it so the administrator can edit it
+  res.json(secureConfig);
+});
+
+// Update admin settings
+app.post('/api/admin/settings', requireAdminAuth, (req, res) => {
+  try {
+    const newSettings = req.body;
+    const config = readConfig();
+    
+    // Validate and update fields
+    if (newSettings.adminPassword) config.adminPassword = newSettings.adminPassword;
+    if (newSettings.hasOwnProperty('geminiApiKey')) config.geminiApiKey = newSettings.geminiApiKey;
+    if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
+    if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
+    if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
+    if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
+    if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = !!newSettings.captchaEnabled;
+    if (newSettings.hasOwnProperty('rateLimitPerHour')) config.rateLimitPerHour = parseInt(newSettings.rateLimitPerHour, 10) || 5;
+    if (newSettings.evaluationPrompt) config.evaluationPrompt = newSettings.evaluationPrompt;
+    if (newSettings.optimizationPrompt) config.optimizationPrompt = newSettings.optimizationPrompt;
+    
+    writeConfig(config);
+    res.json({ success: true, message: "Parámetros guardados correctamente." });
+  } catch (err) {
+    res.status(500).json({ error: "Error al guardar parámetros." });
+  }
+});
+
+// Fallback for download file (optional helper if needed, we just serve text in dashboard)
+app.get('/api/admin/download-text/:id', requireAdminAuth, (req, res) => {
+  const db = readDb();
+  const analysis = db.analyses.find(a => a.id === req.params.id);
+  if (!analysis) return res.status(404).send("No encontrado");
+  
+  res.setHeader('Content-disposition', `attachment; filename=cv_${analysis.filename}.txt`);
+  res.setHeader('Content-type', 'text/plain; charset=utf-8');
+  res.send(analysis.originalText);
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

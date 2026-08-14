@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Cintia</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Admin-specific layout adjustments */
+    .admin-header {
+      background-color: var(--bg-primary);
+      border-bottom: 1px solid var(--border-grey);
+      padding: 16px 0;
+      margin-bottom: 30px;
+    }
+    .admin-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .admin-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-grey);
+      padding-bottom: 12px;
+    }
+    .admin-tab {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: var(--border-radius-sm);
+      padding: 8px 16px;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-medium);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .admin-tab:hover {
+      color: var(--text-dark);
+      background-color: var(--bg-secondary);
+    }
+    .admin-tab.active {
+      color: var(--color-mint);
+      background-color: var(--color-mint-light);
+      border-color: rgba(16, 185, 129, 0.15);
+    }
+    .admin-panel {
+      display: none;
+    }
+    .admin-panel.active {
+      display: block;
+    }
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      padding: 20px;
+      background-color: var(--bg-secondary);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+    /* Table styling */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-grey);
+      white-space: nowrap;
+    }
+    th {
+      background-color: var(--bg-secondary);
+      font-weight: 600;
+      color: var(--text-medium);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge.free { background-color: var(--bg-secondary); color: var(--text-medium); }
+    .badge.ai { background-color: var(--color-mint-light); color: var(--color-mint-hover); }
+    .badge.pending { background-color: #fef3c7; color: #d97706; } /* Amber */
+    .badge.completed { background-color: #d1fae5; color: #065f46; } /* Green */
+    
+    /* Login Centered card */
+    .login-container {
+      max-width: 380px;
+      margin: 100px auto;
+    }
+    .login-card {
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-md);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    .login-title {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .login-subtitle {
+      color: var(--text-medium);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      font-family: var(--font-body);
+      transition: var(--transition-smooth);
+    }
+    .form-control:focus {
+      border-color: var(--color-mint);
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 120px;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .checkbox-group input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-mint);
+    }
+    .checkbox-group label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-top: 0;
+      width: auto;
+    }
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Header (visible when logged in) -->
+  <header class="admin-header" id="adminHeader" style="display: none;">
+    <div class="app-container admin-nav">
+      <a href="/" class="logo"><span class="logo-text">Cint<span style="color: var(--color-mint)">ia</span></span> <span style="font-weight:400; font-size:14px; color:var(--text-light); margin-left:8px;">Control Admin</span></a>
+      <button class="btn-secondary btn-sm" id="logoutBtn">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <!-- Login Area -->
+  <main class="app-container login-container" id="loginArea">
+    <div class="login-card">
+      <h2 class="login-title">Administración</h2>
+      <p class="login-subtitle">Ingresa la contraseña para acceder al panel de control</p>
+      
+      <div id="loginError" class="error-banner" style="display: none;"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="adminPassword">Contraseña</label>
+          <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn">Entrar al panel</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Dashboard Admin Area (visible when logged in) -->
+  <main class="app-container" id="adminDashboard" style="display: none; margin-bottom: 80px;">
+    
+    <!-- Navigation Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-target="panelStats">Estadísticas</button>
+      <button class="admin-tab" data-target="panelDocs">Historial de CVs</button>
+      <button class="admin-tab" data-target="panelSettings">Configuración y Prompts</button>
+    </div>
+
+    <!-- Panel 1: Stats -->
+    <section class="admin-panel active" id="panelStats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Visitas</div>
+          <div class="stat-val" id="statVisits">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">CVs Analizados</div>
+          <div class="stat-val" id="statAnalyses">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Optimizaciones IA ($1)</div>
+          <div class="stat-val" id="statPaidAi">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Expertos Pendientes</div>
+          <div class="stat-val" id="statExpertPending">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ingresos Totales</div>
+          <div class="stat-val" id="statRevenue">$0.00 USD</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 24px;">
+        <h3>Resumen de Actividad reciente</h3>
+        <p style="color: var(--text-medium); font-size: 14px; margin-bottom: 20px;">Utiliza la pestaña 'Historial de CVs' para auditar los detalles y descargar currículums.</p>
+        <div class="table-container">
+          <table id="recentActivityTable">
+            <thead>
+              <tr>
+                <th>Archivo</th>
+                <th>Fecha</th>
+                <th>Calificación</th>
+                <th>Estado Pago</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 2: Document log -->
+    <section class="admin-panel" id="panelDocs">
+      <div class="card" style="padding: 24px;">
+        <h3 style="margin-bottom: 16px;">Historial Completo de Currículums Subidos</h3>
+        <div class="table-container">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>Archivo</th>
+                <th>Tamaño</th>
+                <th>Fecha</th>
+                <th>Calificación</th>
+                <th>Tipo Pago</th>
+                <th>Contacto Experto</th>
+                <th>IP</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 3: Settings manager -->
+    <section class="admin-panel" id="panelSettings">
+      <div class="card" style="padding: 32px;">
+        <h3 style="margin-bottom: 24px;">Configuración de Parámetros del Sistema</h3>
+        
+        <div id="settingsMessage" class="error-banner" style="display: none; background-color: var(--color-mint-light); border-color: rgba(16, 185, 129, 0.2); color: var(--color-mint-hover);"></div>
+        
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="setGeminiKey">Gemini API Key</label>
+            <input type="password" id="setGeminiKey" class="form-control" placeholder="Configura tu clave para usar Gemini">
+            <small style="color: var(--text-light); font-size: 11px;">Deja en blanco para usar la variable de entorno del sistema (si existe).</small>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="form-group">
+              <label for="setPriceAi">Precio Optimización IA (USD)</label>
+              <input type="number" step="0.01" id="setPriceAi" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="setPriceExpert">Precio Experto Manual (USD)</label>
+              <input type="number" step="0.01" id="setPriceExpert" class="form-control" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="form-group">
+              <label for="setRateLimit">Límite de subidas por IP (por hora)</label>
+              <input type="number" id="setRateLimit" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="setAdminPassword">Cambiar Contraseña Administrador</label>
+              <input type="password" id="setAdminPassword" class="form-control" placeholder="Nueva contraseña (dejar en blanco para mantener)">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div class="checkbox-group" style="margin-bottom: 0;">
+              <input type="checkbox" id="setOptAiEnabled">
+              <label for="setOptAiEnabled">Habilitar Optimización IA</label>
+            </div>
+            <div class="checkbox-group" style="margin-bottom: 0;">
+              <input type="checkbox" id="setOptExpertEnabled">
+              <label for="setOptExpertEnabled">Habilitar Optimización por Experto</label>
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="setCaptchaEnabled">
+            <label for="setCaptchaEnabled">Habilitar verificación Captcha anti-abuso</label>
+          </div>
+
+          <div class="form-group">
+            <label for="setEvalPrompt">Prompt de Evaluación (Retorna JSON estructurado)</label>
+            <textarea id="setEvalPrompt" class="form-control" required></textarea>
+            <small style="color: var(--text-light); font-size: 11px;">Importante: El prompt debe instruir a Gemini a retornar un JSON con la estructura correcta descrita en el archivo original.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="setOptPrompt">Prompt de Optimización (Retorna Markdown)</label>
+            <textarea id="setOptPrompt" class="form-control" required></textarea>
+          </div>
+
+          <button type="submit" class="btn" style="margin-top: 16px;">Guardar Configuración</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- View CV Text Modal -->
+  <dialog id="viewTextModal">
+    <div class="modal-content" style="max-width: 600px; width: 100%;">
+      <div class="modal-header">
+        <h3 class="modal-title">Texto Extraído del CV</h3>
+        <button class="modal-close" id="closeTextModalBtn" type="button">&times;</button>
+      </div>
+      <div class="optimized-content-box" id="cvTextContentBox" style="font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px;">
+        <!-- Injected -->
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Footer -->
+  <footer>
+    <div class="app-container">
+      <p>&copy; 2026 Cintia. Todos los derechos reservados. Control de Administración.</p>
+    </div>
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>

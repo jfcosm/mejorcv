@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cintia - Deja que la IA perfeccione tu Currículum</title>
+  <meta name="description" content="Sube tu currículum, evalúa su compatibilidad con filtros ATS y optimízalo al instante con Inteligencia Artificial.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="app-container nav">
+      <a href="/" class="logo"><span class="logo-text">Cint<span style="color: var(--color-mint)">ia</span></span><span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="/" id="navHome">Inicio</a></li>
+        <li><a href="/admin.html" id="navAdmin">Panel Administrador</a></li>
+        <li class="lang-selector-container">
+          <select id="langSelector" class="lang-selector">
+            <option value="es" selected>ES</option>
+            <option value="en">EN</option>
+          </select>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Hero -->
+  <section class="hero">
+    <h1>Analiza y <span>perfecciona</span> tu Currículum Vitae</h1>
+    <p>Descubre qué tan compatible es tu CV con filtros ATS, obtén una calificación de estrellas instantánea y descarga una versión optimizada.</p>
+  </section>
+
+  <!-- Upload Dashboard -->
+  <main class="app-container main-dashboard">
+    <div class="card">
+      
+      <!-- Error banner -->
+      <div id="errorBanner" class="error-banner"></div>
+
+      <!-- Upload Form Wrapper -->
+      <div id="uploadWrapper">
+        <form id="cvForm">
+          <div class="upload-zone" id="dropZone">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <h3 class="upload-title">Arrastra tu currículum aquí</h3>
+            <p class="upload-hint">Formatos aceptados: .pdf, .docx, .odt, .txt (Menos de 5 MB)</p>
+            <input type="file" id="cvFileInput" name="cv" class="file-input" accept=".pdf,.docx,.odt,.txt">
+          </div>
+
+          <!-- Selected File Display -->
+          <div class="selected-file-container" id="selectedFileContainer">
+            <div class="file-info">
+              <svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <div>
+                <div class="file-name" id="fileNameDisplay">CV_Nombre_Archivo.pdf</div>
+                <div class="file-size" id="fileSizeDisplay">1.2 MB</div>
+              </div>
+            </div>
+            <button type="button" class="remove-file-btn" id="removeFileBtn" title="Eliminar archivo">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Captcha Box -->
+          <div class="captcha-container" id="captchaContainer">
+            <label class="captcha-label" for="captchaInput">Medida anti-abuso: Verifica que eres humano</label>
+            <div class="captcha-box">
+              <div class="captcha-image-wrapper" id="captchaImageWrapper" title="Clic para recargar captcha">
+                <!-- SVG Captcha dynamically injected -->
+              </div>
+              <input type="text" id="captchaInput" class="captcha-input" placeholder="Resultado" required>
+              <button type="button" class="refresh-captcha" id="refreshCaptchaBtn">Recargar</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Analizar CV Gratis</button>
+        </form>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-wrapper" id="loadingWrapper">
+        <div class="spinner"></div>
+        <h3 id="loadingStatus">Analizando tu Currículum...</h3>
+        <ul class="loading-steps" id="loadingSteps">
+          <li id="step1" class="active">Extrayendo texto del documento...</li>
+          <li id="step2">Evaluando estructura bajo estándares ATS...</li>
+          <li id="step3">Analizando claridad de capacidades y certificaciones...</li>
+          <li id="step4">Verificando la extensión de páginas...</li>
+          <li id="step5">Generando informe de calidad...</li>
+        </ul>
+      </div>
+
+      <!-- Results Panel -->
+      <section class="results-section" id="resultsSection">
+        <div class="results-header">
+          <h2>Evaluación de Calidad</h2>
+          <div class="stars-rating" id="starsRating">
+            <!-- Dynamic Stars -->
+          </div>
+          <p class="results-summary" id="resultsSummary">¡Tu CV tiene un potencial excelente!</p>
+        </div>
+
+        <div class="critique-grid" id="critiqueGrid">
+          <!-- Las tarjetas de los 7 criterios de calidad se inyectan dinámicamente desde JS -->
+        </div>
+
+        <div class="detailed-explanation">
+          <h3>Explicación del Puntaje</h3>
+          <p id="detailedExplanationText">Tu currículum cumple con las mejores prácticas en términos de longitud y estructura. Sin embargo, no superará filtros automáticos de grandes empresas debido a la falta de palabras de acción en la descripción de roles previos. Te recomendamos enriquecer tus descripciones profesionales con verbos como 'Lideré', 'Desarrollé' y 'Optimicé'.</p>
+        </div>
+
+        <!-- Pricing Plans -->
+        <div class="pricing-section" id="pricingSection">
+          <h2 class="pricing-title">¿Quieres optimizar tu CV para conseguir más entrevistas?</h2>
+          <p class="pricing-subtitle">Corrige errores, reorganiza secciones y maximiza la compatibilidad ATS.</p>
+
+          <div class="plans-grid">
+            <!-- Tier 1: AI instant optimization -->
+            <div class="plan-card popular" id="aiPlanCard">
+              <h3 class="plan-name">Optimización con IA</h3>
+              <div class="plan-price">$1 <span>USD / pago único</span></div>
+              <ul class="plan-features">
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Corrección al instante con Gemini
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Inyección de palabras clave ATS
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Reorganización de habilidades y perfil
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Descarga inmediata en texto/markdown
+                </li>
+              </ul>
+              <button type="button" class="btn" id="optimizeAiBtn">Optimizar con IA por $1 USD</button>
+            </div>
+
+            <!-- Tier 2: Expert manual optimization -->
+            <div class="plan-card" id="expertPlanCard">
+              <h3 class="plan-name">Optimización Manual</h3>
+              <div class="plan-price">$25 <span>USD / por entrega</span></div>
+              <div class="plan-input-group">
+                <label for="expertEmail">Correo Electrónico</label>
+                <input type="email" id="expertEmail" class="plan-input" placeholder="nombre@correo.com">
+              </div>
+              <div class="plan-input-group">
+                <label for="expertPhone">Número de Celular o WhatsApp</label>
+                <input type="tel" id="expertPhone" class="plan-input" placeholder="+56 9 1234 5678">
+              </div>
+              <small class="input-hint" id="expertContactHint" style="display: block; font-size: 11px; color: var(--text-light); margin: -8px 0 16px; text-align: left;">* Proporciona al menos uno de los dos medios de contacto.</small>
+              <ul class="plan-features">
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Revisión por experto de Recursos Humanos
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Rediseño visual a medida
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Asesoría en llamadas/chat
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Entrega final en PDF y Word editable
+                </li>
+              </ul>
+              <button type="button" class="btn" id="optimizeExpertBtn">Solicitar Asistencia de Experto</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Optimized Output Panel -->
+      <section class="optimized-output-container" id="optimizedOutputContainer">
+        <div class="optimized-header">
+          <h2 class="optimized-title">Tu Currículum Optimizado con IA</h2>
+          <div class="optimized-actions">
+            <button class="btn-secondary" id="copyCvBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copiar Texto
+            </button>
+            <button class="btn-secondary" id="downloadCvBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Descargar .txt
+            </button>
+          </div>
+        </div>
+        <div class="optimized-content-box" id="optimizedContentBox">
+          <!-- Text generated dynamically -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Checkout Dialog -->
+  <dialog id="checkoutModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="checkoutTitle">Pagar servicio</h3>
+        <button class="modal-close" id="closeModalBtn" type="button">&times;</button>
+      </div>
+
+      <!-- Payment details -->
+      <div class="checkout-details">
+        <div class="checkout-row">
+          <span id="checkoutService">Optimización de CV - IA</span>
+          <span id="checkoutPriceOriginal">$1.00 USD</span>
+        </div>
+        <div class="checkout-row">
+          <span>Impuestos</span>
+          <span>$0.00 USD</span>
+        </div>
+        <div class="checkout-row">
+          <span>Total a pagar</span>
+          <span id="checkoutTotal">$1.00 USD</span>
+        </div>
+      </div>
+
+      <!-- Payment Buttons -->
+      <div class="payment-methods" id="paymentMethodsView">
+        <button type="button" class="payment-btn paypal" id="payPaypalBtn">
+          Pagar con PayPal
+        </button>
+      </div>
+
+      <!-- Success View (hidden initially) -->
+      <div class="success-view" id="successPaymentView" style="display: none;">
+        <svg class="success-icon" id="successPaymentIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <div class="spinner" id="successPaymentSpinner" style="display: none; margin: 0 auto 20px;"></div>
+        <h3 id="successPaymentTitle">¡Pago Completado!</h3>
+        <p id="successPaymentMessage">Tu pago ha sido procesado correctamente. Procesando el documento...</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Footer -->
+  <footer>
+    <div class="app-container">
+      <p id="footerCopyright">&copy; 2026 Cintia. Todos los derechos reservados. Tecnología basada en Google Gemini.</p>
+      <p style="margin-top: 8px; font-size: 12px; color: var(--text-light);" id="footerCredits">Con el ❤️ y ⚡ de <a href="https://www.melodialab.net" target="_blank" style="color: var(--color-mint); text-decoration: none; font-weight: 600;">MelodIA Lab</a></p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
