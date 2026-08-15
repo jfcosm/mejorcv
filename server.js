@@ -450,9 +450,12 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       }
     } else {
       const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      const languageText = lang === 'en' ? 'ENGLISH (Inglés)' : 'SPANISH (Español)';
+      const systemInstruction = config.evaluationPrompt + `\n\nCRITICAL: You must translate and write all feedback text, summaries, and explanations in the JSON response strictly in ${languageText}. Do not respond in Spanish if the language is English, and vice versa.`;
+      
       const analysisRaw = await callGemini(
         config.geminiApiKey,
-        config.evaluationPrompt,
+        systemInstruction,
         `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM DEL USUARIO A ANALIZAR:\n\n${extractedText}`,
         true // Expect JSON
       );
