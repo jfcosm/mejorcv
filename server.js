@@ -72,15 +72,15 @@ function generateCaptcha() {
   
   if (operation === '+') {
     answer = num1 + num2;
-    text = `¿Cuánto es ${num1} + ${num2}?`;
+    text = `${num1} + ${num2} = ?`;
   } else if (operation === '-') {
     const max = Math.max(num1, num2);
     const min = Math.min(num1, num2);
     answer = max - min;
-    text = `¿Cuánto es ${max} - ${min}?`;
+    text = `${max} - ${min} = ?`;
   } else {
     answer = num1 * num2;
-    text = `¿Cuánto es ${num1} × ${num2}?`;
+    text = `${num1} × ${num2} = ?`;
   }
   
   const width = 180;
