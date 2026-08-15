@@ -103,7 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
       expertPlanName: "Optimización Manual",
       expertPlanPriceUnit: "USD / por entrega",
       expertEmailLabel: "Correo Electrónico",
+      expertEmailPlaceholder: "nombre@correo.com",
       expertPhoneLabel: "Número de Celular o WhatsApp",
+      expertContactHint: "* Proporciona al menos uno de los dos medios de contacto.",
       expertPlanF1: "Revisión por experto de Recursos Humanos",
       expertPlanF2: "Rediseño visual a medida",
       expertPlanF3: "Asesoría en llamadas/chat",
@@ -159,7 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
       expertPlanName: "Manual Optimization",
       expertPlanPriceUnit: "USD / per delivery",
       expertEmailLabel: "Email Address",
+      expertEmailPlaceholder: "name@email.com",
       expertPhoneLabel: "Cell Phone or WhatsApp Number",
+      expertContactHint: "* Provide at least one of the two contact methods.",
       expertPlanF1: "Review by Human Resources expert",
       expertPlanF2: "Tailored visual redesign",
       expertPlanF3: "Consulting via call/chat",
@@ -266,6 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
       cards[1].querySelector('.plan-name').textContent = t.expertPlanName;
       cards[1].querySelectorAll('.plan-input-group label')[0].textContent = t.expertEmailLabel;
       cards[1].querySelectorAll('.plan-input-group label')[1].textContent = t.expertPhoneLabel;
+      
+      const expertEmailInput = document.getElementById('expertEmail');
+      if (expertEmailInput) expertEmailInput.placeholder = t.expertEmailPlaceholder;
+      const expertContactHintEl = document.getElementById('expertContactHint');
+      if (expertContactHintEl) expertContactHintEl.textContent = t.expertContactHint;
       const expFeatures = cards[1].querySelectorAll('.plan-features li');
       if (expFeatures.length >= 4) {
         const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> `;
