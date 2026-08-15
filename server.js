@@ -17,43 +17,69 @@ const DB_PATH = path.join(DATA_DIR, 'db.json');
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 
 // Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Could not create data directory, running in ephemeral filesystem mode.");
 }
+
+// Memory cache variables for serverless environments (Vercel)
+let inMemoryDb = null;
+let inMemoryConfig = null;
 
 // Helper functions for Database
 function readDb() {
+  if (inMemoryDb) return inMemoryDb;
   try {
-    return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+    inMemoryDb = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+    return inMemoryDb;
   } catch (err) {
-    return { visits: 0, analyses: [] };
+    inMemoryDb = { visits: 0, analyses: [] };
+    return inMemoryDb;
   }
 }
 
 function writeDb(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+  inMemoryDb = data;
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.warn("Read-only filesystem detected. Database updated in memory only.");
+  }
 }
 
 function readConfig() {
+  if (inMemoryConfig) return inMemoryConfig;
   try {
-    return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    inMemoryConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    return inMemoryConfig;
   } catch (err) {
     // Default fallback
-    return {
-      adminPassword: "admin",
+    inMemoryConfig = {
+      adminPassword: "",
       geminiApiKey: "",
       priceAi: 1.0,
       priceExpert: 25.0,
+      optAiEnabled: false,
+      optExpertEnabled: true,
       captchaEnabled: true,
-      rateLimitPerHour: 5,
-      evaluationPrompt: "Eres un experto reclutador y especialista en optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos criterios:\n1. Compatibilidad ATS (estructura, palabras clave).\n2. Claridad en capacidades, talentos y certificaciones.\n3. Extensión (idealmente <= 2 páginas).\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": {\n    \"score\": (número de 0 a 100),\n    \"feedback\": \"Retroalimentación detallada sobre ATS\"\n  },\n  \"skillsClarity\": {\n    \"score\": (número de 0 a 100),\n    \"feedback\": \"Retroalimentación sobre habilidades/certificaciones\"\n  },\n  \"lengthCheck\": {\n    \"passed\": (true o false),\n    \"feedback\": \"Análisis de extensión del documento\"\n  },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
-      optimizationPrompt: "Eres un redactor profesional y experto en marca personal. Toma el siguiente currículum vitae y genera una versión optimizada, con redacción persuasiva, palabras clave estratégicas para filtros ATS, y una estructura impecable. Mantén la información veraz del usuario pero exprésala de la manera más profesional y atractiva posible. Devuelve el currículum optimizado completo formateado en Markdown limpio."
+      rateLimitPerHour: 20,
+      evaluationPrompt: "Eres Cintia, la experta virtual de MelodIA Lab en reclutamiento y optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos 7 criterios clave:\n1. Compatibilidad ATS (estructura de secciones, legibilidad).\n2. Claridad de Talentos e Habilidades (habilidades duras, blandas y certificaciones).\n3. Extensión del Documento (máximo 2 páginas).\n4. Logros y Métricas Cuantificables (existencia de números, porcentajes o impactos cuantificados en la experiencia).\n5. Lenguaje y Verbos de Acción (uso de verbos activos y tono profesional persuasivo).\n6. Datos de Contacto y Enlaces (presencia de datos esenciales de contacto y enlaces clave como LinkedIn/Portafolio).\n7. Ortografía y Consistencia Gramatical (ausencia de errores y concordancia en tiempos verbales).\n\nCRÍTICO EN FECHAS Y CRONOLOGÍA:\nUtiliza la 'FECHA ACTUAL DEL SISTEMA' proporcionada al inicio del currículum como punto de referencia absoluto para determinar si una fecha del currículum es pasada, presente o futura. Presta especial atención a no generar falsos positivos con el orden de las experiencias pasadas. 'Actualidad' o 'Presente' son correctos y válidos. Revisa con rigor lógico las fechas y no reportes inconsistencias a menos que exista un solapamiento físicamente imposible o una contradicción temporal explícita.\n\nIDIOMA DE RESPUESTA:\nDebes responder en el mismo idioma en el que está escrito el currículum del usuario. Si el currículum está redactado en inglés, toda la retroalimentación, resumen y explicaciones detalladas deben redactarse estrictamente en Inglés (English). Si el currículum está redactado en español, toda la retroalimentación, resumen y explicaciones detalladas deben redactarse estrictamente en Español (Spanish).\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5 para el puntaje global),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita** para conceptos clave\" },\n  \"skillsClarity\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"lengthCheck\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"quantifiableMetrics\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"actionVerbs\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"contactLinks\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"grammarSpelling\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
+      optimizationPrompt: "Eres Cintia, la redactora profesional y experta virtual de MelodIA Lab en marca personal. Toma el siguiente currículum vitae y genera una versión optimizada, con redacción persuasiva, palabras clave estratégicas para filtros ATS, y una estructura impecable. Además del currículum optimizado, debes incluir obligatoriamente una sección con ejemplos de párrafos alternativos completamente optimizados para su perfil (como un perfil profesional pulido o la redacción de sus logros clave) y una sección de recomendaciones de mejora estratégicas detalladas según su trayectoria laboral y conocimientos específicos del sector. Devuelve todo el documento formateado en Markdown limpio."
     };
+    return inMemoryConfig;
   }
 }
 
 function writeConfig(data) {
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
+  inMemoryConfig = data;
+  try {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.warn("Read-only filesystem detected. Configuration updated in memory only.");
+  }
 }
 
 // Active admin sessions in memory
