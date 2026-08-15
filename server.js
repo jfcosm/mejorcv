@@ -182,6 +182,41 @@ function isRateLimited(ip, limit) {
   return false;
 }
 
+// Admin Login Rate Limiter (consecutive attempts check)
+const adminLoginAttempts = new Map();
+function checkAdminLoginRateLimit(ip) {
+  const now = Date.now();
+  const record = adminLoginAttempts.get(ip);
+  if (record) {
+    if (record.lockUntil && now < record.lockUntil) {
+      return { limited: true, secondsLeft: Math.ceil((record.lockUntil - now) / 1000) };
+    }
+    if (record.lockUntil && now >= record.lockUntil) {
+      record.count = 0;
+      record.lockUntil = null;
+    }
+  }
+  return { limited: false };
+}
+
+function registerAdminLoginAttempt(ip, success) {
+  const now = Date.now();
+  let record = adminLoginAttempts.get(ip);
+  if (!record) {
+    record = { count: 0, lockUntil: null };
+    adminLoginAttempts.set(ip, record);
+  }
+  if (success) {
+    record.count = 0;
+    record.lockUntil = null;
+  } else {
+    record.count++;
+    if (record.count >= 5) {
+      record.lockUntil = now + 60 * 1000; // 1 minute lock
+    }
+  }
+}
+
 // ODT parser helper
 function parseOdt(buffer) {
   try {
@@ -257,6 +292,15 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
 
 // Express middlewares
 app.use(express.json());
+
+// Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
 
 // Obscured Admin panel route
 const ADMIN_ROUTE = process.env.ADMIN_ROUTE || '/cintia-private-dashboard';
@@ -363,6 +407,11 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 
     if (!extractedText || extractedText.trim().length === 0) {
       return res.status(400).json({ error: "El archivo no contiene texto legible." });
+    }
+
+    // Safety check to mitigate ReDoS (Regular Expression Denial of Service)
+    if (extractedText.length > 100000) {
+      return res.status(400).json({ error: "El texto extraído supera el límite de seguridad permitido (100,000 caracteres)." });
     }
 
     // Auto-detect the CV's language
@@ -763,6 +812,14 @@ function requireAdminAuth(req, res, next) {
 
 // Admin login
 app.post('/api/admin/login', (req, res) => {
+  const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+  
+  // Rate limiting check
+  const rateLimitStatus = checkAdminLoginRateLimit(clientIp);
+  if (rateLimitStatus.limited) {
+    return res.status(429).json({ error: `Demasiados intentos de acceso fallidos. Bloqueado por ${rateLimitStatus.secondsLeft} segundos.` });
+  }
+
   const { email, password } = req.body;
   
   // Get credentials from environment variables with safe fallbacks
@@ -770,10 +827,12 @@ app.post('/api/admin/login', (req, res) => {
   const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
   
   if (email === expectedEmail && password === expectedPassword) {
+    registerAdminLoginAttempt(clientIp, true);
     const token = crypto.randomBytes(32).toString('hex');
     activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000); // 2 hours
     res.json({ success: true, token });
   } else {
+    registerAdminLoginAttempt(clientIp, false);
     res.status(401).json({ error: "Credenciales incorrectas." });
   }
 });
@@ -848,10 +907,18 @@ app.post('/api/admin/expert-complete', requireAdminAuth, (req, res) => {
 // Get admin settings
 app.get('/api/admin/settings', requireAdminAuth, (req, res) => {
   const config = readConfig();
-  // Don't send plain password hash if we don't want, but for simplicity we return settings
-  // Omit the password for security or return it. Since this is an admin session, we can return it or mask it.
   const secureConfig = { ...config };
-  // Hide actual API key characters partially for safety in display, but we can return it so the administrator can edit it
+  
+  // Mask the API Key to protect it from exposure
+  if (secureConfig.geminiApiKey) {
+    secureConfig.geminiApiKey = '••••••••' + secureConfig.geminiApiKey.slice(-4);
+  } else {
+    secureConfig.geminiApiKey = '';
+  }
+  
+  // Omit password from responses for safety
+  delete secureConfig.adminPassword;
+  
   res.json(secureConfig);
 });
 
@@ -862,8 +929,12 @@ app.post('/api/admin/settings', requireAdminAuth, (req, res) => {
     const config = readConfig();
     
     // Validate and update fields
-    if (newSettings.adminPassword) config.adminPassword = newSettings.adminPassword;
-    if (newSettings.hasOwnProperty('geminiApiKey')) config.geminiApiKey = newSettings.geminiApiKey;
+    if (newSettings.hasOwnProperty('geminiApiKey')) {
+      const cleanKey = newSettings.geminiApiKey.trim();
+      if (!cleanKey.startsWith('••••••••')) {
+        config.geminiApiKey = cleanKey;
+      }
+    }
     if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
