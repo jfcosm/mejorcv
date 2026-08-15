@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaRefresh: "Recargar",
       submitBtn: "Analizar CV Gratis",
       loadingStatus: "Cintia está analizando tu Currículum...",
+      step0: "Cintia está detectando el idioma del currículum...",
       step1: "Cintia está extrayendo el texto del documento...",
       step2: "Cintia está evaluando la estructura bajo estándares ATS...",
       step3: "Cintia está analizando la claridad de capacidades y certificaciones...",
@@ -142,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaRefresh: "Reload",
       submitBtn: "Analyze CV for Free",
       loadingStatus: "Cintia is analyzing your Resume...",
+      step0: "Cintia is detecting the language of the resume...",
       step1: "Cintia is extracting text from document...",
       step2: "Cintia is evaluating structure under ATS standards...",
       step3: "Cintia is analyzing clarity of skills and certifications...",
@@ -224,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submitBtn').textContent = t.submitBtn;
     
     document.getElementById('loadingStatus').textContent = t.loadingStatus;
+    document.getElementById('step0').textContent = t.step0;
     document.getElementById('step1').textContent = t.step1;
     document.getElementById('step2').textContent = t.step2;
     document.getElementById('step3').textContent = t.step3;
@@ -491,6 +494,10 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsSection.style.display = 'none';
     optimizedOutputContainer.style.display = 'none';
 
+    // Hide language selector during analysis/results phase
+    const langContainer = document.querySelector('.lang-selector-container');
+    if (langContainer) langContainer.style.display = 'none';
+
     // Mock progress steps increments for aesthetic value
     const steps = loadingSteps.querySelectorAll('li');
     let currentStepIdx = 0;
@@ -538,6 +545,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Render Results
       currentAnalysisId = data.analysisId;
+      
+      // Auto-apply resume's detected language to the entire app interface
+      if (data.lang && data.lang !== currentLanguage) {
+        localStorage.setItem('cvLang', data.lang);
+        langSelector.value = data.lang;
+        applyLanguage(data.lang);
+      }
+
       renderEvaluation(data.evaluation);
 
       // Hide loading / show results
@@ -551,6 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadWrapper.style.display = 'block';
       loadCaptcha();
       showError(err.message);
+      
+      // Re-enable language selection on error fallback
+      const langContainer = document.querySelector('.lang-selector-container');
+      if (langContainer) langContainer.style.display = 'block';
     }
   });
 

@@ -585,7 +585,8 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     res.json({
       success: true,
       analysisId: analysisId,
-      evaluation: evaluation
+      evaluation: evaluation,
+      lang: lang
     });
 
   } catch (err) {
