@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalSuccessTitle: "¡Pago Completado!",
       modalSuccessMessage: "Tu pago ha sido procesado correctamente. Cintia está procesando el documento...",
       footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología basada en Google Gemini.",
-      footerCredits: "Con el ❤️ y ⚡ de <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">MelodIA Lab</a>"
+      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>"
     },
     en: {
       navHome: "Home",
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalSuccessTitle: "Payment Completed!",
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
       footerCopyright: "&copy; 2026 Cintia. All rights reserved. Powered by Google Gemini.",
-      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">MelodIA Lab</a>"
+      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>"
     }
   };
 
