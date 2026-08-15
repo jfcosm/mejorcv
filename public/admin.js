@@ -459,8 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Reload settings display
       loadSettings();
       
-      // Clear password field
-      setAdminPassword.value = '';
+      // Password managed via environment variables
 
       setTimeout(() => {
         settingsMessage.style.display = 'none';
