@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navHome: "Inicio",
       navAdmin: "Panel Administrador",
       heroTitle: "Deja que <span>Cintia</span> perfeccione tu Currículum Vitae",
-      heroDesc: "Sube tu CV para que Cintia evalúe su compatibilidad ATS, te asigne una calificación de estrellas y prepare una versión optimizada al instante.",
+      heroDesc: "¿Sientes que envías tu CV y nadie te responde? Muchos currículums quedan descartados de forma automática por filtros invisibles (ATS). Sube tu currículum gratis: Cintia analizará cómo lo leen los reclutadores, te guiará con recomendaciones empáticas y te ayudará a brillar para conseguir esa entrevista que mereces.",
       uploadTitle: "Arrastra tu currículum aquí",
       uploadHint: "Formatos aceptados: .pdf, .docx, .odt, .txt (Menos de 5 MB)",
       captchaLabel: "Medida anti-abuso: Verifica que eres humano",
@@ -119,13 +119,20 @@ document.addEventListener('DOMContentLoaded', () => {
       modalSuccessTitle: "¡Pago Completado!",
       modalSuccessMessage: "Tu pago ha sido procesado correctamente. Cintia está procesando el documento...",
       footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología basada en Google Gemini.",
-      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>"
+      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>",
+      howItWorksTitle: "¿Cómo funciona Cintia?",
+      step1Title: "1. Sube tu Currículum",
+      step1Desc: "Sube tu archivo (.pdf, .docx, .odt o .txt) de manera 100% segura. Cintia leerá y extraerá tu texto al instante.",
+      step2Title: "2. Obtén un Diagnóstico Honesto",
+      step2Desc: "Descubre qué puntaje obtienes frente a los algoritmos ATS y lee consejos detallados para corregir errores invisibles.",
+      step3Title: "3. Optimiza y Destaca",
+      step3Desc: "Elige mejorar tu redacción con nuestra Inteligencia Artificial o solicita la ayuda personalizada de un experto humano."
     },
     en: {
       navHome: "Home",
       navAdmin: "Admin Panel",
       heroTitle: "Let <span>Cintia</span> perfect your Resume",
-      heroDesc: "Upload your resume for Cintia to check its ATS compatibility, give you a star rating, and prepare an optimized version instantly.",
+      heroDesc: "Sending out resumes and hearing only silence? Many applications are filtered out automatically by invisible recruitment software (ATS). Upload your CV for free: Cintia will reveal exactly how recruiters see your profile, provide supportive guidance, and help you stand out to land the interviews you deserve.",
       uploadTitle: "Drag your resume here",
       uploadHint: "Accepted formats: .pdf, .docx, .odt, .txt (Under 5 MB)",
       captchaLabel: "Anti-abuse measure: Verify you are human",
@@ -168,7 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
       modalSuccessTitle: "Payment Completed!",
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
       footerCopyright: "&copy; 2026 Cintia. All rights reserved. Powered by Google Gemini.",
-      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>"
+      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: var(--color-mint); text-decoration: none; font-weight: 600;\">OrangeVibe</a>",
+      howItWorksTitle: "How Cintia Works",
+      step1Title: "1. Upload Your Resume",
+      step1Desc: "Upload your file (.pdf, .docx, .odt or .txt) 100% securely. Cintia will immediately read and analyze your details.",
+      step2Title: "2. Get an Honest Diagnostic",
+      step2Desc: "Receive a transparent rating and detailed recommendations matching ATS algorithms and recruiter standards.",
+      step3Title: "3. Optimize & Stand Out",
+      step3Desc: "Upgrade your resume instantly using AI or request manual assistance from a human expert. Make your talent visible!"
     }
   };
 
@@ -217,6 +231,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelector('.pricing-title').textContent = t.pricingTitle;
     document.querySelector('.pricing-subtitle').textContent = t.pricingSubtitle;
+    
+    // How it Works Section dynamic translations
+    const howItWorksTitleEl = document.getElementById('howItWorksTitle');
+    if (howItWorksTitleEl) howItWorksTitleEl.textContent = t.howItWorksTitle;
+    const step1TitleEl = document.getElementById('step1Title');
+    if (step1TitleEl) step1TitleEl.textContent = t.step1Title;
+    const step1DescEl = document.getElementById('step1Desc');
+    if (step1DescEl) step1DescEl.textContent = t.step1Desc;
+    const step2TitleEl = document.getElementById('step2Title');
+    if (step2TitleEl) step2TitleEl.textContent = t.step2Title;
+    const step2DescEl = document.getElementById('step2Desc');
+    if (step2DescEl) step2DescEl.textContent = t.step2Desc;
+    const step3TitleEl = document.getElementById('step3Title');
+    if (step3TitleEl) step3TitleEl.textContent = t.step3Title;
+    const step3DescEl = document.getElementById('step3Desc');
+    if (step3DescEl) step3DescEl.textContent = t.step3Desc;
     
     // Plans Cards
     const cards = document.querySelectorAll('.plan-card');

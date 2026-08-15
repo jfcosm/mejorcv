@@ -886,10 +886,80 @@ footer {
   background-color: var(--bg-secondary);
 }
 
+/* How it Works Section */
+.how-it-works-section {
+  margin: 5rem auto;
+  padding: 0 24px;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 3.5rem;
+  color: var(--text-dark);
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+}
+
+.step-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-grey);
+  border-radius: var(--border-radius-md);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-mint);
+}
+
+.step-number {
+  width: 50px;
+  height: 50px;
+  background-color: var(--color-mint-light);
+  color: var(--color-mint);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--color-mint);
+}
+
+.step-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.step-desc {
+  font-size: 0.95rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
 /* Responsive tweaks */
 @media (max-width: 600px) {
   .hero h1 { font-size: 32px; }
   .card { padding: 24px; }
   .upload-zone { padding: 32px 16px; }
   .critique-grid { grid-template-columns: 1fr; }
+  .steps-container { grid-template-columns: 1fr; }
+  .section-title { font-size: 1.75rem; margin-bottom: 2.5rem; }
 }
