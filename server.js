@@ -231,6 +231,13 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
 
 // Express middlewares
 app.use(express.json());
+
+// Obscured Admin panel route
+const ADMIN_ROUTE = process.env.ADMIN_ROUTE || '/cintia-private-dashboard';
+app.get(ADMIN_ROUTE, (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Multer storage in memory
@@ -730,14 +737,18 @@ function requireAdminAuth(req, res, next) {
 
 // Admin login
 app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  const config = readConfig();
-  if (password === config.adminPassword) {
+  const { email, password } = req.body;
+  
+  // Get credentials from environment variables with safe fallbacks
+  const expectedEmail = process.env.ADMIN_EMAIL || 'admin@cintia.net';
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
+  
+  if (email === expectedEmail && password === expectedPassword) {
     const token = crypto.randomBytes(32).toString('hex');
     activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000); // 2 hours
     res.json({ success: true, token });
   } else {
-    res.status(401).json({ error: "Contraseña incorrecta." });
+    res.status(401).json({ error: "Credenciales incorrectas." });
   }
 });
 

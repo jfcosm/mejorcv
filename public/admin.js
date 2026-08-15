@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Authentication Elements
   const loginArea = document.getElementById('loginArea');
   const loginForm = document.getElementById('loginForm');
+  const adminEmailInput = document.getElementById('adminEmail');
   const adminPasswordInput = document.getElementById('adminPassword');
   const loginError = document.getElementById('loginError');
   
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setPriceAi = document.getElementById('setPriceAi');
   const setPriceExpert = document.getElementById('setPriceExpert');
   const setRateLimit = document.getElementById('setRateLimit');
-  const setAdminPassword = document.getElementById('setAdminPassword');
+  const setAdminPassword = null;
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
   const setOptAiEnabled = document.getElementById('setOptAiEnabled');
   const setOptExpertEnabled = document.getElementById('setOptExpertEnabled');
@@ -88,22 +89,24 @@ document.addEventListener('DOMContentLoaded', () => {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.style.display = 'none';
+    const email = adminEmailInput.value;
     const password = adminPasswordInput.value;
 
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ email, password })
       });
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Contraseña incorrecta.');
+        throw new Error(data.error || 'Credenciales incorrectas.');
       }
 
       adminToken = data.token;
       localStorage.setItem('adminToken', adminToken);
+      adminEmailInput.value = '';
       adminPasswordInput.value = '';
       showDashboard();
 
@@ -404,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setCaptchaEnabled.checked = settings.captchaEnabled;
       setEvalPrompt.value = settings.evaluationPrompt;
       setOptPrompt.value = settings.optimizationPrompt;
-      setAdminPassword.value = '';
+      // Password managed via environment variables
 
     } catch (err) {
       console.error(err);
@@ -431,9 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (setGeminiKey.value.trim() !== '') {
       payload.geminiApiKey = setGeminiKey.value.trim();
     }
-    if (setAdminPassword.value.trim() !== '') {
-      payload.adminPassword = setAdminPassword.value.trim();
-    }
+    // Password managed via environment variables
 
     try {
       const response = await fetch('/api/admin/settings', {

@@ -190,7 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Update labels
     document.getElementById('navHome').textContent = t.navHome;
-    document.getElementById('navAdmin').textContent = t.navAdmin;
+    const navAdminEl = document.getElementById('navAdmin');
+    if (navAdminEl) navAdminEl.textContent = t.navAdmin;
     
     document.querySelector('.hero h1').innerHTML = t.heroTitle;
     document.querySelector('.hero p').textContent = t.heroDesc;

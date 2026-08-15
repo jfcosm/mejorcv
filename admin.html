@@ -214,11 +214,15 @@
   <main class="app-container login-container" id="loginArea">
     <div class="login-card">
       <h2 class="login-title">Administración</h2>
-      <p class="login-subtitle">Ingresa la contraseña para acceder al panel de control</p>
+      <p class="login-subtitle">Ingresa tus credenciales para acceder al panel de control</p>
       
       <div id="loginError" class="error-banner" style="display: none;"></div>
       
       <form id="loginForm">
+        <div class="form-group">
+          <label for="adminEmail">Correo Electrónico</label>
+          <input type="email" id="adminEmail" class="form-control" placeholder="admin@cintia.net" required>
+        </div>
         <div class="form-group">
           <label for="adminPassword">Contraseña</label>
           <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" required>
@@ -371,8 +375,10 @@
               <input type="number" id="setRateLimit" class="form-control" required>
             </div>
             <div class="form-group">
-              <label for="setAdminPassword">Cambiar Contraseña Administrador</label>
-              <input type="password" id="setAdminPassword" class="form-control" placeholder="Nueva contraseña (dejar en blanco para mantener)">
+              <label>Credenciales del Panel</label>
+              <div style="font-size: 11px; color: var(--text-light); padding: 10px; background-color: var(--bg-primary); border: 1px solid var(--border-grey); border-radius: var(--border-radius-sm); line-height: 1.4;">
+                Gestionadas en las variables de entorno de Vercel (<code>ADMIN_EMAIL</code> y <code>ADMIN_PASSWORD</code>).
+              </div>
             </div>
           </div>
 
