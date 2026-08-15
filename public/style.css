@@ -902,8 +902,8 @@ footer {
 
 .steps-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 
 .step-card {
@@ -955,11 +955,14 @@ footer {
 }
 
 /* Responsive tweaks */
+@media (max-width: 850px) {
+  .steps-container { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+
 @media (max-width: 600px) {
   .hero h1 { font-size: 32px; }
   .card { padding: 24px; }
   .upload-zone { padding: 32px 16px; }
   .critique-grid { grid-template-columns: 1fr; }
-  .steps-container { grid-template-columns: 1fr; }
   .section-title { font-size: 1.75rem; margin-bottom: 2.5rem; }
 }
