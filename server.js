@@ -194,10 +194,65 @@ async function getAdminData(config) {
     expertContact: a.expertContact
   })).reverse();
 
+  const geminiStats = await getGeminiStats(config);
   return {
-    stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue },
+    stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue, geminiStats },
     documentLog
   };
+}
+
+// Gemini Usage Statistics Tracking
+let inMemoryGeminiUsage = {
+  totalCalls: 0,
+  evaluations: 0,
+  optimizations: 0,
+  tests: 0,
+  lastModel: "gemini-2.5-flash",
+  lastCallAt: null
+};
+
+async function recordGeminiCall(type, model) {
+  inMemoryGeminiUsage.totalCalls = (inMemoryGeminiUsage.totalCalls || 0) + 1;
+  if (type) {
+    inMemoryGeminiUsage[type] = (inMemoryGeminiUsage[type] || 0) + 1;
+  }
+  inMemoryGeminiUsage.lastModel = model || "gemini-2.5-flash";
+  inMemoryGeminiUsage.lastCallAt = new Date().toISOString();
+
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      const updateData = {
+        totalCalls: admin.firestore.FieldValue.increment(1),
+        lastModel: model || "gemini-2.5-flash",
+        lastCallAt: inMemoryGeminiUsage.lastCallAt
+      };
+      if (type) {
+        updateData[type] = admin.firestore.FieldValue.increment(1);
+      }
+      await dbFs.collection('app_stats').doc('gemini').set(updateData, { merge: true });
+    } catch (err) {
+      console.error("Firestore recordGeminiCall error:", err.message);
+    }
+  }
+}
+
+async function getGeminiStats(config) {
+  const activeKey = getGeminiApiKey(config);
+  let stats = { ...inMemoryGeminiUsage, isConfigured: !!activeKey };
+
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      const doc = await dbFs.collection('app_stats').doc('gemini').get();
+      if (doc.exists) {
+        stats = { ...stats, ...doc.data(), isConfigured: !!activeKey };
+      }
+    } catch (err) {
+      console.error("Firestore getGeminiStats error:", err.message);
+    }
+  }
+  return stats;
 }
 
 async function incrementVisitsCounter() {
@@ -521,6 +576,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
       
       const responseData = await response.json();
       if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
+        await recordGeminiCall(responseJson ? "evaluations" : "optimizations", model);
         return responseData.candidates[0].content.parts[0].text;
       }
     } catch (err) {
@@ -544,9 +600,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Obscured Admin panel route
+// Obscured Admin panel route & friendly aliases
 const ADMIN_ROUTE = process.env.ADMIN_ROUTE || '/cintia-private-dashboard';
-app.get(ADMIN_ROUTE, (req, res) => {
+app.get([ADMIN_ROUTE, '/admin', '/admin.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
@@ -1054,9 +1110,39 @@ app.post('/api/admin/logout', (req, res) => {
 
 // Admin stats
 app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
-  const config = readConfig();
+  const config = await getConfigDoc();
   const adminData = await getAdminData(config);
   res.json(adminData);
+});
+
+// Test Gemini API connectivity
+app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
+  try {
+    const config = await getConfigDoc();
+    const key = getGeminiApiKey(config);
+    if (!key) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "No se encontró Gemini API Key configurada ni en el panel ni en variables de entorno (GEMINI_API_KEY)." 
+      });
+    }
+
+    const start = Date.now();
+    const responseText = await callGemini(key, null, "Responde únicamente con la palabra OK.", false);
+    const latencyMs = Date.now() - start;
+
+    res.json({
+      success: true,
+      message: "Conexión exitosa con la API de Google Gemini.",
+      latencyMs: latencyMs,
+      responsePreview: responseText ? responseText.trim() : "OK"
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: `Error de conexión con Gemini: ${err.message}`
+    });
+  }
 });
 
 // Mark expert review as completed

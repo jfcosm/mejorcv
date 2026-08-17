@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const statPaidAi = document.getElementById('statPaidAi');
   const statExpertPending = document.getElementById('statExpertPending');
   const statRevenue = document.getElementById('statRevenue');
+  const statGeminiCalls = document.getElementById('statGeminiCalls');
+  const statGeminiSub = document.getElementById('statGeminiSub');
+  const geminiHealthDot = document.getElementById('geminiHealthDot');
+  
+  // Gemini Health Widget Elements
+  const geminiHealthDotWidget = document.getElementById('geminiHealthDotWidget');
+  const geminiHealthStatusText = document.getElementById('geminiHealthStatusText');
+  const geminiActiveModelCode = document.getElementById('geminiActiveModelCode');
+  const geminiCallsCount = document.getElementById('geminiCallsCount');
+  const testGeminiBtn = document.getElementById('testGeminiBtn');
+  const geminiTestOutput = document.getElementById('geminiTestOutput');
   
   // Tables
   const recentActivityTableBody = document.querySelector('#recentActivityTable tbody');
@@ -116,7 +127,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 3. Logout Handler
+  // 9. Test Gemini API Connection Button
+  if (testGeminiBtn) {
+    testGeminiBtn.addEventListener('click', async () => {
+      testGeminiBtn.disabled = true;
+      const originalHtml = testGeminiBtn.innerHTML;
+      testGeminiBtn.textContent = 'Diagnosticando...';
+      
+      geminiTestOutput.style.display = 'block';
+      geminiTestOutput.style.background = '#f1f5f9';
+      geminiTestOutput.style.color = '#334155';
+      geminiTestOutput.style.border = '1px solid #cbd5e1';
+      geminiTestOutput.textContent = 'Enviando petición de diagnóstico a Google Gemini API...';
+
+      try {
+        const response = await fetch('/api/admin/test-gemini', {
+          headers: { 'Authorization': adminToken }
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          geminiTestOutput.style.background = '#d1fae5';
+          geminiTestOutput.style.color = '#065f46';
+          geminiTestOutput.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+          geminiTestOutput.innerHTML = `✓ <strong>${data.message}</strong> (Latencia: <strong>${data.latencyMs} ms</strong>, Respuesta: "<code>${data.responsePreview}</code>")`;
+          
+          if (geminiHealthDotWidget) geminiHealthDotWidget.style.background = '#10b981';
+          if (geminiHealthStatusText) geminiHealthStatusText.textContent = 'Estado API: Conectada y Operativa';
+          if (geminiHealthDot) geminiHealthDot.style.background = '#10b981';
+        } else {
+          geminiTestOutput.style.background = '#fee2e2';
+          geminiTestOutput.style.color = '#991b1b';
+          geminiTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          geminiTestOutput.innerHTML = `✕ <strong>Fallo en la prueba:</strong> ${data.error || 'No se pudo conectar con Gemini.'}`;
+          
+          if (geminiHealthDotWidget) geminiHealthDotWidget.style.background = '#ef4444';
+          if (geminiHealthStatusText) geminiHealthStatusText.textContent = 'Estado API: Error en conexión';
+          if (geminiHealthDot) geminiHealthDot.style.background = '#ef4444';
+        }
+      } catch (err) {
+        geminiTestOutput.style.background = '#fee2e2';
+        geminiTestOutput.style.color = '#991b1b';
+        geminiTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        geminiTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${err.message}`;
+      } finally {
+        testGeminiBtn.disabled = false;
+        testGeminiBtn.innerHTML = originalHtml;
+        loadStats();
+      }
+    });
+  }
+
+  // 10. Navigation Tabs
+  const adminTabs = document.querySelectorAll('.admin-tab');
+  const adminPanels = document.querySelectorAll('.admin-panel');
+
+  adminTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      adminTabs.forEach(t => t.classList.remove('active'));
+      adminPanels.forEach(p => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetId = tab.getAttribute('data-target');
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+
+  // 11. Logout
   logoutBtn.addEventListener('click', async () => {
     try {
       await fetch('/api/admin/logout', {
@@ -124,26 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Authorization': adminToken }
       });
     } catch (e) {
-      console.warn('Logout server notification failed');
+      // Ignore
     }
     localStorage.removeItem('adminToken');
     adminToken = null;
     showLogin();
-  });
-
-  // 4. Tab switching
-  const tabs = document.querySelectorAll('.admin-tab');
-  const panels = document.querySelectorAll('.admin-panel');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      
-      tab.classList.add('active');
-      const target = tab.getAttribute('data-target');
-      document.getElementById(target).classList.add('active');
-    });
   });
 
   // Helper to render copy email and whatsapp quick action buttons
@@ -189,6 +251,24 @@ document.addEventListener('DOMContentLoaded', () => {
       statPaidAi.textContent = data.stats.paidAi;
       statExpertPending.textContent = data.stats.paidExpertPending;
       statRevenue.textContent = `$${data.stats.totalRevenue.toFixed(2)} USD`;
+
+      // Set Gemini usage statistics
+      if (data.stats.geminiStats) {
+        const gStats = data.stats.geminiStats;
+        if (statGeminiCalls) statGeminiCalls.textContent = gStats.totalCalls || 0;
+        if (statGeminiSub) statGeminiSub.textContent = `${gStats.evaluations || 0} eval / ${gStats.optimizations || 0} opt`;
+        
+        const isConfigured = !!gStats.isConfigured;
+        const statusColor = isConfigured ? '#10b981' : '#ef4444';
+        
+        if (geminiHealthDot) geminiHealthDot.style.background = statusColor;
+        if (geminiHealthDotWidget) geminiHealthDotWidget.style.background = statusColor;
+        if (geminiHealthStatusText) {
+          geminiHealthStatusText.textContent = isConfigured ? 'Estado API: Conectada y Lista' : 'Estado API: Sin API Key Configurada';
+        }
+        if (geminiActiveModelCode) geminiActiveModelCode.textContent = gStats.lastModel || 'gemini-2.5-flash';
+        if (geminiCallsCount) geminiCallsCount.textContent = gStats.totalCalls || 0;
+      }
 
       // Render Recent Table (max 5 rows)
       recentActivityTableBody.innerHTML = '';
