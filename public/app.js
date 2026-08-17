@@ -1077,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const check = setInterval(() => {
           if (typeof paypal !== 'undefined') { clearInterval(check); resolve(); }
         }, 150);
-        setTimeout(() => { clearInterval(check); resolve(); }, 8000); // timeout after 8s
+        setTimeout(() => { clearInterval(check); resolve(); }, 8000);
       });
     }
 
@@ -1090,6 +1090,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (paypalLoadingHint) paypalLoadingHint.style.display = 'none';
 
+    // Helper: show error message inside the modal (avoid native browser alerts)
+    let paypalErrorHandled = false;
+    function showPaypalError(msg) {
+      paypalErrorHandled = true;
+      let errEl = document.getElementById('paypalInlineError');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.id = 'paypalInlineError';
+        errEl.style.cssText = 'color:#ef4444;font-size:13px;text-align:center;margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.25);';
+        paypalButtonContainer.after(errEl);
+      }
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+
     paypal.Buttons({
       style: {
         layout: 'vertical',
@@ -1100,19 +1115,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Step 1: Create order on server
       createOrder: async () => {
-        try {
-          const resp = await fetch('/api/paypal/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ analysisId: currentAnalysisId, tier: currentTier })
-          });
-          const data = await resp.json();
-          if (!resp.ok) throw new Error(data.error || 'Error al crear la orden de pago.');
-          return data.orderID;
-        } catch (err) {
-          alert('❌ ' + err.message);
-          throw err;
+        // Clear any previous inline error
+        const prevErr = document.getElementById('paypalInlineError');
+        if (prevErr) prevErr.style.display = 'none';
+        paypalErrorHandled = false;
+
+        const resp = await fetch('/api/paypal/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ analysisId: currentAnalysisId, tier: currentTier })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          const msg = data.error || (currentLanguage === 'en' ? 'Could not create payment order.' : 'No se pudo crear la orden de pago.');
+          showPaypalError(msg);
+          throw new Error(msg); // PayPal needs a throw to abort, onError will be suppressed
         }
+        return data.orderID;
       },
 
       // Step 2: Capture payment after buyer approves
@@ -1142,7 +1161,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!resp.ok) throw new Error(result.error || 'Error al confirmar el pago.');
 
           if (currentTier === 'ai') {
-            // Show generating CV state
             successPaymentTitle.textContent = currentLanguage === 'en' ? 'Generating CV...' : 'Generando CV...';
             successPaymentMessage.textContent = currentLanguage === 'en'
               ? 'Cintia is rewriting your profile with ATS keywords...'
@@ -1165,7 +1183,6 @@ document.addEventListener('DOMContentLoaded', () => {
             successPaymentMessage.textContent = currentLanguage === 'en'
               ? 'Your session has been registered. A Cintia expert will contact you within 24 hours to schedule your mentoring session.'
               : 'Tu sesión ha sido registrada. Un experto de Cintia te contactará en un máximo de 24 horas para coordinar tu sesión de asesoría.';
-            // Clear contact inputs
             expertEmail.value = '';
             expertPhone.value = '';
             pendingExpertContact = null;
@@ -1176,20 +1193,22 @@ document.addEventListener('DOMContentLoaded', () => {
           paymentMethodsView.style.display = 'flex';
           successPaymentView.style.display = 'none';
           await initPayPalButtons(amount);
-          alert('❌ ' + err.message);
+          showPaypalError('❌ ' + err.message);
         }
       },
 
       onCancel: () => {
-        // User closed PayPal popup without paying — do nothing
         console.log('PayPal payment cancelled by user.');
       },
 
       onError: (err) => {
-        console.error('PayPal error:', err);
-        alert(currentLanguage === 'en'
-          ? '⚠️ An error occurred with PayPal. Please try again.'
-          : '⚠️ Ocurrió un error con PayPal. Por favor inténtalo nuevamente.');
+        console.error('PayPal SDK error:', err);
+        // Only show error to user if createOrder/onApprove didn’t already handle it
+        if (!paypalErrorHandled) {
+          showPaypalError(currentLanguage === 'en'
+            ? '⚠️ An unexpected error occurred. Please try again or refresh the page.'
+            : '⚠️ Ocurrió un error inesperado. Por favor inténtalo nuevamente o recarga la página.');
+        }
       }
 
     }).render('#paypalButtonContainer');
