@@ -1243,10 +1243,63 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/\n/g, '<br>');
   }
 
+  // Clean Markdown to pristine plain text for .txt download and clipboard
+  function cleanMarkdownToPlainText(text) {
+    if (!text) return '';
+
+    let clean = text;
+
+    // 1. Remove code blocks indicators (```markdown, ```text, ```)
+    clean = clean.replace(/```[a-zA-Z0-9_-]*\n?/g, '').replace(/```/g, '');
+
+    // 2. Remove Github-style alerts (> [!NOTE], > [!TIP], etc.)
+    clean = clean.replace(/^>\s*\[![A-Z]+\]\s*\n?/gm, '');
+
+    // 3. Format / clean headers: #, ##, ###, ####, etc.
+    clean = clean.replace(/^#\s+(.+)$/gm, (match, p1) => `${p1.toUpperCase()}\n${'='.repeat(Math.min(p1.length, 60))}`);
+    clean = clean.replace(/^##\s+(.+)$/gm, (match, p1) => `\n${p1.toUpperCase()}\n${'-'.repeat(Math.min(p1.length, 60))}`);
+    clean = clean.replace(/^###\s+(.+)$/gm, (match, p1) => `\n${p1.toUpperCase()}`);
+    clean = clean.replace(/^#{4,6}\s+(.+)$/gm, (match, p1) => `\n${p1}`);
+
+    // 4. Clean Markdown Links: [Text](mailto:Email), [Text](tel:Phone), [Text](URL)
+    clean = clean.replace(/\[([^\]]+)\]\(mailto:([^)]+)\)/gi, (match, label, email) => email || label);
+    clean = clean.replace(/\[([^\]]+)\]\(tel:([^)]+)\)/gi, (match, label, phone) => phone || label);
+    clean = clean.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+      if (label.trim() === url.trim() || url.startsWith('#')) return label;
+      return `${label} (${url})`;
+    });
+
+    // 5. Remove bold & italic markdown markers (**text**, *text*, __text__, _text_)
+    clean = clean.replace(/\*\*\*([^*]+)\*\*\*/g, '$1');
+    clean = clean.replace(/\*\*([^*]+)\*\*/g, '$1');
+    clean = clean.replace(/\*([^*\n]+)\*/g, '$1');
+    clean = clean.replace(/___([^_]+)___/g, '$1');
+    clean = clean.replace(/__([^_]+)__/g, '$1');
+    clean = clean.replace(/_([^_\n]+)_/g, '$1');
+
+    // 6. Clean inline code `code`
+    clean = clean.replace(/`([^`]+)`/g, '$1');
+
+    // 7. Format horizontal rules (---, ***, ___)
+    clean = clean.replace(/^(?:---|___|\*\*\*)\s*$/gm, '------------------------------------------------------------');
+
+    // 8. Clean bullet list markers (*, -, +) to clean bullet symbols •
+    clean = clean.replace(/^[\s]*[\*\-\+]\s+/gm, '•  ');
+
+    // 9. Clean blockquotes (> text)
+    clean = clean.replace(/^>\s?/gm, '');
+
+    // 10. Normalize consecutive line breaks (max 2)
+    clean = clean.replace(/\n{3,}/g, '\n\n');
+
+    return clean.trim();
+  }
+
   // Unlocked copy & download actions
   if (unlockedCopyBtn) {
     unlockedCopyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(optimizedContentText)
+      const plainText = cleanMarkdownToPlainText(optimizedContentText);
+      navigator.clipboard.writeText(plainText)
         .then(() => {
           const origText = unlockedCopyBtn.innerHTML;
           unlockedCopyBtn.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
@@ -1260,8 +1313,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (unlockedDownloadBtn) {
     unlockedDownloadBtn.addEventListener('click', () => {
+      const plainText = cleanMarkdownToPlainText(optimizedContentText);
       const element = document.createElement('a');
-      const file = new Blob([optimizedContentText], { type: 'text/plain;charset=utf-8' });
+      const file = new Blob([plainText], { type: 'text/plain;charset=utf-8' });
       element.href = URL.createObjectURL(file);
       element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
       document.body.appendChild(element);
@@ -1273,7 +1327,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fallback Copy & Download Action
   if (copyCvBtn) {
     copyCvBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(optimizedContentText)
+      const plainText = cleanMarkdownToPlainText(optimizedContentText);
+      navigator.clipboard.writeText(plainText)
         .then(() => {
           copyCvBtn.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
           setTimeout(() => { 
@@ -1286,8 +1341,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (downloadCvBtn) {
     downloadCvBtn.addEventListener('click', () => {
+      const plainText = cleanMarkdownToPlainText(optimizedContentText);
       const element = document.createElement('a');
-      const file = new Blob([optimizedContentText], { type: 'text/plain;charset=utf-8' });
+      const file = new Blob([plainText], { type: 'text/plain;charset=utf-8' });
       element.href = URL.createObjectURL(file);
       element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
       document.body.appendChild(element);

@@ -735,12 +735,20 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
     languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido estrictamente en ESPAÑOL (Spanish).";
   }
   const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-  return await callGemini(
+  const rawResult = await callGemini(
     key,
     config.optimizationPrompt + languageInstruction,
     `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${extractedText}`,
     false // Expect markdown/text
   );
+  
+  let cleanedResult = (rawResult || "").trim();
+  if (cleanedResult.startsWith('```markdown')) {
+    cleanedResult = cleanedResult.replace(/^```markdown\s*/i, '').replace(/\s*```$/, '');
+  } else if (cleanedResult.startsWith('```')) {
+    cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  return cleanedResult.trim();
 }
 
 // Analyze document
