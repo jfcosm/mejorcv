@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModalBtn = document.getElementById('closeModalBtn');
   
   const paymentMethodsView = document.getElementById('paymentMethodsView');
-  const payPaypalBtn = document.getElementById('payPaypalBtn');
+  const paypalButtonContainer = document.getElementById('paypalButtonContainer');
+  const paypalLoadingHint = document.getElementById('paypalLoadingHint');
   
   const successPaymentView = document.getElementById('successPaymentView');
   const successPaymentMessage = document.getElementById('successPaymentMessage');
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const successPaymentSpinner = document.getElementById('successPaymentSpinner');
   const successPaymentTitle = document.getElementById('successPaymentTitle');
   
+
   const optimizedOutputContainer = document.getElementById('optimizedOutputContainer');
   const optimizedContentBox = document.getElementById('optimizedContentBox');
   const copyCvBtn = document.getElementById('copyCvBtn');
@@ -416,15 +418,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Fetch Public Config Parameters on Load
+  // Also dynamically loads the PayPal JS SDK with the correct client-id
   async function fetchConfig() {
     try {
       const response = await fetch('/api/config');
       const data = await response.json();
       appConfig = data;
       applyConfigToUi();
+
+      // Load PayPal SDK dynamically once we have the client ID
+      if (data.paypalClientId) {
+        await loadPayPalSdk(data.paypalClientId);
+      }
     } catch (err) {
       console.error('Error fetching config:', err);
     }
+  }
+
+  // Dynamically inject the PayPal JS SDK script
+  let paypalSdkLoaded = false;
+  function loadPayPalSdk(clientId) {
+    return new Promise((resolve, reject) => {
+      if (paypalSdkLoaded || document.getElementById('paypal-sdk-script')) {
+        paypalSdkLoaded = true;
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'paypal-sdk-script';
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`;
+      script.onload = () => { paypalSdkLoaded = true; resolve(); };
+      script.onerror = () => reject(new Error('No se pudo cargar el SDK de PayPal.'));
+      document.head.appendChild(script);
+    });
   }
 
   function applyConfigToUi() {
@@ -981,77 +1007,39 @@ document.addEventListener('DOMContentLoaded', () => {
     detailedExplanationText.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation);
   }
 
-  // 6. Pricing Plan Actions & Custom checkoutModal Flow
+  // ─── 6. Pricing Plan Actions & PayPal Checkout Flow ───────────────────────
+
+  // State: contact data for expert tier, set before opening checkout
+  let pendingExpertContact = null;
+
   optimizeAiBtn.addEventListener('click', () => {
     currentTier = 'ai';
+    pendingExpertContact = null;
     openCheckout(
-      currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA', 
+      currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA',
       appConfig.priceAi.toFixed(2)
     );
   });
 
-  // Direct Expert Request submission (no checkout payments dialog)
-  optimizeExpertBtn.addEventListener('click', async () => {
+  // Expert Request: collect contact, validate, then open PayPal checkout
+  optimizeExpertBtn.addEventListener('click', () => {
     hideError();
     const email = expertEmail.value.trim();
     const phone = expertPhone.value.trim();
 
     if (!email && !phone) {
-      showError(currentLanguage === 'en' 
-        ? 'Please provide at least your email or WhatsApp/Phone number so Cintia can contact you.' 
+      showError(currentLanguage === 'en'
+        ? 'Please provide at least your email or WhatsApp/Phone number so Cintia can contact you.'
         : 'Por favor, proporciona al menos tu correo o tu WhatsApp/Teléfono para que Cintia te contacte.');
       return;
     }
 
-    optimizeExpertBtn.disabled = true;
-    const originalText = optimizeExpertBtn.textContent;
-    optimizeExpertBtn.textContent = currentLanguage === 'en' ? 'Sending...' : 'Enviando...';
-
-    try {
-      const response = await fetch('/api/expert-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          analysisId: currentAnalysisId,
-          email: email,
-          phone: phone
-        })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Error processing request');
-      }
-
-      // Display the success checkout popup directly
-      checkoutTitle.textContent = currentLanguage === 'en' ? 'Expert Assistance' : 'Asistencia de Experto';
-      checkoutService.textContent = currentLanguage === 'en' ? 'Manual expert review' : 'Revisión por experto';
-      checkoutPriceOriginal.textContent = `$${appConfig.priceExpert.toFixed(2)} USD`;
-      checkoutTotal.textContent = `$${appConfig.priceExpert.toFixed(2)} USD`;
-      
-      paymentMethodsView.style.display = 'none';
-      successPaymentView.style.display = 'flex';
-      
-      // Ensure icon is visible and spinner is hidden
-      successPaymentIcon.style.display = 'block';
-      successPaymentSpinner.style.display = 'none';
-      successPaymentTitle.textContent = currentLanguage === 'en' ? 'Request Registered!' : '¡Solicitud Registrada!';
-      successPaymentMessage.textContent = currentLanguage === 'en'
-        ? 'Request successfully registered! Cintia will contact you soon via email or WhatsApp to coordinate your expert assistance.'
-        : '¡Solicitud registrada con éxito! Tu solicitud ha sido enviada. Cintia te contactará pronto por correo o WhatsApp para coordinar la asistencia del experto.';
-
-      checkoutModal.showModal();
-
-      // Clear inputs
-      expertEmail.value = '';
-      expertPhone.value = '';
-
-    } catch (err) {
-      showError(err.message);
-    } finally {
-      optimizeExpertBtn.disabled = false;
-      optimizeExpertBtn.textContent = originalText;
-    }
+    currentTier = 'expert';
+    pendingExpertContact = { email, phone };
+    openCheckout(
+      currentLanguage === 'en' ? 'Human Expert Mentoring & CV Optimization' : 'Asesoría y Optimización con Experto Humano',
+      appConfig.priceExpert.toFixed(2)
+    );
   });
 
   function openCheckout(serviceName, priceStr) {
@@ -1060,17 +1048,151 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutService.textContent = serviceName;
     checkoutPriceOriginal.textContent = `$${priceStr} USD`;
     checkoutTotal.textContent = `$${priceStr} USD`;
-    
-    // Reset Modal View to show payment buttons (Paypal only)
+
+    // Reset modal views
     paymentMethodsView.style.display = 'flex';
     successPaymentView.style.display = 'none';
-    
-    // Reset success view subelements
     successPaymentIcon.style.display = 'block';
     successPaymentSpinner.style.display = 'none';
     successPaymentTitle.textContent = currentLanguage === 'en' ? 'Payment Completed!' : '¡Pago Completado!';
 
+    // Render PayPal buttons for this amount
+    initPayPalButtons(parseFloat(priceStr));
+
     checkoutModal.showModal();
+  }
+
+  // Render official PayPal smart buttons inside #paypalButtonContainer
+  async function initPayPalButtons(amount) {
+    if (!paypalButtonContainer) return;
+    paypalButtonContainer.innerHTML = ''; // clear previous render
+    if (paypalLoadingHint) paypalLoadingHint.style.display = 'block';
+
+    // Wait for SDK if not yet loaded
+    if (!paypalSdkLoaded || typeof paypal === 'undefined') {
+      if (paypalLoadingHint) paypalLoadingHint.textContent = currentLanguage === 'en'
+        ? 'Loading payment methods...'
+        : 'Cargando métodos de pago...';
+      await new Promise(resolve => {
+        const check = setInterval(() => {
+          if (typeof paypal !== 'undefined') { clearInterval(check); resolve(); }
+        }, 150);
+        setTimeout(() => { clearInterval(check); resolve(); }, 8000); // timeout after 8s
+      });
+    }
+
+    if (typeof paypal === 'undefined') {
+      if (paypalLoadingHint) paypalLoadingHint.textContent = currentLanguage === 'en'
+        ? '⚠️ Could not load PayPal. Check your internet connection.'
+        : '⚠️ No se pudo cargar PayPal. Verifica tu conexión a internet.';
+      return;
+    }
+
+    if (paypalLoadingHint) paypalLoadingHint.style.display = 'none';
+
+    paypal.Buttons({
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        label: 'pay'
+      },
+
+      // Step 1: Create order on server
+      createOrder: async () => {
+        try {
+          const resp = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: currentAnalysisId, tier: currentTier })
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.error || 'Error al crear la orden de pago.');
+          return data.orderID;
+        } catch (err) {
+          alert('❌ ' + err.message);
+          throw err;
+        }
+      },
+
+      // Step 2: Capture payment after buyer approves
+      onApprove: async (data) => {
+        // Show processing state
+        paymentMethodsView.style.display = 'none';
+        successPaymentView.style.display = 'flex';
+        successPaymentIcon.style.display = 'none';
+        successPaymentSpinner.style.display = 'block';
+        successPaymentTitle.textContent = currentLanguage === 'en' ? 'Confirming Payment...' : 'Confirmando Pago...';
+        successPaymentMessage.textContent = currentLanguage === 'en'
+          ? 'PayPal is processing the transaction. Please wait...'
+          : 'PayPal está procesando la transacción. Por favor espera...';
+
+        try {
+          const resp = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderID: data.orderID,
+              analysisId: currentAnalysisId,
+              tier: currentTier,
+              contact: pendingExpertContact
+            })
+          });
+          const result = await resp.json();
+          if (!resp.ok) throw new Error(result.error || 'Error al confirmar el pago.');
+
+          if (currentTier === 'ai') {
+            // Show generating CV state
+            successPaymentTitle.textContent = currentLanguage === 'en' ? 'Generating CV...' : 'Generando CV...';
+            successPaymentMessage.textContent = currentLanguage === 'en'
+              ? 'Cintia is rewriting your profile with ATS keywords...'
+              : 'Cintia está reescribiendo tu perfil con palabras clave ATS...';
+          }
+
+          // Show success
+          successPaymentIcon.style.display = 'block';
+          successPaymentSpinner.style.display = 'none';
+
+          if (currentTier === 'ai') {
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ CV Generated!' : '✅ ¡CV Generado!';
+            successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your result...' : 'Redirigiendo a tu resultado...';
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            checkoutModal.close();
+            unlockOptimizedCv(result.optimizedText || optimizedContentText);
+
+          } else if (currentTier === 'expert') {
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Payment Confirmed!' : '✅ ¡Pago Confirmado!';
+            successPaymentMessage.textContent = currentLanguage === 'en'
+              ? 'Your session has been registered. A Cintia expert will contact you within 24 hours to schedule your mentoring session.'
+              : 'Tu sesión ha sido registrada. Un experto de Cintia te contactará en un máximo de 24 horas para coordinar tu sesión de asesoría.';
+            // Clear contact inputs
+            expertEmail.value = '';
+            expertPhone.value = '';
+            pendingExpertContact = null;
+          }
+
+        } catch (err) {
+          // Roll back to payment view on error
+          paymentMethodsView.style.display = 'flex';
+          successPaymentView.style.display = 'none';
+          await initPayPalButtons(amount);
+          alert('❌ ' + err.message);
+        }
+      },
+
+      onCancel: () => {
+        // User closed PayPal popup without paying — do nothing
+        console.log('PayPal payment cancelled by user.');
+      },
+
+      onError: (err) => {
+        console.error('PayPal error:', err);
+        alert(currentLanguage === 'en'
+          ? '⚠️ An error occurred with PayPal. Please try again.'
+          : '⚠️ Ocurrió un error con PayPal. Por favor inténtalo nuevamente.');
+      }
+
+    }).render('#paypalButtonContainer');
   }
 
   closeModalBtn.addEventListener('click', () => {
@@ -1084,78 +1206,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 7. Payment Simulation Click Handler
-  async function executePaymentSimulation(method) {
-    paymentMethodsView.style.display = 'none';
-    successPaymentView.style.display = 'flex';
-    
-    // Phase 1: Simulated payment processing
-    successPaymentIcon.style.display = 'none';
-    successPaymentSpinner.style.display = 'block';
-    successPaymentTitle.textContent = currentLanguage === 'en' ? 'Processing Payment...' : 'Procesando Pago...';
-    successPaymentMessage.textContent = currentLanguage === 'en' ? 'Processing payment, please wait...' : 'Procesando el pago, por favor espera...';
-    
-    // Send request payload
-    const payload = {
-      analysisId: currentAnalysisId,
-      tier: currentTier,
-      paymentMethod: method
-    };
-
-    try {
-      // Simulate gateway latency
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Phase 2: Payment approved! Transition message to Generating CV
-      successPaymentTitle.textContent = currentLanguage === 'en' ? 'Generating CV...' : 'Generando CV...';
-      successPaymentMessage.textContent = currentLanguage === 'en' 
-        ? 'Cintia is rewriting your profile, injecting keywords and structuring your achievements (this may take a few seconds)...' 
-        : 'Cintia está reescribiendo tu perfil, inyectando palabras clave y estructurando tus logros (esto puede demorar unos segundos)...';
-      
-      const response = await fetch('/api/payment/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || (currentLanguage === 'en' ? 'Error processing payment.' : 'Error al procesar el pago.'));
-      }
-      
-      // Phase 3: AI CV generation finished. Show green checkmark icon
-      successPaymentIcon.style.display = 'block';
-      successPaymentSpinner.style.display = 'none';
-      successPaymentTitle.textContent = currentLanguage === 'en' ? 'CV Generated!' : '¡CV Generado!';
-      successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your result...' : 'Redirigiendo a tu resultado...';
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      checkoutModal.close();
-
-      if (currentTier === 'ai') {
-        unlockOptimizedCv(data.optimizedText || optimizedContentText);
-      }
-
-    } catch (err) {
-      paymentMethodsView.style.display = 'flex';
-      successPaymentView.style.display = 'none';
-      alert('Error: ' + err.message);
-    }
-  }
-
-  payPaypalBtn.addEventListener('click', () => executePaymentSimulation('paypal'));
-
   // Unlock CTA button listener in the blurred preview card
   if (unlockActionBtn) {
     unlockActionBtn.addEventListener('click', () => {
       currentTier = 'ai';
+      pendingExpertContact = null;
       openCheckout(
-        currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA', 
+        currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA',
         appConfig.priceAi.toFixed(2)
       );
     });
   }
+
+  // ─── End PayPal Checkout Flow ──────────────────────────────────────────────
 
   // 8. Render Blurred AI CV Preview
   function renderBlurredPreview(mdText) {

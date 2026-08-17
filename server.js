@@ -1023,7 +1023,8 @@ app.get('/api/config', async (req, res) => {
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     priceAi: config.priceAi || 1.0,
-    priceExpert: config.priceExpert || 25.0
+    priceExpert: config.priceExpert || 25.0,
+    paypalClientId: process.env.PAYPAL_CLIENT_ID || ''
   });
 });
 
@@ -1058,6 +1059,192 @@ app.post('/api/expert-request', async (req, res) => {
   }
 });
 
+
+// ─── PayPal Orders API v2 Integration ──────────────────────────────────────
+
+// Helper: get PayPal OAuth2 access token
+async function getPayPalAccessToken() {
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_SECRET_KEY;
+  const mode = (process.env.PAYPAL_MODE || 'sandbox').toLowerCase();
+  const baseUrl = mode === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+
+  if (!clientId || !secret) {
+    throw new Error('PayPal credentials not configured (PAYPAL_CLIENT_ID / PAYPAL_SECRET_KEY).');
+  }
+
+  const credentials = Buffer.from(`${clientId}:${secret}`).toString('base64');
+  const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text();
+    throw new Error(`PayPal token error: ${response.status} - ${errBody}`);
+  }
+
+  const data = await response.json();
+  return { accessToken: data.access_token, baseUrl };
+}
+
+// POST /api/paypal/create-order
+// Creates a PayPal order for the given tier (ai=$1, expert=$25)
+app.post('/api/paypal/create-order', async (req, res) => {
+  try {
+    const { analysisId, tier } = req.body;
+    if (!analysisId || !tier) {
+      return res.status(400).json({ error: 'Faltan datos: analysisId y tier son requeridos.' });
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: 'Análisis no encontrado.' });
+    }
+
+    const config = await getConfigDoc();
+    const amount = tier === 'ai'
+      ? (config.priceAi || 1.0).toFixed(2)
+      : (config.priceExpert || 25.0).toFixed(2);
+
+    const description = tier === 'ai'
+      ? 'Cintia - Optimización de CV con IA'
+      : 'Cintia - Asesoría y Optimización por Experto Humano';
+
+    const { accessToken, baseUrl } = await getPayPalAccessToken();
+
+    const orderPayload = {
+      intent: 'CAPTURE',
+      purchase_units: [{
+        reference_id: `${tier}_${analysisId}`,
+        description,
+        amount: {
+          currency_code: 'USD',
+          value: amount
+        }
+      }]
+    };
+
+    const orderResponse = await fetch(`${baseUrl}/v2/checkout/orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderPayload)
+    });
+
+    if (!orderResponse.ok) {
+      const errBody = await orderResponse.text();
+      throw new Error(`PayPal create-order error: ${orderResponse.status} - ${errBody}`);
+    }
+
+    const orderData = await orderResponse.json();
+    res.json({ orderID: orderData.id });
+
+  } catch (err) {
+    console.error('Error in /api/paypal/create-order:', err);
+    res.status(500).json({ error: err.message || 'Error al crear la orden de pago.' });
+  }
+});
+
+// POST /api/paypal/capture-order
+// Captures the payment after PayPal approval. Handles AI unlock or expert registration.
+app.post('/api/paypal/capture-order', async (req, res) => {
+  try {
+    const { orderID, analysisId, tier, contact } = req.body;
+    if (!orderID || !analysisId || !tier) {
+      return res.status(400).json({ error: 'Faltan datos: orderID, analysisId y tier son requeridos.' });
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: 'Análisis no encontrado.' });
+    }
+
+    const { accessToken, baseUrl } = await getPayPalAccessToken();
+
+    // Capture the payment with PayPal
+    const captureResponse = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!captureResponse.ok) {
+      const errBody = await captureResponse.text();
+      throw new Error(`PayPal capture error: ${captureResponse.status} - ${errBody}`);
+    }
+
+    const captureData = await captureResponse.json();
+    const captureStatus = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.status;
+
+    if (captureStatus !== 'COMPLETED') {
+      return res.status(402).json({ error: `Pago no completado. Estado PayPal: ${captureStatus}` });
+    }
+
+    const paypalTransactionId = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+
+    if (tier === 'ai') {
+      let optimizedText = analysis.optimizedText;
+      if (!optimizedText) {
+        const config = await getConfigDoc();
+        optimizedText = await generateAiOptimization(
+          analysis.filename,
+          analysis.originalText,
+          analysis.lang || 'es',
+          config
+        );
+      }
+      await updateAnalysisDoc(analysisId, {
+        paymentStatus: 'completed_ai',
+        paymentMethod: 'paypal',
+        paypalOrderId: orderID,
+        paypalTransactionId,
+        paidAt: new Date().toISOString(),
+        optimizedText
+      });
+      recordGeminiCall('optimization');
+      return res.json({ success: true, tier: 'ai', optimizedText });
+
+    } else if (tier === 'expert') {
+      await updateAnalysisDoc(analysisId, {
+        paymentStatus: 'paid_expert',
+        paymentMethod: 'paypal',
+        paypalOrderId: orderID,
+        paypalTransactionId,
+        paidAt: new Date().toISOString(),
+        expertContact: {
+          email: contact?.email || '',
+          phone: contact?.phone || '',
+          requestedAt: new Date().toISOString()
+        }
+      });
+      return res.json({
+        success: true,
+        tier: 'expert',
+        message: '¡Pago completado! Un experto de Cintia te contactará en máximo 24 horas para coordinar tu sesión de asesoría.'
+      });
+
+    } else {
+      return res.status(400).json({ error: 'Tier de pago inválido.' });
+    }
+
+  } catch (err) {
+    console.error('Error in /api/paypal/capture-order:', err);
+    res.status(500).json({ error: err.message || 'Error al capturar el pago.' });
+  }
+});
+
+// ─── End PayPal Integration ─────────────────────────────────────────────────
 
 // Retrieve optimized CV for completed AI sessions (useful on refresh/recovery)
 app.get('/api/analysis/:id', async (req, res) => {

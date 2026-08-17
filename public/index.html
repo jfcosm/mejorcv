@@ -404,11 +404,10 @@
         </div>
       </div>
 
-      <!-- Payment Buttons -->
+      <!-- Payment Buttons: PayPal JS SDK renders here -->
       <div class="payment-methods" id="paymentMethodsView">
-        <button type="button" class="payment-btn paypal" id="payPaypalBtn">
-          Pagar con PayPal
-        </button>
+        <div id="paypalButtonContainer"></div>
+        <p class="paypal-loading-hint" id="paypalLoadingHint" style="text-align:center; font-size:13px; color: var(--text-light); margin-top: 12px;">Cargando métodos de pago...</p>
       </div>
 
       <!-- Success View (hidden initially) -->
