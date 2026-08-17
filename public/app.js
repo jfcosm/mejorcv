@@ -54,6 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyCvBtn = document.getElementById('copyCvBtn');
   const downloadCvBtn = document.getElementById('downloadCvBtn');
   
+  // Blurred AI CV Preview Elements
+  const aiPreviewSection = document.getElementById('aiPreviewSection');
+  const blurredDocCard = document.getElementById('blurredDocCard');
+  const blurredDocContent = document.getElementById('blurredDocContent');
+  const unlockOverlay = document.getElementById('unlockOverlay');
+  const unlockCtaPrice = document.getElementById('unlockCtaPrice');
+  const unlockActionBtn = document.getElementById('unlockActionBtn');
+  const unlockedActionsBar = document.getElementById('unlockedActionsBar');
+  const unlockedCopyBtn = document.getElementById('unlockedCopyBtn');
+  const unlockedDownloadBtn = document.getElementById('unlockedDownloadBtn');
+
   const langSelector = document.getElementById('langSelector');
 
   // Application Dictionaries & State
@@ -102,6 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiStrengthsLabel: "Fortalezas",
       kpiFixesLabel: "Por Mejorar",
       critiqueExplanationTitle: "Explicación del Puntaje",
+      previewPillText: "CV Optimizado por Cintia Listo",
+      previewSectionTitle: "Reescritura Profesional de Alto Impacto",
+      previewSectionSubtitle: "Cintia ha reestructurado tu currículum inyectando palabras clave ATS, logros cuantificados y formato profesional listo para postular.",
+      unlockCtaHeading: "Desbloquea tu Currículum Optimizado",
+      unlockCtaDescription: "Accede a la versión completa optimizada por Cintia, con redacción persuasiva, palabras clave ATS y lista para enviar a reclutadores.",
+      unlockCtaPeriod: "USD / pago único",
+      unlockActionBtnText: "Desbloquear y Descargar CV",
+      unlockedStatusText: "¡Currículum Desbloqueado con Éxito!",
+      unlockedCopyBtnText: "Copiar Texto",
+      unlockedDownloadBtnText: "Descargar .txt",
       pricingTitle: "¿Quieres que Cintia optimice tu CV para conseguir más entrevistas?",
       pricingSubtitle: "Cintia reescribirá tu perfil, inyectará palabras clave estratégicas y maximizará la compatibilidad ATS al instante.",
       aiPlanName: "Optimización con IA",
@@ -169,6 +190,16 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiStrengthsLabel: "Strengths",
       kpiFixesLabel: "Needs Work",
       critiqueExplanationTitle: "Score Explanation",
+      previewPillText: "Cintia-Optimized CV Ready",
+      previewSectionTitle: "High-Impact Professional Rewrite",
+      previewSectionSubtitle: "Cintia has restructured your resume with ATS keywords, quantifiable metrics, and interview-ready formatting.",
+      unlockCtaHeading: "Unlock Your Optimized Resume",
+      unlockCtaDescription: "Access the complete version rewritten by Cintia, featuring persuasive language, ATS keyword injection, and recruiter-ready layout.",
+      unlockCtaPeriod: "USD / one-time payment",
+      unlockActionBtnText: "Unlock & Download Resume",
+      unlockedStatusText: "Resume Successfully Unlocked!",
+      unlockedCopyBtnText: "Copy Text",
+      unlockedDownloadBtnText: "Download .txt",
       pricingTitle: "Want Cintia to optimize your CV to get more interviews?",
       pricingSubtitle: "Cintia will rewrite your profile, inject key ATS terms, and maximize compatibility instantly.",
       aiPlanName: "AI Optimization",
@@ -280,6 +311,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector('.detailed-explanation h3').textContent = t.critiqueExplanationTitle;
     
+    // Blurred Preview Dynamic Text
+    const previewPillTextEl = document.getElementById('previewPillText');
+    if (previewPillTextEl) previewPillTextEl.textContent = t.previewPillText;
+    const previewSectionTitleEl = document.getElementById('previewSectionTitle');
+    if (previewSectionTitleEl) previewSectionTitleEl.textContent = t.previewSectionTitle;
+    const previewSectionSubtitleEl = document.getElementById('previewSectionSubtitle');
+    if (previewSectionSubtitleEl) previewSectionSubtitleEl.textContent = t.previewSectionSubtitle;
+    const unlockCtaHeadingEl = document.getElementById('unlockCtaHeading');
+    if (unlockCtaHeadingEl) unlockCtaHeadingEl.textContent = t.unlockCtaHeading;
+    const unlockCtaDescriptionEl = document.getElementById('unlockCtaDescription');
+    if (unlockCtaDescriptionEl) unlockCtaDescriptionEl.textContent = t.unlockCtaDescription;
+    const unlockCtaPeriodEl = document.getElementById('unlockCtaPeriod');
+    if (unlockCtaPeriodEl) unlockCtaPeriodEl.textContent = t.unlockCtaPeriod;
+    const unlockActionBtnTextEl = document.getElementById('unlockActionBtnText');
+    if (unlockActionBtnTextEl) unlockActionBtnTextEl.textContent = `${t.unlockActionBtnText} ($${appConfig.priceAi || 1} USD)`;
+    const unlockedStatusTextEl = document.getElementById('unlockedStatusText');
+    if (unlockedStatusTextEl) unlockedStatusTextEl.textContent = t.unlockedStatusText;
+    const unlockedCopyBtnTextEl = document.getElementById('unlockedCopyBtnText');
+    if (unlockedCopyBtnTextEl) unlockedCopyBtnTextEl.textContent = t.unlockedCopyBtnText;
+    const unlockedDownloadBtnTextEl = document.getElementById('unlockedDownloadBtnText');
+    if (unlockedDownloadBtnTextEl) unlockedDownloadBtnTextEl.textContent = t.unlockedDownloadBtnText;
+
     // Re-render visual evaluation if data is present
     if (lastEvaluationData) {
       renderEvaluation(lastEvaluationData);
@@ -618,6 +671,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       renderEvaluation(data.evaluation);
+
+      // Render the blurred AI CV Preview with unlock CTA
+      if (data.optimizedText) {
+        renderBlurredPreview(data.optimizedText);
+      }
 
       // Hide loading / show results
       loadingWrapper.style.display = 'none';
@@ -1081,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
       checkoutModal.close();
 
       if (currentTier === 'ai') {
-        renderOptimizedCv(data.optimizedText);
+        unlockOptimizedCv(data.optimizedText || optimizedContentText);
       }
 
     } catch (err) {
@@ -1093,12 +1151,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
   payPaypalBtn.addEventListener('click', () => executePaymentSimulation('paypal'));
 
-  // 8. Render Optimized Markdown text
-  function renderOptimizedCv(mdText) {
+  // Unlock CTA button listener in the blurred preview card
+  if (unlockActionBtn) {
+    unlockActionBtn.addEventListener('click', () => {
+      currentTier = 'ai';
+      openCheckout(
+        currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA', 
+        appConfig.priceAi.toFixed(2)
+      );
+    });
+  }
+
+  // 8. Render Blurred AI CV Preview
+  function renderBlurredPreview(mdText) {
+    if (!mdText) return;
     optimizedContentText = mdText;
-    
-    // Markdown-to-HTML simple parser
-    let html = mdText
+
+    if (blurredDocContent) {
+      blurredDocContent.innerHTML = formatMarkdownToHtml(mdText);
+    }
+
+    if (blurredDocCard) {
+      blurredDocCard.classList.remove('unlocked');
+    }
+
+    if (unlockOverlay) {
+      unlockOverlay.style.display = 'flex';
+    }
+
+    if (unlockedActionsBar) {
+      unlockedActionsBar.style.display = 'none';
+    }
+
+    if (unlockCtaPrice) {
+      unlockCtaPrice.textContent = `$${appConfig.priceAi || 1}`;
+    }
+  }
+
+  // 9. Unlock Optimized CV upon payment completion
+  function unlockOptimizedCv(mdText) {
+    if (mdText) {
+      optimizedContentText = mdText;
+      if (blurredDocContent) {
+        blurredDocContent.innerHTML = formatMarkdownToHtml(mdText);
+      }
+    }
+
+    if (blurredDocCard) {
+      blurredDocCard.classList.add('unlocked');
+    }
+
+    if (unlockOverlay) {
+      unlockOverlay.style.display = 'none';
+    }
+
+    if (unlockedActionsBar) {
+      unlockedActionsBar.style.display = 'flex';
+    }
+
+    // Smooth scroll to the unblurred document
+    if (aiPreviewSection) {
+      aiPreviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // Helper Markdown-to-HTML parser
+  function formatMarkdownToHtml(mdText) {
+    if (!mdText) return '';
+    return mdText
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -1106,13 +1226,19 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Blockquotes / Alerts
+      .replace(/^>\s*\[!NOTE\]/gim, '<div class="alert-note">')
+      .replace(/^>\s*(.*$)/gim, '<blockquote>$1</blockquote>')
       // Bold
       .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
       .replace(/__(.*?)__/gim, '<strong>$1</strong>')
       // Italics
       .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+      // Horizontal rules
+      .replace(/^---$/gim, '<hr style="border:0; border-top:1px solid var(--border-grey); margin:18px 0;">')
       // Bullet lists
       .replace(/^\s*\-\s(.*$)/gim, '<li>$1</li>')
+      .replace(/^\s*\*\s(.*$)/gim, '<li>$1</li>')
       // Wrap list items
       .replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>')
       // Remove double wrap of ul tags
@@ -1120,36 +1246,60 @@ document.addEventListener('DOMContentLoaded', () => {
       // Newlines to paragraphs
       .replace(/\n\n/g, '<p></p>')
       .replace(/\n/g, '<br>');
-
-    optimizedContentBox.innerHTML = html;
-    
-    optimizedOutputContainer.style.display = 'block';
-    optimizedOutputContainer.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // 9. Copy & Download Action
-  copyCvBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(optimizedContentText)
-      .then(() => {
-        const origText = copyCvBtn.innerHTML;
-        copyCvBtn.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
-        setTimeout(() => { 
-          // Restore text with icons
-          applyLanguage(currentLanguage);
-        }, 2000);
-      })
-      .catch(() => alert('Could not copy text.'));
-  });
+  // Unlocked copy & download actions
+  if (unlockedCopyBtn) {
+    unlockedCopyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(optimizedContentText)
+        .then(() => {
+          const origText = unlockedCopyBtn.innerHTML;
+          unlockedCopyBtn.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
+          setTimeout(() => {
+            unlockedCopyBtn.innerHTML = origText;
+          }, 2000);
+        })
+        .catch(() => alert('Could not copy text.'));
+    });
+  }
 
-  downloadCvBtn.addEventListener('click', () => {
-    const element = document.createElement('a');
-    const file = new Blob([optimizedContentText], { type: 'text/plain;charset=utf-8' });
-    element.href = URL.createObjectURL(file);
-    element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  });
+  if (unlockedDownloadBtn) {
+    unlockedDownloadBtn.addEventListener('click', () => {
+      const element = document.createElement('a');
+      const file = new Blob([optimizedContentText], { type: 'text/plain;charset=utf-8' });
+      element.href = URL.createObjectURL(file);
+      element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
+  }
+
+  // Fallback Copy & Download Action
+  if (copyCvBtn) {
+    copyCvBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(optimizedContentText)
+        .then(() => {
+          copyCvBtn.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
+          setTimeout(() => { 
+            applyLanguage(currentLanguage);
+          }, 2000);
+        })
+        .catch(() => alert('Could not copy text.'));
+    });
+  }
+
+  if (downloadCvBtn) {
+    downloadCvBtn.addEventListener('click', () => {
+      const element = document.createElement('a');
+      const file = new Blob([optimizedContentText], { type: 'text/plain;charset=utf-8' });
+      element.href = URL.createObjectURL(file);
+      element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
+  }
 
   // Helper parser for markdown in card feedback
   function parseFeedbackMarkdown(text) {

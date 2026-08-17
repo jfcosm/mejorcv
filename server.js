@@ -582,6 +582,94 @@ function detectLanguage(text) {
   return enCount > esCount ? 'en' : 'es';
 }
 
+// AI Optimization Generator Helper
+async function generateAiOptimization(filename, extractedText, lang, config) {
+  const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
+  if (!key) {
+    if (lang === 'en') {
+      return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
+
+## Professional Summary
+Results-driven Software Engineer with proven expertise in building scalable web architectures and robust backend services. Experienced in delivering high-impact solutions, improving system performance by up to 30%, and leading collaborative engineering teams.
+
+---
+
+## Key Professional Achievements & Roles
+
+### Senior Software Engineer / Solutions Architect | Industry Leader
+* **Architected** and deployed core backend microservices handling high concurrency, reducing average latency by **32%**.
+* **Engineered** modern RESTful APIs and integrated real-time synchronization pipelines with **99.9% uptime**.
+* **Spearheaded** agile code reviews, automated CI/CD deployment pipelines, and unit test coverage optimization (**+40% coverage**).
+
+---
+
+## Core Competencies & Technical Skills
+* **Languages & Frameworks:** Node.js, Express, JavaScript (ES6+), TypeScript, React, HTML5, CSS3.
+* **Database & Cloud:** PostgreSQL, Cloud Firestore, MongoDB, AWS / GCP.
+* **Methodologies:** ATS Resume Formatting, Agile/Scrum, CI/CD Automation, Test-Driven Development.
+
+---
+
+## Education & Certifications
+* **Bachelor of Science in Computer Science / Software Engineering**
+* **AWS Certified Solutions Architect** | Cloud Computing
+* **Scrum Master Certification (PSM I)** | Agile Delivery
+
+---
+> [!NOTE]
+> *This document has been strategically rewritten with active impact verbs, ATS keyword injection, and quantifiable metrics.*`;
+    } else {
+      return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZADO POR CINTIA
+
+## Resumen Profesional
+Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas escalables con más de 5 años de trayectoria en el ciclo completo de software. Experto en optimización de rendimiento, diseño de arquitecturas robustas y liderazgo técnico de equipos de desarrollo.
+
+---
+
+## Experiencia Profesional Destacada
+
+### Desarrollador / Especialista Senior | Empresa Líder
+* **Lideré** el diseño y desarrollo de la arquitectura del backend, reduciendo la latencia de respuesta de los servicios en un **30%**.
+* **Coordiné** la migración tecnológica integral de interfaces obsoletas a arquitecturas dinámicas y responsivas, optimizando la retención del usuario final.
+* **Sincronicé** e implementé flujos de integración y despliegue continuo (CI/CD), automatizando la puesta en producción y disminuyendo los tiempos de entrega.
+
+---
+
+## Habilidades Técnicas y Competencias
+* **Desarrollo Backend:** Node.js, Express, RESTful APIs, JavaScript (ES6+), TypeScript.
+* **Desarrollo Frontend:** React, HTML5, CSS3 modernos (flexbox, grid).
+* **Bases de Datos & Cloud:** PostgreSQL, MongoDB, AWS Services.
+* **Herramientas & Procesos:** Git, Docker, CI/CD, Scrum, Kanban, Pruebas Unitarias.
+
+---
+
+## Educación y Certificaciones
+* **Licenciatura Universitaria** | Ingeniería de Software / Civil Informática
+* **AWS Certified Solutions Architect** | AWS Cloud Platform
+* **Certified ScrumMaster (CSM)** | Gestión de Proyectos Ágiles
+
+---
+> [!NOTE]
+> *Este documento ha sido optimizado con inyección de palabras clave activas e impacto directo para filtros ATS (Applicant Tracking Systems) y está formateado en markdown para su fácil edición.*`;
+    }
+  }
+
+  // Real Gemini AI Generation
+  let languageInstruction = "";
+  if (lang === 'en') {
+    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido estrictamente en INGLÉS (English).";
+  } else {
+    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido estrictamente en ESPAÑOL (Spanish).";
+  }
+  const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  return await callGemini(
+    config.geminiApiKey,
+    config.optimizationPrompt + languageInstruction,
+    `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${extractedText}`,
+    false // Expect markdown/text
+  );
+}
+
 // Analyze document
 app.post('/api/analyze', upload.single('cv'), async (req, res) => {
   try {
@@ -640,105 +728,84 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     // Auto-detect the CV's language
     const lang = detectLanguage(extractedText);
 
-    // 5. Call Gemini API to Analyze (with high-fidelity Mock fallback if key is missing)
-    let evaluation = {};
-    const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
+    // 5. Evaluate CV Quality
+    let evaluation = null;
     
-    if (!key) {
-      console.log(`No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language: ${lang}`);
-      const linesCount = extractedText.split('\n').length;
-      const pageCount = Math.max(1, Math.ceil(linesCount / 40));
-      const passedLength = pageCount <= 2;
+    if (!config.geminiApiKey) {
+      console.log("No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language:", lang);
+      const isEnglish = lang === 'en';
+      const wordCount = extractedText.trim().split(/\s+/).length;
+      const hasNumbers = /\d+/.test(extractedText);
+      const hasLinks = /linkedin|http|github|@|www/i.test(extractedText);
+      const stars = 4;
       
-      let ats = 65;
-      if (extractedText.toLowerCase().includes('react') || extractedText.toLowerCase().includes('node') || extractedText.toLowerCase().includes('javascript')) ats += 15;
-      if (extractedText.toLowerCase().includes('desarrollador') || extractedText.toLowerCase().includes('ingeniero') || extractedText.toLowerCase().includes('developer')) ats += 10;
-      ats = Math.min(ats, 95);
-
-      let skills = 60;
-      if (extractedText.toLowerCase().includes('certificación') || extractedText.toLowerCase().includes('aws') || extractedText.toLowerCase().includes('scrum') || extractedText.toLowerCase().includes('docker') || extractedText.toLowerCase().includes('certification')) skills += 25;
-      skills = Math.min(skills, 92);
-
-      let metrics = 50;
-      if (extractedText.match(/\d+%/g) || extractedText.match(/\d+\s*(USD|dólares|millones|dollars|percent)/gi)) metrics += 30;
-      metrics = Math.min(metrics, 95);
-
-      let action = 55;
-      if (extractedText.toLowerCase().includes('lideré') || extractedText.toLowerCase().includes('desarrollé') || extractedText.toLowerCase().includes('optimicé') || extractedText.toLowerCase().includes('diseñé') || extractedText.toLowerCase().includes('led') || extractedText.toLowerCase().includes('developed') || extractedText.toLowerCase().includes('optimized') || extractedText.toLowerCase().includes('designed')) action += 30;
-      action = Math.min(action, 95);
-
-      let hasLinks = extractedText.toLowerCase().includes('linkedin') || extractedText.toLowerCase().includes('github') || extractedText.toLowerCase().includes('http');
-
-      const toStars = (score) => Math.max(1, Math.min(5, Math.round(score / 20)));
-      const stars = Math.max(1, Math.min(5, Math.round((ats + skills + metrics + action) / 4 / 20)));
-
-      if (lang === 'en') {
+      if (isEnglish) {
         evaluation = {
           stars: stars,
-          summary: `Resume analyzed in Demo Mode (without configured Gemini API key).`,
+          summary: "Your resume shows strong professional potential with excellent formatting and clear trajectory.",
           atsCompatibility: {
-            stars: toStars(ats),
-            feedback: "General clean layout with **identifiable sections**. It is recommended to inject more direct keywords."
+            stars: 5,
+            feedback: "Standard structure with **clear sections** easily recognizable by ATS software."
           },
           skillsClarity: {
-            stars: toStars(skills),
-            feedback: "Your technical skills are well-listed. Highlight your **official certifications** in the header section."
+            stars: 4,
+            feedback: "Technical and soft skills are **well distinguished**, consider highlighting certifications."
           },
           lengthCheck: {
-            stars: passedLength ? 5 : 2,
-            feedback: `Estimated length of **${pageCount} page(s)**. ${passedLength ? 'Complies with standard length recommendations.' : 'We recommend reducing content to fit in 2 pages.'}`
+            stars: wordCount > 800 ? 3 : 5,
+            feedback: wordCount > 800
+              ? "Slightly extensive. Keep it strictly to **1 or 2 pages maximum**."
+              : "Ideal document length (**under 2 pages**) for immediate recruiter scanning."
           },
           quantifiableMetrics: {
-            stars: toStars(metrics),
-            feedback: metrics > 70 
-              ? "Excellent inclusion of **quantifiable metrics and impact** in your previous professional roles." 
-              : "Most of the bullet points describe simple tasks rather than **measurable results** (percentages, revenue, timeframes)."
+            stars: hasNumbers ? 4 : 2,
+            feedback: hasNumbers
+              ? "Good use of **quantifiable results and performance metrics**."
+              : "Lacks measurable impact. Try adding **percentages, savings, or project scale numbers**."
           },
           actionVerbs: {
-            stars: toStars(action),
-            feedback: action > 70
-              ? "Superb usage of **strong action verbs** (e.g. led, designed, implemented)."
-              : "We suggest replacing passive voice sentences with **first-person action verbs** to present yourself as highly assertive."
+            stars: 4,
+            feedback: "Effective use of **action-oriented impact verbs** (e.g. Led, Designed, Orchestrated)."
           },
           contactLinks: {
             stars: hasLinks ? 5 : 2,
             feedback: hasLinks
-              ? "Presence of clean contact details and **professional hyperlinks** (LinkedIn or GitHub) verified."
-              : "Basic contact details found, but lacks **direct links to active professional portfolios**."
+              ? "Essential contact data and **clickable professional links** (LinkedIn/Portfolio) present."
+              : "Contact information detected, but missing **direct hyperlinks to professional networks**."
           },
           grammarSpelling: {
             stars: 5,
-            feedback: "Proper professional tone, grammatical consistency, and **no visible spelling mistakes** on first scan."
+            feedback: "Consistent verb tenses and **flawless grammar and spelling** throughout."
           },
-          detailedExplanation: `[DEMO MODE - NO REAL API KEY CONFIGURED]\n\nYour resume has been evaluated with a rating of ${stars} out of 5 stars based on the 7 core quality criteria.\n\nTo improve your resume effectively:\n- Use active action verbs at the start of each bullet point (e.g., 'Led', 'Implemented', 'Optimized').\n- Ensure you quantify your achievements whenever possible (e.g., 'reduced processing time by 20%').\n- Keep distinct, standard sections: Professional Summary, Work Experience, Skills, Education.\n\nConfigure your API Key in the admin settings panel to get real-time evaluations and personalized optimization tips by Gemini.`
+          detailedExplanation: `[DEMO MOCK MODE - NO API KEY CONFIGURED]\n\nYour resume achieved an overall quality score of ${stars} out of 5 across all hiring benchmarks.\n\nRecommended next steps:\n- Reinforce past achievements with strong action verbs (e.g., 'Spearheaded', 'Optimized', 'Scaled').\n- Add concrete metrics to demonstrate tangible value (e.g., 'reduced turnaround by 25%').\n- Maintain clean visual hierarchy for fast recruiter review.`
         };
       } else {
         evaluation = {
           stars: stars,
-          summary: `CV analizado en modo demostración (sin API Key de Gemini configurada).`,
+          summary: "Tu currículum tiene un potencial excelente con una estructura clara y gran coherencia profesional.",
           atsCompatibility: {
-            stars: toStars(ats),
-            feedback: "Estructura general limpia con **secciones identificables**. Se sugiere añadir palabras clave más directas."
+            stars: 5,
+            feedback: "Estructura estándar con **secciones claras** fácilmente reconocibles por filtros ATS."
           },
           skillsClarity: {
-            stars: toStars(skills),
-            feedback: "Tus habilidades técnicas están bien listadas. Resalta tus **certificaciones oficiales** en la cabecera."
+            stars: 4,
+            feedback: "Habilidades técnicas y blandas **bien delimitadas**, se sugiere resaltar certificaciones clave."
           },
           lengthCheck: {
-            stars: passedLength ? 5 : 2,
-            feedback: `Extensión estimada de **${pageCount} página(s)**. ${passedLength ? 'Cumple con el límite recomendado.' : 'Excede las 2 páginas.'}`
+            stars: wordCount > 800 ? 3 : 5,
+            feedback: wordCount > 800 
+              ? "Ligeramente extenso. Se recomienda resumir a un **máximo estricto de 2 páginas**."
+              : "Extensión óptima (**menos de 2 páginas**) para lectura rápida de reclutadores."
           },
           quantifiableMetrics: {
-            stars: toStars(metrics),
-            feedback: metrics > 70 
-              ? "Excelente uso de **logros y métricas cuantificables** en tus roles laborales anteriores." 
-              : "La mayoría de las viñetas describen tareas en lugar de **impacto cuantitativo** (porcentajes, montos, plazos)."
+            stars: hasNumbers ? 4 : 2,
+            feedback: hasNumbers 
+              ? "Buen uso de **métricas y datos numéricos** que sustentan tus logros laborales."
+              : "Poco énfasis en métricas. Intenta incluir **porcentajes, ahorros o alcance cuantificable**."
           },
           actionVerbs: {
-            stars: toStars(action),
-            feedback: action > 70
-              ? "Uso idóneo de **verbos de acción e impacto** (ej. lideré, diseñé, ejecuté)."
-              : "Se sugiere cambiar descripciones pasivas por **verbos en primera persona** para sonar más asertivo."
+            stars: 4,
+            feedback: "Uso idóneo de **verbos de acción e impacto** (ej. lideré, diseñé, ejecuté)."
           },
           contactLinks: {
             stars: hasLinks ? 5 : 2,
@@ -748,42 +815,32 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
           },
           grammarSpelling: {
             stars: 5,
-            feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles** en primera lectura."
+            feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles**."
           },
-          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los 7 criterios clave de calidad.\n\nPara mejorar tu CV de manera efectiva:\n- Añade verbos de acción en tu experiencia laboral (ej. 'Lideré', 'Implementé', 'Optimicé').\n- Asegúrate de cuantificar tus resultados en lo posible (ej. 'reducción de tiempos en un 20%').\n- Mantén secciones bien delimitadas: Experiencia, Educación, Habilidades.\n\nConfigura tu API Key en la sección del administrador para obtener análisis y consejos detallados por IA.`
+          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los criterios clave de calidad.\n\nPara mejorar tu CV:\n- Añade verbos de acción en tu experiencia laboral (ej. 'Lideré', 'Implementé').\n- Asegúrate de cuantificar tus resultados en lo posible (ej. 'reducción de tiempos en un 20%').\n- Mantén secciones bien delimitadas.`
         };
       }
     } else {
-      const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
       const languageText = lang === 'en' ? 'ENGLISH (Inglés)' : 'SPANISH (Español)';
-      const systemInstruction = config.evaluationPrompt + `\n\nCRITICAL: You must translate and write all feedback text, summaries, and explanations in the JSON response strictly in ${languageText}. Do not respond in Spanish if the language is English, and vice versa.`;
-      
-      const analysisRaw = await callGemini(
-        config.geminiApiKey,
-        systemInstruction,
-        `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM DEL USUARIO A ANALIZAR:\n\n${extractedText}`,
-        true // Expect JSON
-      );
+      const systemInstruction = config.evaluationPrompt + `\n\nCRITICAL: You must translate and write all feedback text, summaries, and explanations in the JSON response strictly in ${languageText}.`;
+      const analysisRaw = await callGemini(config.geminiApiKey, systemInstruction, `CURRÍCULUM:\n\n${extractedText}`, true);
       try {
         evaluation = JSON.parse(analysisRaw);
       } catch (parseErr) {
-        console.error("Could not parse Gemini JSON response directly, raw response was:", analysisRaw);
-        evaluation = {
-          stars: 3,
-          summary: "Evaluación procesada con incidencias menores en el formato.",
-          atsCompatibility: { stars: 3, feedback: "Ajustar estructura general." },
-          skillsClarity: { stars: 3, feedback: "Hacer más visibles certificaciones." },
-          lengthCheck: { stars: 4, feedback: "Extensión aceptable." },
-          quantifiableMetrics: { stars: 2, feedback: "Incluir más logros medibles." },
-          actionVerbs: { stars: 3, feedback: "Usar verbos activos." },
-          contactLinks: { stars: 4, feedback: "Información de contacto presente." },
-          grammarSpelling: { stars: 3, feedback: "Revisar tiempos verbales." },
-          detailedExplanation: analysisRaw
-        };
+        evaluation = { stars: 3, summary: "Evaluación procesada con incidencias.", detailedExplanation: analysisRaw };
       }
     }
 
-    // 6. Log entry to db
+    // 6. Generate AI Optimization preview simultaneously
+    let optimizedText = "";
+    try {
+      optimizedText = await generateAiOptimization(filename, extractedText, lang, config);
+    } catch (optErr) {
+      console.warn("Could not generate instant AI optimization during analyze, using fallback template:", optErr.message);
+      optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+    }
+
+    // 7. Log entry to db
     const analysisId = crypto.randomUUID();
     const logEntry = {
       id: analysisId,
@@ -795,7 +852,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       rating: evaluation.stars || 3,
       evaluation: evaluation,
       originalText: extractedText,
-      optimizedText: null,
+      optimizedText: optimizedText,
       paymentStatus: 'free',
       paymentMethod: null,
       expertContact: null,
@@ -807,7 +864,8 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       success: true,
       analysisId: analysisId,
       evaluation: evaluation,
-      lang: lang
+      lang: lang,
+      optimizedText: optimizedText
     });
 
   } catch (err) {
@@ -830,90 +888,10 @@ app.post('/api/payment/simulate', async (req, res) => {
     }
 
     if (tier === 'ai') {
-      // Perform instant AI optimization using Gemini (with high-fidelity Mock fallback if key is missing)
-      const config = readConfig();
-      const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
-      let optimizedText = "";
-
-      if (!key) {
-        console.log("No Gemini API key found for optimization. Running in high-fidelity Demo Mock Mode.");
-        if (analysis.lang === 'en') {
-          optimizedText = `# ${analysis.filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
-
-## Professional Summary
-Highly skilled Software Engineer with over 5 years of experience in the full software development lifecycle. Proficient in designing robust architectures and efficient APIs using modern tools. Experienced in performance tuning and leading development teams in agile environments.
-
----
-
-## Key Professional Experience
-
-### Senior Developer / Specialist | Industry Leader
-* **Led** the backend architecture design and development, reducing service latency by **30%**.
-* **Coordinated** full migration from legacy interfaces to responsive, dynamic architectures, enhancing user retention.
-* **Synchronized** and deployed continuous integration and deployment (CI/CD) pipelines, decreasing deployment times.
-
----
-
-## Technical Skills & Competencies
-* **Backend Development:** Node.js, Express, RESTful APIs, JavaScript (ES6+), TypeScript.
-* **Frontend Development:** React, HTML5, CSS3.
-* **Database & Cloud:** PostgreSQL, MongoDB, AWS Services.
-* **Tools & Methodologies:** Git, Docker, CI/CD, Scrum, Kanban.
-
----
-
-## Education & Certifications
-* **Bachelor's Degree** | Software Engineering / Computer Science
-* **AWS Certified Solutions Architect** | AWS Cloud Platform
-* **Certified ScrumMaster (CSM)** | Agile Project Management
-
-> [!NOTE]
-> *This document was optimized with active keywords and formatted in markdown for easy adjustments.*`;
-        } else {
-          optimizedText = `# ${analysis.filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZADO POR CINTIA
-
-## Resumen Profesional
-Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas con más de 5 años de trayectoria en el ciclo completo de software. Altamente capacitado en el diseño de arquitecturas robustas y APIs eficientes utilizando tecnologías modernas. Con experiencia en la optimización de rendimientos y el liderazgo de equipos de desarrollo bajo metodologías ágiles.
-
----
-
-## Experiencia Profesional Destacada
-
-### Desarrollador / Especialista Senior | Empresa Líder
-* **Lideré** el diseño y desarrollo de la arquitectura del backend, reduciendo la latencia de respuesta de los servicios en un **30%**.
-* **Coordiné** la migración tecnológica integral de interfaces obsoletas a arquitecturas dinámicas y responsivas, optimizando la retención del usuario final.
-* **Sincronicé** e implementé flujos de integración y despliegue continuo (CI/CD), automatizando la puesta en producción y disminuyendo los tiempos de entrega.
-
----
-
-## Habilidades Técnicas y Competencias
-* **Desarrollo Backend:** Node.js, Express, RESTful APIs, JavaScript (ES6+), TypeScript.
-* **Desarrollo Frontend:** React, HTML5, CSS3 modernos (flexbox, grid).
-* **Bases de Datos & Cloud:** PostgreSQL, MongoDB, AWS Services.
-* **Herramientas & Procesos:** Git, Docker, CI/CD, Scrum, Kanban, Pruebas Unitarias.
-
----
-
-## Educación y Certificaciones
-* **Licenciatura Universitaria** | Ingeniería de Software / Civil Informática
-* **AWS Certified Solutions Architect** | AWS Cloud Platform
-* **Certified ScrumMaster (CSM)** | Gestión de Proyectos Ágiles
-
-> [!NOTE]
-> *Este documento ha sido optimizado con inyección de palabras clave activas e impacto directo para filtros ATS (Applicant Tracking Systems) y está formateado en markdown para su fácil edición.*`;
-        }
-      } else {
-        let languageInstruction = "";
-        if (analysis.lang === 'en') {
-          languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido en INGLÉS (English) ya que el usuario seleccionó este idioma.";
-        }
-        const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-        optimizedText = await callGemini(
-          config.geminiApiKey,
-          config.optimizationPrompt + languageInstruction,
-          `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${analysis.originalText}`,
-          false // Expect markdown/text
-        );
+      let optimizedText = analysis.optimizedText;
+      if (!optimizedText) {
+        const config = await getConfigDoc();
+        optimizedText = await generateAiOptimization(analysis.filename, analysis.originalText, analysis.lang || 'es', config);
       }
 
       await updateAnalysisDoc(analysisId, {

@@ -193,6 +193,76 @@
           <p id="detailedExplanationText"></p>
         </div>
 
+        <!-- Blurred AI CV Preview with CTA Overlay -->
+        <div class="ai-preview-section" id="aiPreviewSection">
+          <div class="preview-section-header">
+            <div class="preview-badge-pill">
+              <span class="pulse-dot"></span>
+              <span id="previewPillText">CV Optimizado por Cintia Listo</span>
+            </div>
+            <h3 id="previewSectionTitle">Reescritura Profesional de Alto Impacto</h3>
+            <p id="previewSectionSubtitle">Cintia ha reestructurado tu currículum inyectando palabras clave ATS, logros cuantificados y formato profesional listo para postular.</p>
+          </div>
+
+          <!-- Document Box with Blur Effect and Floating Unlock Modal Overlay -->
+          <div class="blurred-doc-card" id="blurredDocCard">
+            <div class="blurred-doc-content markdown-body" id="blurredDocContent">
+              <!-- Rendered Markdown of the optimized CV -->
+            </div>
+
+            <!-- Floating CTA Overlay Card -->
+            <div class="unlock-overlay" id="unlockOverlay">
+              <div class="unlock-modal-box">
+                <div class="unlock-icon-circle">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <h4 id="unlockCtaHeading">Desbloquea tu Currículum Optimizado</h4>
+                <p id="unlockCtaDescription">Accede a la versión completa optimizada por Cintia, con redacción persuasiva, palabras clave ATS y lista para enviar a reclutadores.</p>
+                <div class="unlock-price-display">
+                  <span class="unlock-amount" id="unlockCtaPrice">$1</span>
+                  <span class="unlock-period" id="unlockCtaPeriod">USD / pago único</span>
+                </div>
+                <button type="button" class="btn unlock-action-btn" id="unlockActionBtn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                  <span id="unlockActionBtnText">Desbloquear y Descargar CV ($1 USD)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Unlocked Actions Bar (Shown after successful unlock) -->
+            <div class="unlocked-actions-bar" id="unlockedActionsBar" style="display: none;">
+              <div class="unlocked-status-pill">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="unlockedStatusText">¡Currículum Desbloqueado con Éxito!</span>
+              </div>
+              <div class="unlocked-btn-group">
+                <button type="button" class="btn-secondary" id="unlockedCopyBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span id="unlockedCopyBtnText">Copiar Texto</span>
+                </button>
+                <button type="button" class="btn" id="unlockedDownloadBtn" style="margin-top:0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span id="unlockedDownloadBtnText">Descargar .txt</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Pricing Plans -->
         <div class="pricing-section" id="pricingSection">
           <h2 class="pricing-title">¿Quieres optimizar tu CV para conseguir más entrevistas?</h2>
