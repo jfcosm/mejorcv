@@ -513,24 +513,11 @@
         <div id="leadsBoardView" style="display: none;">
           <div class="kanban-board">
             
-            <!-- Column 1: Pending Human Expert (Action Required) -->
-            <div class="kanban-column" id="colPendingExpert" style="border-top: 3px solid #f59e0b;">
-              <div class="kanban-col-header">
-                <div class="kanban-col-title" style="color: #b45309;">
-                  <span>🟡 Asesoría Pendiente ($25)</span>
-                </div>
-                <span class="kanban-col-badge" id="badgePendingExpert" style="background: #fef3c7; color: #b45309;">0</span>
-              </div>
-              <div class="kanban-cards-container" id="cardsPendingExpert">
-                <!-- Cards injected dynamically -->
-              </div>
-            </div>
-
-            <!-- Column 2: AI Optimization Completed (Automated) -->
+            <!-- Column 1: AI Optimization Completed (Automated) -->
             <div class="kanban-column" id="colCompletedAi" style="border-top: 3px solid var(--color-mint);">
               <div class="kanban-col-header">
                 <div class="kanban-col-title" style="color: var(--color-mint-hover);">
-                  <span>🟢 Optimizado por IA ($1)</span>
+                  <span>🟢 Optimizado por IA</span>
                 </div>
                 <span class="kanban-col-badge" id="badgeCompletedAi" style="background: var(--color-mint-light); color: var(--color-mint-hover);">0</span>
               </div>
@@ -539,11 +526,24 @@
               </div>
             </div>
 
-            <!-- Column 3: Human Expert Completed -->
+            <!-- Column 2: Pending Human Expert (To Do / Action Required) -->
+            <div class="kanban-column" id="colPendingExpert" style="border-top: 3px solid #f59e0b;">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title" style="color: #b45309;">
+                  <span>🟡 Asesoría solicitada (por hacer)</span>
+                </div>
+                <span class="kanban-col-badge" id="badgePendingExpert" style="background: #fef3c7; color: #b45309;">0</span>
+              </div>
+              <div class="kanban-cards-container" id="cardsPendingExpert">
+                <!-- Cards injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Column 3: Human Expert Completed (Done) -->
             <div class="kanban-column" id="colCompletedExpert" style="border-top: 3px solid #3b82f6;">
               <div class="kanban-col-header">
                 <div class="kanban-col-title" style="color: #1d4ed8;">
-                  <span>🔵 Asesoría Entregada</span>
+                  <span>🔵 Asesoría entregada (hecho)</span>
                 </div>
                 <span class="kanban-col-badge" id="badgeCompletedExpert" style="background: #dbeafe; color: #1d4ed8;">0</span>
               </div>

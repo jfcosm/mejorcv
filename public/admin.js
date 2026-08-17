@@ -493,8 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
 
-        renderKanbanCards(pendingExpertList, cardsPendingExpert, true);
         renderKanbanCards(completedAiList, cardsCompletedAi, false);
+        renderKanbanCards(pendingExpertList, cardsPendingExpert, true);
         renderKanbanCards(completedExpertList, cardsCompletedExpert, false);
       }
 
