@@ -1192,8 +1192,8 @@ document.addEventListener('DOMContentLoaded', () => {
               expertWhatsappSupportBox.style.display = 'block';
               if (expertWhatsappNotice) {
                 expertWhatsappNotice.innerHTML = currentLanguage === 'en'
-                  ? 'If you have not received any message from us in the next 24 hours, send us a WhatsApp message at <strong>+56 9 3078 1181</strong> for immediate assistance from our team.'
-                  : 'Si no te ha llegado ningún mensaje nuestro en las próximas 24 horas, envíanos un mensaje de WhatsApp al <strong>+56 9 3078 1181</strong> para recibir ayuda inmediata de nuestro equipo.';
+                  ? 'If you have not received any message from us in the next 24 hours, write to us directly on WhatsApp for immediate assistance from our team.'
+                  : 'Si no te ha llegado ningún mensaje nuestro en las próximas 24 horas, escríbenos directamente por WhatsApp para recibir ayuda inmediata de nuestro equipo.';
               }
               if (expertWhatsappBtn) {
                 const waText = currentLanguage === 'en'
