@@ -458,61 +458,78 @@ function parseOdt(buffer) {
   }
 }
 
-// Gemini API integration
+// Gemini API Key Resolver Helper (reads from config doc or environment variables)
+function getGeminiApiKey(config) {
+  if (config && config.geminiApiKey && typeof config.geminiApiKey === 'string' && config.geminiApiKey.trim() !== '' && !config.geminiApiKey.startsWith('••••••••')) {
+    return config.geminiApiKey.trim();
+  }
+  return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+}
+
+// Gemini API integration with multi-model fallback (gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash)
 async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
-  const key = apiKey || process.env.GEMINI_API_KEY;
+  const key = apiKey || getGeminiApiKey();
   if (!key) {
-    throw new Error("Falta la configuración de Gemini API Key en el servidor. Contacte al administrador.");
+    throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
   
-  const model = "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  
-  const payload = {
-    contents: [
-      {
-        parts: [
-          { text: promptContent }
+  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: promptContent }
+            ]
+          }
         ]
+      };
+      
+      if (systemInstruction) {
+        payload.systemInstruction = {
+          parts: [
+            { text: systemInstruction }
+          ]
+        };
       }
-    ]
-  };
-  
-  if (systemInstruction) {
-    payload.systemInstruction = {
-      parts: [
-        { text: systemInstruction }
-      ]
-    };
+      
+      if (responseJson) {
+        payload.generationConfig = {
+          responseMimeType: "application/json"
+        };
+      }
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Gemini model ${model} returned code ${response.status}:`, errorText);
+        lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
+        continue;
+      }
+      
+      const responseData = await response.json();
+      if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
+        return responseData.candidates[0].content.parts[0].text;
+      }
+    } catch (err) {
+      console.warn(`Attempt with Gemini model ${model} failed:`, err.message);
+      lastError = err;
+    }
   }
-  
-  if (responseJson) {
-    payload.generationConfig = {
-      responseMimeType: "application/json"
-    };
-  }
-  
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Gemini error payload:", errorText);
-    throw new Error(`Gemini API respondió con código ${response.status}`);
-  }
-  
-  const responseData = await response.json();
-  try {
-    return responseData.candidates[0].content.parts[0].text;
-  } catch (err) {
-    console.error("Failed to parse candidates in response:", responseData);
-    throw new Error("Respuesta estructurada inválida de Gemini.");
-  }
+
+  throw lastError || new Error("No se pudo obtener respuesta de Gemini API.");
 }
 
 // Express middlewares
@@ -584,7 +601,7 @@ function detectLanguage(text) {
 
 // AI Optimization Generator Helper
 async function generateAiOptimization(filename, extractedText, lang, config) {
-  const key = config.geminiApiKey || process.env.GEMINI_API_KEY;
+  const key = getGeminiApiKey(config);
   if (!key) {
     if (lang === 'en') {
       return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
@@ -663,7 +680,7 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   }
   const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
   return await callGemini(
-    config.geminiApiKey,
+    key,
     config.optimizationPrompt + languageInstruction,
     `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${extractedText}`,
     false // Expect markdown/text
@@ -673,7 +690,7 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
 // Analyze document
 app.post('/api/analyze', upload.single('cv'), async (req, res) => {
   try {
-    const config = readConfig();
+    const config = await getConfigDoc();
     const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
 
     // 1. IP Rate Limiting Check
@@ -730,8 +747,9 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 
     // 5. Evaluate CV Quality
     let evaluation = null;
+    const geminiApiKey = getGeminiApiKey(config);
     
-    if (!config.geminiApiKey) {
+    if (!geminiApiKey) {
       console.log("No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language:", lang);
       const isEnglish = lang === 'en';
       const wordCount = extractedText.trim().split(/\s+/).length;
@@ -823,7 +841,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     } else {
       const languageText = lang === 'en' ? 'ENGLISH (Inglés)' : 'SPANISH (Español)';
       const systemInstruction = config.evaluationPrompt + `\n\nCRITICAL: You must translate and write all feedback text, summaries, and explanations in the JSON response strictly in ${languageText}.`;
-      const analysisRaw = await callGemini(config.geminiApiKey, systemInstruction, `CURRÍCULUM:\n\n${extractedText}`, true);
+      const analysisRaw = await callGemini(geminiApiKey, systemInstruction, `CURRÍCULUM:\n\n${extractedText}`, true);
       try {
         evaluation = JSON.parse(analysisRaw);
       } catch (parseErr) {
@@ -1056,9 +1074,10 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   const config = await getConfigDoc();
   const secureConfig = { ...config };
   
-  // Mask the API Key to protect it from exposure
-  if (secureConfig.geminiApiKey) {
-    secureConfig.geminiApiKey = '••••••••' + secureConfig.geminiApiKey.slice(-4);
+  // Mask the API Key to protect it from exposure (checking both config doc and env vars)
+  const activeKey = getGeminiApiKey(config);
+  if (activeKey) {
+    secureConfig.geminiApiKey = '••••••••' + activeKey.slice(-4);
   } else {
     secureConfig.geminiApiKey = '';
   }
