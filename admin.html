@@ -199,6 +199,147 @@
       display: flex;
       gap: 6px;
     }
+
+    /* Leads View Switcher (List vs Board) */
+    .view-switcher-group {
+      display: inline-flex;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      padding: 3px;
+      gap: 3px;
+    }
+    .view-switch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-medium);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .view-switch-btn.active {
+      background: #ffffff;
+      color: var(--color-mint-hover);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Agile Kanban Board */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+      align-items: start;
+    }
+    .kanban-column {
+      background: #f8fafc;
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+    .kanban-col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-grey);
+    }
+    .kanban-col-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .kanban-col-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .kanban-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .kanban-card {
+      background: #ffffff;
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      position: relative;
+      text-align: left;
+    }
+    .kanban-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+      border-color: var(--color-mint);
+    }
+    .kanban-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .kanban-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      word-break: break-word;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kanban-card-score {
+      font-size: 13px;
+      color: #f59e0b;
+      white-space: nowrap;
+    }
+    .kanban-card-body {
+      font-size: 12.5px;
+      color: var(--text-medium);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .kanban-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 10px;
+      margin-top: 6px;
+      font-size: 11.5px;
+      color: var(--text-light);
+    }
+    .kanban-empty-hint {
+      text-align: center;
+      padding: 30px 14px;
+      color: var(--text-light);
+      font-size: 13px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -325,14 +466,31 @@
       </div>
     </section>
 
-    <!-- Panel Leads: Customer leads table -->
+    <!-- Panel Leads: Customer leads table & Kanban Board -->
     <section class="admin-panel" id="panelLeads">
       <div class="card" style="padding: 24px;">
-        <h3 style="margin-bottom: 8px;">Leads de Clientes (Optimización Solicitada)</h3>
-        <p style="color: var(--text-medium); font-size: 14px; margin-bottom: 20px;">
-          Aquí se listan todos los usuarios que han solicitado mejorar su currículum. La optimización por IA se procesa de forma automática, mientras que las de Experto requieren contacto manual y cobro offline.
-        </p>
-        <div class="table-container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+          <div>
+            <h3 style="margin-bottom: 6px;">Leads de Clientes (Optimización Solicitada)</h3>
+            <p style="color: var(--text-medium); font-size: 14px; margin: 0;">
+              Gestiona el flujo de usuarios que han solicitado optimización con IA o asesoría de experto humano.
+            </p>
+          </div>
+          <!-- View Mode Switcher -->
+          <div class="view-switcher-group">
+            <button type="button" class="view-switch-btn active" id="viewModeListBtn" title="Ver en formato tabla">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              Lista
+            </button>
+            <button type="button" class="view-switch-btn" id="viewModeBoardBtn" title="Ver en tablero ágil tipo Jira">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="5" height="18" rx="1"></rect><rect x="10" y="3" width="5" height="12" rx="1"></rect><rect x="17" y="3" width="5" height="15" rx="1"></rect></svg>
+              Panel Ágil
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. List View (Table) -->
+        <div id="leadsListView" class="table-container">
           <table id="leadsTable">
             <thead>
               <tr>
@@ -350,6 +508,53 @@
             </tbody>
           </table>
         </div>
+
+        <!-- 2. Board View (Jira-style Kanban Board) -->
+        <div id="leadsBoardView" style="display: none;">
+          <div class="kanban-board">
+            
+            <!-- Column 1: Pending Human Expert (Action Required) -->
+            <div class="kanban-column" id="colPendingExpert" style="border-top: 3px solid #f59e0b;">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title" style="color: #b45309;">
+                  <span>🟡 Asesoría Pendiente ($25)</span>
+                </div>
+                <span class="kanban-col-badge" id="badgePendingExpert" style="background: #fef3c7; color: #b45309;">0</span>
+              </div>
+              <div class="kanban-cards-container" id="cardsPendingExpert">
+                <!-- Cards injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Column 2: AI Optimization Completed (Automated) -->
+            <div class="kanban-column" id="colCompletedAi" style="border-top: 3px solid var(--color-mint);">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title" style="color: var(--color-mint-hover);">
+                  <span>🟢 Optimizado por IA ($1)</span>
+                </div>
+                <span class="kanban-col-badge" id="badgeCompletedAi" style="background: var(--color-mint-light); color: var(--color-mint-hover);">0</span>
+              </div>
+              <div class="kanban-cards-container" id="cardsCompletedAi">
+                <!-- Cards injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Column 3: Human Expert Completed -->
+            <div class="kanban-column" id="colCompletedExpert" style="border-top: 3px solid #3b82f6;">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title" style="color: #1d4ed8;">
+                  <span>🔵 Asesoría Entregada</span>
+                </div>
+                <span class="kanban-col-badge" id="badgeCompletedExpert" style="background: #dbeafe; color: #1d4ed8;">0</span>
+              </div>
+              <div class="kanban-cards-container" id="cardsCompletedExpert">
+                <!-- Cards injected dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </section>
 
