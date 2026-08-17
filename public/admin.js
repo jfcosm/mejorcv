@@ -345,8 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
-            if (row.paymentStatus === 'pending_expert') {
-              actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Completar e Ingresar Pago</button>`;
+            if (row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert') {
+              actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar como Entregado</button>`;
             }
 
             leadsTableBody.innerHTML += `
@@ -402,7 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
     switch (status) {
       case 'free': return '<span class="badge free">Gratis (Eval)</span>';
       case 'completed_ai': return '<span class="badge ai">IA Pagado ($1)</span>';
-      case 'pending_expert': return '<span class="badge pending">Experto Pend ($25)</span>';
+      case 'pending_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
+      case 'paid_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
       case 'completed_expert': return '<span class="badge completed">Experto Entregado</span>';
       default: return `<span class="badge">${status}</span>`;
     }

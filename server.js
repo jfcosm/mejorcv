@@ -1257,7 +1257,7 @@ app.post('/api/paypal/capture-order', async (req, res) => {
 
     } else if (tier === 'expert') {
       await updateAnalysisDoc(analysisId, {
-        paymentStatus: 'paid_expert',
+        paymentStatus: 'pending_expert',
         paymentMethod: 'paypal',
         paypalOrderId: orderID,
         paypalTransactionId,
