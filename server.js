@@ -788,8 +788,26 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     if (ext === '.txt') {
       extractedText = req.file.buffer.toString('utf8');
     } else if (ext === '.pdf') {
-      const parsedPdf = await pdfParse(req.file.buffer);
-      extractedText = parsedPdf.text;
+      try {
+        // Primary attempt: standard PDF parsing
+        const parsedPdf = await pdfParse(req.file.buffer);
+        extractedText = parsedPdf.text;
+      } catch (pdfErr) {
+        // Fallback: lenient mode for PDFs with non-standard XRef tables
+        // (common in PDFs exported from Canva, Illustrator, or modern design tools)
+        try {
+          const parsedPdf = await pdfParse(req.file.buffer, {
+            max: 0,         // parse all pages
+            version: 'v1.10.100' // use lenient parser version
+          });
+          extractedText = parsedPdf.text;
+        } catch (pdfErr2) {
+          console.error('PDF parse error (both attempts failed):', pdfErr2.message);
+          return res.status(422).json({
+            error: 'No se pudo leer el PDF. El archivo puede estar dañado, protegido con contraseña, o ser un PDF basado en imágenes (escaneado). Por favor, guárdalo como PDF estándar o súbelo en formato .docx o .txt.'
+          });
+        }
+      }
     } else if (ext === '.docx') {
       const docxResult = await mammoth.extractRawText({ buffer: req.file.buffer });
       extractedText = docxResult.value;
