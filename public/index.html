@@ -85,7 +85,15 @@
             </div>
           </div>
 
-          <button type="submit" class="btn" id="submitBtn">Analizar CV Gratis</button>
+          <!-- Consent Checkbox -->
+          <div class="consent-container" id="consentContainer">
+            <label class="consent-label" for="consentCheckbox">
+              <input type="checkbox" id="consentCheckbox" class="consent-checkbox" required>
+              <span id="consentText">Acepto el procesamiento temporal de este documento para generar mi análisis.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn" disabled>Analizar CV Gratis</button>
         </form>
       </div>
 

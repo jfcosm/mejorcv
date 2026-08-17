@@ -339,6 +339,32 @@ header .nav {
   text-decoration: underline;
 }
 
+/* Consent Checkbox */
+.consent-container {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-medium);
+  cursor: pointer;
+  line-height: 1.45;
+  user-select: none;
+}
+
+.consent-checkbox {
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  accent-color: var(--color-mint);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* Button UI */
 .btn {
   display: inline-flex;

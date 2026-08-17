@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const captchaInput = document.getElementById('captchaInput');
   const refreshCaptchaBtn = document.getElementById('refreshCaptchaBtn');
   
+  const consentCheckbox = document.getElementById('consentCheckbox');
   const submitBtn = document.getElementById('submitBtn');
   const errorBanner = document.getElementById('errorBanner');
   const uploadWrapper = document.getElementById('uploadWrapper');
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaLabel: "Medida anti-abuso: Verifica que eres humano",
       captchaPlaceholder: "Resultado",
       captchaRefresh: "Recargar",
+      consentText: "Acepto el procesamiento temporal de este documento para generar mi análisis.",
       submitBtn: "Analizar CV Gratis",
       loadingStatus: "Cintia está analizando tu Currículum...",
       step0: "Cintia está detectando el idioma del currículum...",
@@ -149,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaLabel: "Anti-abuse measure: Verify you are human",
       captchaPlaceholder: "Result",
       captchaRefresh: "Reload",
+      consentText: "I agree to the temporary processing of this document to generate my analysis.",
       submitBtn: "Analyze CV for Free",
       loadingStatus: "Cintia is analyzing your Resume...",
       step0: "Cintia is detecting the language of the resume...",
@@ -237,6 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.captcha-label').textContent = t.captchaLabel;
     document.getElementById('captchaInput').placeholder = t.captchaPlaceholder;
     document.getElementById('refreshCaptchaBtn').textContent = t.captchaRefresh;
+    
+    const consentTextEl = document.getElementById('consentText');
+    if (consentTextEl) consentTextEl.textContent = t.consentText;
     
     document.getElementById('submitBtn').textContent = t.submitBtn;
     
@@ -517,10 +523,25 @@ document.addEventListener('DOMContentLoaded', () => {
     errorBanner.style.display = 'none';
   }
 
+  // Consent checkbox toggle
+  if (consentCheckbox) {
+    consentCheckbox.addEventListener('change', () => {
+      submitBtn.disabled = !consentCheckbox.checked;
+    });
+  }
+
   // 4. Form Submit & Progress Animation
   cvForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideError();
+
+    if (consentCheckbox && !consentCheckbox.checked) {
+      showError(currentLanguage === 'en'
+        ? 'Please accept the temporary processing of this document to proceed.'
+        : 'Por favor acepta el procesamiento temporal del documento para continuar.');
+      submitBtn.disabled = true;
+      return;
+    }
 
     if (!activeFile) {
       showError(currentLanguage === 'en' ? 'Please select a resume file.' : 'Por favor selecciona un archivo de currículum.');
