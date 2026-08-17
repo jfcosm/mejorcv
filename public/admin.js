@@ -50,8 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Modal Elements
   const viewTextModal = document.getElementById('viewTextModal');
+  const cvModalDocTitle = document.getElementById('cvModalDocTitle');
+  const cvModalDocMeta = document.getElementById('cvModalDocMeta');
+  const tabBtnOriginal = document.getElementById('tabBtnOriginal');
+  const tabBtnOptimized = document.getElementById('tabBtnOptimized');
   const cvTextContentBox = document.getElementById('cvTextContentBox');
+  const copyModalTextBtn = document.getElementById('copyModalTextBtn');
+  const downloadModalOriginalBtn = document.getElementById('downloadModalOriginalBtn');
+  const downloadModalOptimizedBtn = document.getElementById('downloadModalOptimizedBtn');
   const closeTextModalBtn = document.getElementById('closeTextModalBtn');
+
+  let currentInspectionDoc = null;
+  let currentInspectionTab = 'original';
 
   // Admin Session Token
   let adminToken = localStorage.getItem('adminToken');
@@ -409,19 +419,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 6. View text in Modal
+  // 6. CV Inspection & Session Workspace Modal
   async function showCvText(analysisId) {
     try {
-      const response = await fetch(`/api/admin/download-text/${analysisId}`, {
+      cvTextContentBox.textContent = 'Cargando información del currículum...';
+      cvModalDocTitle.textContent = 'Inspección de Currículum';
+      cvModalDocMeta.textContent = '';
+      viewTextModal.showModal();
+
+      const response = await fetch(`/api/admin/analysis-detail/${analysisId}`, {
         headers: { 'Authorization': adminToken }
       });
-      if (!response.ok) throw new Error('No se pudo bajar el texto del currículum.');
-      const text = await response.text();
-      
-      cvTextContentBox.textContent = text;
-      viewTextModal.showModal();
+      if (!response.ok) throw new Error('No se pudo cargar el detalle del currículum.');
+      const data = await response.json();
+      currentInspectionDoc = data;
+
+      cvModalDocTitle.textContent = `Currículum: ${data.filename}`;
+      const contactInfo = data.expertContact 
+        ? ` | Contacto: ${data.expertContact.email || ''} ${data.expertContact.phone || ''}`
+        : '';
+      cvModalDocMeta.textContent = `Subido: ${formatDate(data.uploadedAt)} | Estado: ${data.paymentStatus}${contactInfo}`;
+
+      // Set download links with auth headers handled by click
+      downloadModalOriginalBtn.onclick = (e) => {
+        e.preventDefault();
+        downloadCvFile(`/api/admin/download-text/${data.id}`, `cv_original_${data.filename}.txt`);
+      };
+
+      downloadModalOptimizedBtn.onclick = (e) => {
+        e.preventDefault();
+        downloadCvFile(`/api/admin/download-optimized/${data.id}`, `cv_optimizado_cintia_${data.filename}.txt`);
+      };
+
+      // Default to original or optimized if only one is available
+      setInspectionTab('original');
+
     } catch (err) {
       alert(err.message);
+      viewTextModal.close();
+    }
+  }
+
+  function setInspectionTab(tab) {
+    currentInspectionTab = tab;
+    if (!currentInspectionDoc) return;
+
+    if (tab === 'original') {
+      tabBtnOriginal.style.background = 'var(--color-mint-light)';
+      tabBtnOriginal.style.color = 'var(--color-mint-hover)';
+      tabBtnOriginal.style.borderColor = 'rgba(16,185,129,0.3)';
+
+      tabBtnOptimized.style.background = '#ffffff';
+      tabBtnOptimized.style.color = 'var(--text)';
+      tabBtnOptimized.style.borderColor = 'var(--border-grey)';
+
+      cvTextContentBox.textContent = currentInspectionDoc.originalText || '(Texto original no disponible)';
+    } else {
+      tabBtnOptimized.style.background = 'var(--color-mint-light)';
+      tabBtnOptimized.style.color = 'var(--color-mint-hover)';
+      tabBtnOptimized.style.borderColor = 'rgba(16,185,129,0.3)';
+
+      tabBtnOriginal.style.background = '#ffffff';
+      tabBtnOriginal.style.color = 'var(--text)';
+      tabBtnOriginal.style.borderColor = 'var(--border-grey)';
+
+      cvTextContentBox.textContent = currentInspectionDoc.optimizedText || '(Optimización de IA no disponible)';
+    }
+  }
+
+  if (tabBtnOriginal) tabBtnOriginal.addEventListener('click', () => setInspectionTab('original'));
+  if (tabBtnOptimized) tabBtnOptimized.addEventListener('click', () => setInspectionTab('optimized'));
+
+  if (copyModalTextBtn) {
+    copyModalTextBtn.addEventListener('click', () => {
+      if (!currentInspectionDoc) return;
+      const textToCopy = currentInspectionTab === 'original' 
+        ? currentInspectionDoc.originalText 
+        : currentInspectionDoc.optimizedText;
+      
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const orig = copyModalTextBtn.textContent;
+        copyModalTextBtn.textContent = '✅ ¡Copiado!';
+        setTimeout(() => { copyModalTextBtn.textContent = orig; }, 1500);
+      }).catch(err => alert('No se pudo copiar: ' + err.message));
+    });
+  }
+
+  async function downloadCvFile(endpoint, filename) {
+    try {
+      const resp = await fetch(endpoint, {
+        headers: { 'Authorization': adminToken }
+      });
+      if (!resp.ok) throw new Error('Error al descargar');
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error en descarga: ' + err.message);
     }
   }
 

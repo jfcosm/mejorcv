@@ -1456,14 +1456,45 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   }
 });
 
-// Fallback for download file (optional helper if needed, we just serve text in dashboard)
+// Admin endpoint: get full analysis record (original text, AI optimized text, contact, etc.)
+app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => {
+  const analysis = await getAnalysisDoc(req.params.id);
+  if (!analysis) return res.status(404).json({ error: "Análisis no encontrado." });
+  
+  res.json({
+    id: analysis.id,
+    filename: analysis.filename,
+    fileSize: analysis.fileSize,
+    fileType: analysis.fileType,
+    uploadedAt: analysis.uploadedAt,
+    rating: analysis.rating,
+    paymentStatus: analysis.paymentStatus,
+    paymentMethod: analysis.paymentMethod,
+    expertContact: analysis.expertContact,
+    originalText: analysis.originalText || "",
+    optimizedText: analysis.optimizedText || "",
+    evaluation: analysis.evaluation
+  });
+});
+
+// Admin endpoint: download original CV text
 app.get('/api/admin/download-text/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).send("No encontrado");
   
-  res.setHeader('Content-disposition', `attachment; filename=cv_${analysis.filename}.txt`);
+  res.setHeader('Content-disposition', `attachment; filename=cv_original_${analysis.filename}.txt`);
   res.setHeader('Content-type', 'text/plain; charset=utf-8');
-  res.send(analysis.originalText);
+  res.send(analysis.originalText || "");
+});
+
+// Admin endpoint: download AI-optimized CV text
+app.get('/api/admin/download-optimized/:id', requireAdminAuth, async (req, res) => {
+  const analysis = await getAnalysisDoc(req.params.id);
+  if (!analysis) return res.status(404).send("No encontrado");
+  
+  res.setHeader('Content-disposition', `attachment; filename=cv_optimizado_cintia_${analysis.filename}.txt`);
+  res.setHeader('Content-type', 'text/plain; charset=utf-8');
+  res.send(analysis.optimizedText || "");
 });
 
 // Start Server

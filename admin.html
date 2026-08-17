@@ -445,15 +445,45 @@
 
   </main>
 
-  <!-- View CV Text Modal -->
+  <!-- View CV Text & Inspection Workspace Modal -->
   <dialog id="viewTextModal">
-    <div class="modal-content" style="max-width: 600px; width: 100%;">
-      <div class="modal-header">
-        <h3 class="modal-title">Texto Extraído del CV</h3>
-        <button class="modal-close" id="closeTextModalBtn" type="button">&times;</button>
+    <div class="modal-content" style="max-width: 760px; width: 100%;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-grey); padding-bottom:12px; margin-bottom:14px;">
+        <div>
+          <h3 class="modal-title" id="cvModalDocTitle" style="margin:0; font-size:17px;">Inspección de Currículum</h3>
+          <p id="cvModalDocMeta" style="margin:4px 0 0 0; font-size:12px; color:var(--text-light);"></p>
+        </div>
+        <button class="modal-close" id="closeTextModalBtn" type="button" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-light);">&times;</button>
       </div>
-      <div class="optimized-content-box" id="cvTextContentBox" style="font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px;">
-        <!-- Injected -->
+
+      <!-- Tab Switcher inside Modal -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-grey); padding-bottom: 8px;">
+        <button type="button" id="tabBtnOriginal" class="btn-secondary btn-sm" style="font-weight: 600; padding: 6px 14px;">
+          📄 CV Original Subido
+        </button>
+        <button type="button" id="tabBtnOptimized" class="btn-secondary btn-sm" style="font-weight: 600; padding: 6px 14px;">
+          ✨ CV Optimizado por IA
+        </button>
+      </div>
+
+      <!-- Content Box -->
+      <div class="optimized-content-box" id="cvTextContentBox" style="font-family: monospace; font-size: 12.5px; white-space: pre-wrap; max-height: 420px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--border-grey); padding: 14px; border-radius: 8px; line-height: 1.5;">
+        <!-- Injected dynamically -->
+      </div>
+
+      <!-- Actions Bar in Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 10px;">
+        <button type="button" id="copyModalTextBtn" class="btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+          📋 Copiar Texto
+        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a id="downloadModalOriginalBtn" href="#" class="btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            ⬇️ Bajar Original (.txt)
+          </a>
+          <a id="downloadModalOptimizedBtn" href="#" class="btn btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 0; background-color: var(--color-mint); color: white;">
+            ⬇️ Bajar Optimizado (.txt)
+          </a>
+        </div>
       </div>
     </div>
   </dialog>
