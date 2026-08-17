@@ -321,7 +321,7 @@ function readConfig() {
       optExpertEnabled: true,
       captchaEnabled: true,
       rateLimitPerHour: 20,
-      evaluationPrompt: "Eres Cintia, la experta virtual de MelodIA Lab en reclutamiento y optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos 7 criterios clave:\n1. Compatibilidad ATS (estructura de secciones, legibilidad).\n2. Claridad de Talentos e Habilidades (habilidades duras, blandas y certificaciones).\n3. Extensión del Documento (máximo 2 páginas).\n4. Logros y Métricas Cuantificables (existencia de números, porcentajes o impactos cuantificados en la experiencia).\n5. Lenguaje y Verbos de Acción (uso de verbos activos y tono profesional persuasivo).\n6. Datos de Contacto y Enlaces (presencia de datos esenciales de contacto y enlaces clave como LinkedIn/Portafolio).\n7. Ortografía y Consistencia Gramatical (ausencia de errores y concordancia en tiempos verbales).\n\nCRÍTICO EN FECHAS Y CRONOLOGÍA:\nUtiliza la 'FECHA ACTUAL DEL SISTEMA' proporcionada al inicio del currículum como punto de referencia absoluto para determinar si una fecha del currículum es pasada, presente o futura. Presta especial atención a no generar falsos positivos con el orden de las experiencias pasadas. 'Actualidad' o 'Presente' son correctos y válidos. Revisa con rigor lógico las fechas y no reportes inconsistencias a menos que exista un solapamiento físicamente imposible o una contradicción temporal explícita.\n\nIDIOMA DE RESPUESTA:\nDebes responder en el mismo idioma en el que está escrito el currículum del usuario. Si el currículum está redactado en inglés, toda la retroalimentación, resumen y explicaciones detalladas deben redactarse estrictamente en Inglés (English). Si el currículum está redactado en español, toda la retroalimentación, resumen y explicaciones detalladas deben redactarse estrictamente en Español (Spanish).\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5 para el puntaje global),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita** para conceptos clave\" },\n  \"skillsClarity\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"lengthCheck\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"quantifiableMetrics\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"actionVerbs\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"contactLinks\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"grammarSpelling\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
+      evaluationPrompt: "Eres Cintia, la experta virtual de MelodIA Lab en reclutamiento y optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos 7 criterios clave:\n1. Compatibilidad ATS (estructura de secciones estándar, legibilidad por software ATS, tipografías limpias y encabezados reconocibles).\n2. Claridad de Talentos e Habilidades (habilidades duras, blandas y certificaciones claras y categorizadas).\n3. Extensión del Documento (máximo 2 páginas recomendadas).\n4. Logros y Métricas Cuantificables (existencia de números, porcentajes o impactos cuantificados en la experiencia laboral).\n5. Lenguaje y Verbos de Acción (uso de verbos activos y tono profesional persuasivo).\n6. Datos de Contacto y Enlaces (presencia de datos esenciales de contacto y enlaces clave como LinkedIn o Portafolio).\n7. Ortografía y Consistencia Gramatical (ausencia de errores y concordancia en tiempos verbales).\n\nREGLAS FUNDAMENTALES DE EVALUACIÓN:\n- CRONOLOGÍA Y FECHAS: No generes falsos positivos de fechas. Es completamente normal y válido que un currículum contenga fechas recientes (como 2024, 2025, 2026), roles actuales ('Presente', 'Actualidad', 'Present') o certificaciones recientes. Solo señala un problema de fechas si hay una inconsistencia lógica evidente e imposible (por ejemplo, terminar un trabajo antes de empezarlo). JAMÁS menciones variables internas, 'fecha del sistema' ni términos técnicos de la plataforma en las explicaciones o retroalimentaciones.\n- IDIOMA Y TONO: Debes responder 100% en el mismo idioma del currículum (si el CV está en inglés, responde todo el JSON estrictamente en inglés con vocabulario profesional; si está en español, responde estrictamente en español). Mantén un tono constructivo, profesional, empático y claro, destacando fortalezas y dando consejos prácticos.\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5 para el puntaje global),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita** para conceptos clave\" },\n  \"skillsClarity\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"lengthCheck\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"quantifiableMetrics\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"actionVerbs\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"contactLinks\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"grammarSpelling\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
       optimizationPrompt: "Eres Cintia, la redactora profesional y experta virtual de MelodIA Lab en marca personal. Toma el siguiente currículum vitae y genera una versión optimizada, con redacción persuasiva, palabras clave estratégicas para filtros ATS, y una estructura impecable. Además del currículum optimizado, debes incluir obligatoriamente una sección con ejemplos de párrafos alternativos completamente optimizados para su perfil (como un perfil profesional pulido o la redacción de sus logros clave) y una sección de recomendaciones de mejora estratégicas detalladas según su trayectoria laboral y conocimientos específicos del sector. Devuelve todo el documento formateado en Markdown limpio."
     };
     return inMemoryConfig;
@@ -777,15 +777,20 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   // Real Gemini AI Generation
   let languageInstruction = "";
   if (lang === 'en') {
-    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido estrictamente en INGLÉS (English).";
+    languageInstruction = "\n\nLANGUAGE: Please generate the optimized resume and recommendations strictly and exclusively in ENGLISH (Inglés).";
   } else {
-    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y corregido estrictamente en ESPAÑOL (Spanish).";
+    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y las recomendaciones estrictamente en ESPAÑOL (Spanish).";
   }
-  const currentDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const currentDate = lang === 'en'
+    ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const dateHeader = lang === 'en'
+    ? `Reference Date: ${currentDate}`
+    : `Fecha de referencia: ${currentDate}`;
   const rawResult = await callGemini(
     key,
     config.optimizationPrompt + languageInstruction,
-    `FECHA ACTUAL DEL SISTEMA: ${currentDate}.\n\nCURRÍCULUM A OPTIMIZAR:\n\n${extractedText}`,
+    `${dateHeader}\n\n${lang === 'en' ? 'RESUME TO OPTIMIZE:' : 'CURRÍCULUM A OPTIMIZAR:'}\n\n${extractedText}`,
     false // Expect markdown/text
   );
   
@@ -968,9 +973,20 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
         };
       }
     } else {
-      const languageText = lang === 'en' ? 'ENGLISH (Inglés)' : 'SPANISH (Español)';
-      const systemInstruction = config.evaluationPrompt + `\n\nCRITICAL: You must translate and write all feedback text, summaries, and explanations in the JSON response strictly in ${languageText}.`;
-      const analysisRaw = await callGemini(geminiApiKey, systemInstruction, `CURRÍCULUM:\n\n${extractedText}`, true);
+      const currentDateFormatted = lang === 'en'
+        ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+      const languagePrompt = lang === 'en'
+        ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The resume is in English. You MUST write ALL JSON fields (summary, feedback, detailedExplanation) strictly and exclusively in ENGLISH. Do not include any Spanish words or phrases.\n2. DATES & TIMELINE: Today's reference date is ${currentDateFormatted} (Year ${new Date().getFullYear()}). Dates like 2024, 2025, 2026, or 'Present' are completely valid and normal for current roles or recent certifications. Do NOT penalize or flag recent or current experiences as future dates. Never quote internal system terms or variable names.`
+        : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en español. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
+
+      const systemInstruction = config.evaluationPrompt + languagePrompt;
+      const userContent = lang === 'en'
+        ? `[DOCUMENT REFERENCE DATE: ${currentDateFormatted}]\n\nRESUME CONTENT TO EVALUATE:\n\n${extractedText}`
+        : `[FECHA DE REFERENCIA: ${currentDateFormatted}]\n\nCURRÍCULUM A EVALUAR:\n\n${extractedText}`;
+
+      const analysisRaw = await callGemini(geminiApiKey, systemInstruction, userContent, true);
       try {
         evaluation = JSON.parse(analysisRaw);
       } catch (parseErr) {
