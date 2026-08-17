@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let captchaToken = null;
   let captchaEnabled = true;
   let currentAnalysisId = null;
+  let lastEvaluationData = null;
   let currentTier = null; // 'ai' or 'expert'
   let optimizedContentText = '';
   let currentLanguage = localStorage.getItem('cvLang') || 'es';
@@ -91,6 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
       step4: "Cintia está verificando la extensión de páginas...",
       step5: "Cintia está generando el informe de calidad...",
       resultsTitle: "Evaluación de Cintia",
+      scoreCardTitle: "Puntaje General del CV",
+      radarCardTitle: "Equilibrio de Competencias (7 Ejes)",
+      radarSubtitle: "Visualización integral de los 7 estándares de contratación",
+      breakdownSectionTitle: "Desglose Detallado por Criterio",
+      kpiAtsLabel: "Filtro ATS",
+      kpiStrengthsLabel: "Fortalezas",
+      kpiFixesLabel: "Por Mejorar",
       critiqueExplanationTitle: "Explicación del Puntaje",
       pricingTitle: "¿Quieres que Cintia optimice tu CV para conseguir más entrevistas?",
       pricingSubtitle: "Cintia reescribirá tu perfil, inyectará palabras clave estratégicas y maximizará la compatibilidad ATS al instante.",
@@ -150,6 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
       step4: "Cintia is verifying page limits...",
       step5: "Cintia is generating quality report...",
       resultsTitle: "Cintia's Evaluation",
+      scoreCardTitle: "Overall Resume Score",
+      radarCardTitle: "Competency Balance (7 Axes)",
+      radarSubtitle: "Comprehensive view across 7 hiring benchmarks",
+      breakdownSectionTitle: "Detailed Criteria Breakdown",
+      kpiAtsLabel: "ATS Match",
+      kpiStrengthsLabel: "Strengths",
+      kpiFixesLabel: "Needs Work",
       critiqueExplanationTitle: "Score Explanation",
       pricingTitle: "Want Cintia to optimize your CV to get more interviews?",
       pricingSubtitle: "Cintia will rewrite your profile, inject key ATS terms, and maximize compatibility instantly.",
@@ -233,8 +248,36 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('step4').textContent = t.step4;
     document.getElementById('step5').textContent = t.step5;
     
-    document.querySelector('#resultsSection .results-header h2').textContent = t.resultsTitle;
+    const resultsTitleEl = document.querySelector('#resultsSection .results-header h2');
+    if (resultsTitleEl) resultsTitleEl.textContent = t.resultsTitle;
+
+    const scoreCardTitleEl = document.getElementById('scoreCardTitle');
+    if (scoreCardTitleEl) scoreCardTitleEl.textContent = t.scoreCardTitle;
+
+    const radarCardTitleEl = document.getElementById('radarCardTitle');
+    if (radarCardTitleEl) radarCardTitleEl.textContent = t.radarCardTitle;
+
+    const radarSubtitleEl = document.getElementById('radarSubtitle');
+    if (radarSubtitleEl) radarSubtitleEl.textContent = t.radarSubtitle;
+
+    const breakdownSectionTitleEl = document.getElementById('breakdownSectionTitle');
+    if (breakdownSectionTitleEl) breakdownSectionTitleEl.textContent = t.breakdownSectionTitle;
+
+    const kpiAtsLabelEl = document.getElementById('kpiAtsLabel');
+    if (kpiAtsLabelEl) kpiAtsLabelEl.textContent = t.kpiAtsLabel;
+
+    const kpiStrengthsLabelEl = document.getElementById('kpiStrengthsLabel');
+    if (kpiStrengthsLabelEl) kpiStrengthsLabelEl.textContent = t.kpiStrengthsLabel;
+
+    const kpiFixesLabelEl = document.getElementById('kpiFixesLabel');
+    if (kpiFixesLabelEl) kpiFixesLabelEl.textContent = t.kpiFixesLabel;
+
     document.querySelector('.detailed-explanation h3').textContent = t.critiqueExplanationTitle;
+    
+    // Re-render visual evaluation if data is present
+    if (lastEvaluationData) {
+      renderEvaluation(lastEvaluationData);
+    }
     
     document.querySelector('.pricing-title').textContent = t.pricingTitle;
     document.querySelector('.pricing-subtitle').textContent = t.pricingSubtitle;
@@ -587,19 +630,240 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
+  // 5. Radar Heptagon SVG Generator
+  function renderRadarChart(evalData) {
+    const container = document.getElementById('radarChartContainer');
+    if (!container) return;
+
+    const isEn = currentLanguage === 'en';
+    const axes = [
+      { key: 'atsCompatibility', label: isEn ? 'ATS Match' : 'Filtro ATS' },
+      { key: 'skillsClarity', label: isEn ? 'Talent Clarity' : 'Talentos' },
+      { key: 'lengthCheck', label: isEn ? 'Page Length' : 'Extensión' },
+      { key: 'quantifiableMetrics', label: isEn ? 'Metrics' : 'Métricas' },
+      { key: 'actionVerbs', label: isEn ? 'Action Verbs' : 'Verbos' },
+      { key: 'contactLinks', label: isEn ? 'Contact' : 'Contacto' },
+      { key: 'grammarSpelling', label: isEn ? 'Grammar' : 'Gramática' }
+    ];
+
+    const cx = 200;
+    const cy = 175;
+    const maxRadius = 105;
+    const numAxes = axes.length; // 7
+
+    // Levels 1 to 5
+    const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
+    
+    // Compute grid concentric heptagons
+    let gridPolygonsHtml = '';
+    levels.forEach((level, idx) => {
+      const pts = [];
+      for (let i = 0; i < numAxes; i++) {
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+        const x = cx + level * maxRadius * Math.cos(angle);
+        const y = cy + level * maxRadius * Math.sin(angle);
+        pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      }
+      const isOuter = idx === levels.length - 1;
+      gridPolygonsHtml += `<polygon points="${pts.join(' ')}" class="${isOuter ? 'radar-grid-outer' : 'radar-grid-polygon'}" />`;
+    });
+
+    // Compute axis lines and labels
+    let axisLinesHtml = '';
+    let labelsHtml = '';
+    const dataPoints = [];
+
+    axes.forEach((axis, i) => {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+      const endX = cx + maxRadius * Math.cos(angle);
+      const endY = cy + maxRadius * Math.sin(angle);
+      axisLinesHtml += `<line x1="${cx}" y1="${cy}" x2="${endX.toFixed(1)}" y2="${endY.toFixed(1)}" class="radar-axis-line" />`;
+
+      // Value coordinate
+      const scoreObj = evalData[axis.key];
+      const starsVal = scoreObj ? (scoreObj.stars || 3) : 3;
+      const valRatio = Math.max(0.12, Math.min(1.0, starsVal / 5));
+      const dataX = cx + valRatio * maxRadius * Math.cos(angle);
+      const dataY = cy + valRatio * maxRadius * Math.sin(angle);
+      dataPoints.push({ x: dataX, y: dataY, score: starsVal, label: axis.label });
+
+      // Label coordinate outside the outer ring
+      const labelRadius = maxRadius + 24;
+      const labelX = cx + labelRadius * Math.cos(angle);
+      const labelY = cy + labelRadius * Math.sin(angle);
+      
+      let textAnchor = 'middle';
+      const cosA = Math.cos(angle);
+      if (cosA > 0.22) textAnchor = 'start';
+      else if (cosA < -0.22) textAnchor = 'end';
+
+      labelsHtml += `
+        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${textAnchor}" class="radar-axis-label" dominant-baseline="central">
+          ${axis.label}
+          <tspan class="radar-axis-score" dx="3">(${starsVal}/5)</tspan>
+        </text>
+      `;
+    });
+
+    const dataPolygonPoints = dataPoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+    let vertexPointsHtml = '';
+    dataPoints.forEach(p => {
+      vertexPointsHtml += `
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" class="radar-vertex-point">
+          <title>${p.label}: ${p.score} / 5</title>
+        </circle>
+      `;
+    });
+
+    container.innerHTML = `
+      <svg class="radar-svg" viewBox="0 0 400 350">
+        <defs>
+          <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.45" />
+            <stop offset="100%" stop-color="#059669" stop-opacity="0.15" />
+          </linearGradient>
+        </defs>
+        ${gridPolygonsHtml}
+        ${axisLinesHtml}
+        <polygon points="${dataPolygonPoints}" class="radar-data-polygon" />
+        ${vertexPointsHtml}
+        ${labelsHtml}
+      </svg>
+    `;
+  }
+
+  // 6. Score Gauge & KPI Highlights Renderer
+  function renderScoreGaugeAndKpis(evalData) {
+    const isEn = currentLanguage === 'en';
+    const gaugeValueEl = document.getElementById('gaugeScoreValue');
+    const gaugeCircle = document.getElementById('gaugeProgressCircle');
+    const badgeEl = document.getElementById('gaugeStatusBadge');
+
+    const kpiAtsVal = document.getElementById('kpiAtsVal');
+    const kpiStrengthsVal = document.getElementById('kpiStrengthsVal');
+    const kpiFixesVal = document.getElementById('kpiFixesVal');
+
+    const keys = ['atsCompatibility', 'skillsClarity', 'lengthCheck', 'quantifiableMetrics', 'actionVerbs', 'contactLinks', 'grammarSpelling'];
+    
+    let totalStars = 0;
+    let counted = 0;
+    let strengthsCount = 0;
+    let fixesCount = 0;
+    let atsStars = 3;
+
+    keys.forEach(k => {
+      if (evalData[k] && typeof evalData[k].stars === 'number') {
+        const s = evalData[k].stars;
+        totalStars += s;
+        counted++;
+        if (k === 'atsCompatibility') atsStars = s;
+        if (s >= 4) strengthsCount++;
+        else if (s <= 2) fixesCount++;
+      }
+    });
+
+    const avgScore = counted > 0 ? (totalStars / (counted * 5)) * 100 : 70;
+    const finalScore = Math.round(avgScore);
+
+    // Animate counter
+    let currentCount = 0;
+    const duration = 1000;
+    const start = performance.now();
+    
+    function animateCounter(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      currentCount = Math.floor(progress * finalScore);
+      if (gaugeValueEl) gaugeValueEl.textContent = currentCount;
+      if (progress < 1) requestAnimationFrame(animateCounter);
+      else if (gaugeValueEl) gaugeValueEl.textContent = finalScore;
+    }
+    requestAnimationFrame(animateCounter);
+
+    // Animate Circle
+    const circumference = 402.12; // 2 * PI * 64
+    const offset = circumference - (finalScore / 100) * circumference;
+    if (gaugeCircle) {
+      gaugeCircle.style.strokeDashoffset = offset;
+      if (finalScore >= 80) gaugeCircle.style.stroke = 'var(--color-mint)';
+      else if (finalScore >= 60) gaugeCircle.style.stroke = '#f59e0b';
+      else gaugeCircle.style.stroke = 'var(--color-red)';
+    }
+
+    // Badge
+    if (badgeEl) {
+      badgeEl.className = 'gauge-status-badge';
+      if (finalScore >= 80) {
+        badgeEl.classList.add('badge-excellent');
+        badgeEl.textContent = isEn ? 'Ready to Apply' : 'Listo para Postular';
+      } else if (finalScore >= 60) {
+        badgeEl.classList.add('badge-good');
+        badgeEl.textContent = isEn ? 'Good Potential' : 'Buen Potencial';
+      } else {
+        badgeEl.classList.add('badge-warning');
+        badgeEl.textContent = isEn ? 'Needs Attention' : 'Atención Prioritaria';
+      }
+    }
+
+    // KPIs
+    if (kpiAtsVal) {
+      const atsPct = Math.round((atsStars / 5) * 100);
+      kpiAtsVal.textContent = `${atsPct}%`;
+      kpiAtsVal.style.color = atsStars >= 4 ? 'var(--color-mint)' : (atsStars === 3 ? '#f59e0b' : 'var(--color-red)');
+    }
+    if (kpiStrengthsVal) {
+      kpiStrengthsVal.textContent = `${strengthsCount} / 7`;
+      kpiStrengthsVal.style.color = 'var(--color-mint)';
+    }
+    if (kpiFixesVal) {
+      kpiFixesVal.textContent = `${fixesCount} ${isEn ? 'items' : 'puntos'}`;
+      kpiFixesVal.style.color = fixesCount > 0 ? 'var(--color-red)' : 'var(--color-mint)';
+    }
+  }
+
+  // 7. Render Evaluation Function (Dashboard)
+  function renderEvaluation(evalData) {
+    if (!evalData) return;
+    lastEvaluationData = evalData;
+
     // Set text summaries
     resultsSummary.textContent = evalData.summary || 'Quality Evaluation';
     
-    // Inyectar dinámicamente los 7 criterios de calidad con títulos traducidos
+    // Render Visual Charts (Radar Heptagon + Score Gauge + KPIs)
+    renderRadarChart(evalData);
+    renderScoreGaugeAndKpis(evalData);
+
+    // Dynamic 7 criteria mapping with icons and titles
     const isEn = currentLanguage === 'en';
     const criteriaMapping = {
-      atsCompatibility: { title: isEn ? 'ATS Compatibility' : 'Compatibilidad ATS' },
-      skillsClarity: { title: isEn ? 'Talent Clarity' : 'Claridad de Talentos' },
-      lengthCheck: { title: isEn ? 'Page Length (<= 2 pgs)' : 'Extensión (<= 2 pág)' },
-      quantifiableMetrics: { title: isEn ? 'Quantifiable Metrics' : 'Métricas Cuantificables' },
-      actionVerbs: { title: isEn ? 'Action Verbs' : 'Verbos de Acción' },
-      contactLinks: { title: isEn ? 'Contact & Links' : 'Contacto y Enlaces' },
-      grammarSpelling: { title: isEn ? 'Grammar & Spelling' : 'Ortografía y Gramática' }
+      atsCompatibility: { 
+        title: isEn ? 'ATS Compatibility' : 'Compatibilidad ATS',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+      },
+      skillsClarity: { 
+        title: isEn ? 'Talent Clarity' : 'Claridad de Talentos',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+      },
+      lengthCheck: { 
+        title: isEn ? 'Page Length (<= 2 pgs)' : 'Extensión (<= 2 pág)',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+      },
+      quantifiableMetrics: { 
+        title: isEn ? 'Quantifiable Metrics' : 'Métricas Cuantificables',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
+      },
+      actionVerbs: { 
+        title: isEn ? 'Action Verbs' : 'Verbos de Acción',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+      },
+      contactLinks: { 
+        title: isEn ? 'Contact & Links' : 'Contacto y Enlaces',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+      },
+      grammarSpelling: { 
+        title: isEn ? 'Grammar & Spelling' : 'Ortografía y Gramática',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`
+      }
     };
 
     critiqueGrid.innerHTML = '';
@@ -608,23 +872,45 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = evalData[key];
       if (!data) continue;
       
-      // Standardize rating to 1-5 stars scale
       const starsValue = data.stars || 3;
-      let starsHtml = '<div class="critique-stars">';
-      for (let i = 1; i <= 5; i++) {
-        const isFilled = i <= starsValue;
-        starsHtml += `
-          <svg class="star-icon ${isFilled ? 'filled' : ''}" viewBox="0 0 24 24">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        `;
-      }
-      starsHtml += '</div>';
+      const pct = (starsValue / 5) * 100;
       
+      // Qualitative badge text & class
+      let badgeClass = 'badge-3';
+      let badgeText = isEn ? 'Fair' : 'Aceptable';
+      let fillClass = 'fill-warn';
+
+      if (starsValue >= 5) {
+        badgeClass = 'badge-5';
+        badgeText = isEn ? 'Outstanding' : 'Sobresaliente';
+        fillClass = '';
+      } else if (starsValue === 4) {
+        badgeClass = 'badge-4';
+        badgeText = isEn ? 'Solid' : 'Bueno';
+        fillClass = '';
+      } else if (starsValue <= 2) {
+        badgeClass = 'badge-1';
+        badgeText = isEn ? 'Needs Work' : 'Por Mejorar';
+        fillClass = 'fill-danger';
+      }
+
       critiqueGrid.innerHTML += `
         <div class="critique-item">
-          <div class="critique-title">${config.title}</div>
-          ${starsHtml}
+          <div class="critique-item-header">
+            <div class="critique-title-wrap">
+              <div class="critique-icon">${config.icon}</div>
+              <div class="critique-title">${config.title}</div>
+            </div>
+            <span class="critique-badge ${badgeClass}">${badgeText}</span>
+          </div>
+
+          <div class="critique-progress-wrap">
+            <div class="critique-progress-track">
+              <div class="critique-progress-fill ${fillClass}" style="width: ${pct}%;"></div>
+            </div>
+            <span class="critique-stars-count">${starsValue} / 5 ★</span>
+          </div>
+
           <div class="critique-feedback">${parseFeedbackMarkdown(data.feedback)}</div>
         </div>
       `;
