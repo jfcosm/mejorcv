@@ -887,8 +887,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!evalData) return;
     lastEvaluationData = evalData;
 
-    // Set text summaries
-    resultsSummary.textContent = evalData.summary || 'Quality Evaluation';
+    // Set text summaries with clean bold tag rendering
+    resultsSummary.innerHTML = parseFeedbackMarkdown(evalData.summary || (currentLanguage === 'en' ? 'Quality Evaluation' : 'Evaluación de Calidad'));
     
     // Render Visual Charts (Radar Heptagon + Score Gauge + KPIs)
     renderRadarChart(evalData);
@@ -1352,15 +1352,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Helper parser for markdown in card feedback
+  // Helper parser for markdown in card feedback and summaries
   function parseFeedbackMarkdown(text) {
     if (!text) return '';
     return text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/__(.*?)__/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      .replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      .replace(/_([^_\n]+)_/g, '<em>$1</em>');
   }
 });

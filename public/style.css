@@ -453,9 +453,9 @@ header .nav {
 /* Results Section & Visual Dashboard */
 .results-section {
   display: none;
-  margin-top: 40px;
-  border-top: 1px dashed var(--border-grey);
-  padding-top: 40px;
+  margin-top: 32px;
+  border-top: none;
+  padding-top: 10px;
 }
 
 .results-header {
