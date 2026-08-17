@@ -263,14 +263,14 @@
           </div>
         </div>
 
-        <!-- Pricing Plans -->
+        <!-- Human Expert Consulting & Optimization Section -->
         <div class="pricing-section" id="pricingSection">
-          <h2 class="pricing-title">¿Quieres optimizar tu CV para conseguir más entrevistas?</h2>
-          <p class="pricing-subtitle">Corrige errores, reorganiza secciones y maximiza la compatibilidad ATS.</p>
+          <h2 class="pricing-title">¿Prefieres la asesoría y optimización de un Experto Humano?</h2>
+          <p class="pricing-subtitle">Trabaja 1 a 1 con un especialista en Recursos Humanos y Reclutamiento para potenciar tu perfil y preparar tus próximas entrevistas.</p>
 
           <div class="plans-grid">
-            <!-- Tier 1: AI instant optimization -->
-            <div class="plan-card popular" id="aiPlanCard">
+            <!-- Tier 1: AI instant optimization (Optional fallback if enabled in admin) -->
+            <div class="plan-card popular" id="aiPlanCard" style="display: none;">
               <h3 class="plan-name">Optimización con IA</h3>
               <div class="plan-price">$1 <span>USD / pago único</span></div>
               <ul class="plan-features">
@@ -294,10 +294,10 @@
               <button type="button" class="btn" id="optimizeAiBtn">Optimizar con IA por $1 USD</button>
             </div>
 
-            <!-- Tier 2: Expert manual optimization -->
-            <div class="plan-card" id="expertPlanCard">
-              <h3 class="plan-name">Optimización Manual</h3>
-              <div class="plan-price">$25 <span>USD / por entrega</span></div>
+            <!-- Tier 2: Expert manual optimization & mentoring -->
+            <div class="plan-card expert-featured-card" id="expertPlanCard">
+              <h3 class="plan-name">Asesoría 1 a 1 y Optimización con Experto Humano</h3>
+              <div class="plan-price">$25 <span>USD / asesoría y entrega completa</span></div>
               <div class="plan-input-group">
                 <label for="expertEmail">Correo Electrónico</label>
                 <input type="email" id="expertEmail" class="plan-input" placeholder="nombre@correo.com">
@@ -310,22 +310,18 @@
               <ul class="plan-features">
                 <li>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Revisión por experto de Recursos Humanos
+                  Optimización de tu CV por parte de un experto humano en RRHH y reclutamiento.
                 </li>
                 <li>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Rediseño visual a medida
+                  1 hora y media de asesoría, entrega de la información y entrevista con el usuario titular del CV.
                 </li>
                 <li>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Asesoría en llamadas/chat
-                </li>
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Entrega final en PDF y Word editable
+                  Entrega del CV optimizado en formato PDF y Word editable.
                 </li>
               </ul>
-              <button type="button" class="btn" id="optimizeExpertBtn">Solicitar Asistencia de Experto</button>
+              <button type="button" class="btn" id="optimizeExpertBtn">Solicitar Asistencia de Experto ($25 USD)</button>
             </div>
           </div>
         </div>

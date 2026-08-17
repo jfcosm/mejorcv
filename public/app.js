@@ -123,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
       unlockedStatusText: "¡Currículum Desbloqueado con Éxito!",
       unlockedCopyBtnText: "Copiar Texto",
       unlockedDownloadBtnText: "Descargar .txt",
-      pricingTitle: "¿Quieres que Cintia optimice tu CV para conseguir más entrevistas?",
-      pricingSubtitle: "Cintia reescribirá tu perfil, inyectará palabras clave estratégicas y maximizará la compatibilidad ATS al instante.",
+      pricingTitle: "¿Prefieres la asesoría y optimización de un Experto Humano?",
+      pricingSubtitle: "Trabaja 1 a 1 con un especialista en Recursos Humanos y Reclutamiento para potenciar tu perfil y preparar tus próximas entrevistas.",
       aiPlanName: "Optimización con IA",
       aiPlanPriceUnit: "USD / pago único",
       aiPlanF1: "Reescritura inmediata de Cintia",
@@ -132,17 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
       aiPlanF3: "Reorganización de habilidades y perfil",
       aiPlanF4: "Descarga inmediata en texto/markdown",
       aiPlanBtn: "Optimizar con IA",
-      expertPlanName: "Optimización Manual",
-      expertPlanPriceUnit: "USD / por entrega",
+      expertPlanName: "Asesoría 1 a 1 y Optimización con Experto Humano",
+      expertPlanPriceUnit: "USD / asesoría y entrega completa",
       expertEmailLabel: "Correo Electrónico",
       expertEmailPlaceholder: "nombre@correo.com",
       expertPhoneLabel: "Número de Celular o WhatsApp",
       expertContactHint: "* Proporciona al menos uno de los dos medios de contacto.",
-      expertPlanF1: "Revisión por experto de Recursos Humanos",
-      expertPlanF2: "Rediseño visual a medida",
-      expertPlanF3: "Asesoría en llamadas/chat",
-      expertPlanF4: "Entrega final en PDF y Word editable",
-      expertPlanBtn: "Solicitar Asistencia de Experto",
+      expertPlanF1: "Optimización de tu CV por parte de un experto humano en RRHH y reclutamiento.",
+      expertPlanF2: "1 hora y media de asesoría, entrega de la información y entrevista con el usuario titular del CV.",
+      expertPlanF3: "Entrega del CV optimizado en formato PDF y Word editable.",
+      expertPlanBtn: "Solicitar Asesoría de Experto ($25 USD)",
       optimizedTitle: "Currículum Optimizado por Cintia",
       copyBtn: "Copiar Texto",
       downloadBtn: "Descargar .txt",
@@ -200,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
       unlockedStatusText: "Resume Successfully Unlocked!",
       unlockedCopyBtnText: "Copy Text",
       unlockedDownloadBtnText: "Download .txt",
-      pricingTitle: "Want Cintia to optimize your CV to get more interviews?",
-      pricingSubtitle: "Cintia will rewrite your profile, inject key ATS terms, and maximize compatibility instantly.",
+      pricingTitle: "Prefer personalized mentoring and optimization by a Human Expert?",
+      pricingSubtitle: "Work 1-on-1 with an HR & Recruitment specialist to elevate your professional profile and prepare for upcoming interviews.",
       aiPlanName: "AI Optimization",
       aiPlanPriceUnit: "USD / one-time payment",
       aiPlanF1: "Cintia's instant profile rewriting",
@@ -209,17 +208,16 @@ document.addEventListener('DOMContentLoaded', () => {
       aiPlanF3: "Reorganization of skills and profile",
       aiPlanF4: "Immediate download in text/markdown",
       aiPlanBtn: "Optimize with AI",
-      expertPlanName: "Manual Optimization",
-      expertPlanPriceUnit: "USD / per delivery",
+      expertPlanName: "1-on-1 Mentoring & Human Expert Resume Optimization",
+      expertPlanPriceUnit: "USD / complete session & delivery",
       expertEmailLabel: "Email Address",
       expertEmailPlaceholder: "name@email.com",
       expertPhoneLabel: "Cell Phone or WhatsApp Number",
       expertContactHint: "* Provide at least one of the two contact methods.",
-      expertPlanF1: "Review by Human Resources expert",
-      expertPlanF2: "Tailored visual redesign",
-      expertPlanF3: "Consulting via call/chat",
-      expertPlanF4: "Final delivery in PDF and editable Word",
-      expertPlanBtn: "Request Expert Assistance",
+      expertPlanF1: "Resume optimization by an HR and recruitment human expert.",
+      expertPlanF2: "1.5 hours of 1-on-1 advisory session, feedback delivery, and personalized interview.",
+      expertPlanF3: "Delivery of the optimized resume in PDF and editable Word formats.",
+      expertPlanBtn: "Request Expert Consultation ($25 USD)",
       optimizedTitle: "Resume Optimized by Cintia",
       copyBtn: "Copy Text",
       downloadBtn: "Download .txt",
@@ -357,37 +355,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const step3DescEl = document.getElementById('step3Desc');
     if (step3DescEl) step3DescEl.textContent = t.step3Desc;
     
-    // Plans Cards
-    const cards = document.querySelectorAll('.plan-card');
-    if (cards.length >= 2) {
-      // AI
-      cards[0].querySelector('.plan-name').textContent = t.aiPlanName;
-      const aiFeatures = cards[0].querySelectorAll('.plan-features li');
-      if (aiFeatures.length >= 4) {
-        const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> `;
-        aiFeatures[0].innerHTML = checkIcon + t.aiPlanF1;
-        aiFeatures[1].innerHTML = checkIcon + t.aiPlanF2;
-        aiFeatures[2].innerHTML = checkIcon + t.aiPlanF3;
-        aiFeatures[3].innerHTML = checkIcon + t.aiPlanF4;
-      }
+    // Expert Plan Card
+    const expertCard = document.getElementById('expertPlanCard');
+    if (expertCard) {
+      expertCard.querySelector('.plan-name').textContent = t.expertPlanName;
+      const priceSpan = expertCard.querySelector('.plan-price span');
+      if (priceSpan) priceSpan.textContent = t.expertPlanPriceUnit;
       
-      // Expert
-      cards[1].querySelector('.plan-name').textContent = t.expertPlanName;
-      cards[1].querySelectorAll('.plan-input-group label')[0].textContent = t.expertEmailLabel;
-      cards[1].querySelectorAll('.plan-input-group label')[1].textContent = t.expertPhoneLabel;
+      const labels = expertCard.querySelectorAll('.plan-input-group label');
+      if (labels.length >= 2) {
+        labels[0].textContent = t.expertEmailLabel;
+        labels[1].textContent = t.expertPhoneLabel;
+      }
       
       const expertEmailInput = document.getElementById('expertEmail');
       if (expertEmailInput) expertEmailInput.placeholder = t.expertEmailPlaceholder;
       const expertContactHintEl = document.getElementById('expertContactHint');
       if (expertContactHintEl) expertContactHintEl.textContent = t.expertContactHint;
-      const expFeatures = cards[1].querySelectorAll('.plan-features li');
-      if (expFeatures.length >= 4) {
-        const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> `;
+      
+      const expFeatures = expertCard.querySelectorAll('.plan-features li');
+      const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> `;
+      if (expFeatures.length >= 3) {
         expFeatures[0].innerHTML = checkIcon + t.expertPlanF1;
         expFeatures[1].innerHTML = checkIcon + t.expertPlanF2;
         expFeatures[2].innerHTML = checkIcon + t.expertPlanF3;
-        expFeatures[3].innerHTML = checkIcon + t.expertPlanF4;
       }
+      
+      const optExpertBtn = document.getElementById('optimizeExpertBtn');
+      if (optExpertBtn) optExpertBtn.textContent = t.expertPlanBtn;
     }
     
     // Output Panel

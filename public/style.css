@@ -950,6 +950,28 @@ header .nav {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.plan-card.expert-featured-card {
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(180deg, #ffffff 0%, #fafffc 100%);
+  border-radius: var(--border-radius-md);
+  padding: 36px 32px;
+}
+
+.plan-card.expert-featured-card .plan-features li {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.plan-card.expert-featured-card .plan-features svg {
+  margin-top: 3px;
 }
 
 .plan-card {
