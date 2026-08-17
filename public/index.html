@@ -298,15 +298,19 @@
             <div class="plan-card expert-featured-card" id="expertPlanCard">
               <h3 class="plan-name">Asesoría 1 a 1 y Optimización con Experto Humano</h3>
               <div class="plan-price">$25 <span>USD / asesoría y entrega completa</span></div>
+
+              <!-- Dedicated Inline Error Notification -->
+              <div id="expertCardError" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin: 14px 0; text-align: left; line-height: 1.4; font-weight: 500;"></div>
+
               <div class="plan-input-group">
-                <label for="expertEmail">Correo Electrónico</label>
-                <input type="email" id="expertEmail" class="plan-input" placeholder="nombre@correo.com">
+                <label for="expertEmail">Correo Electrónico <span style="color:#ef4444;">*</span></label>
+                <input type="email" id="expertEmail" class="plan-input" placeholder="nombre@correo.com" required>
               </div>
               <div class="plan-input-group">
-                <label for="expertPhone">Número de Celular o WhatsApp</label>
-                <input type="tel" id="expertPhone" class="plan-input" placeholder="+56 9 1234 5678">
+                <label for="expertPhone">Número de Celular o WhatsApp <span style="color:#ef4444;">*</span></label>
+                <input type="tel" id="expertPhone" class="plan-input" placeholder="+56 9 1234 5678" required>
               </div>
-              <small class="input-hint" id="expertContactHint" style="display: block; font-size: 11px; color: var(--text-light); margin: -8px 0 16px; text-align: left;">* Proporciona al menos uno de los dos medios de contacto.</small>
+              <small class="input-hint" id="expertContactHint" style="display: block; font-size: 11px; color: var(--text-light); margin: -8px 0 16px; text-align: left;">* Ambos datos de contacto son obligatorios para garantizar la coordinación de tu sesión.</small>
               <ul class="plan-features">
                 <li>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -442,5 +446,23 @@
   </footer>
 
   <script src="app.js"></script>
+  <!-- Contact Validation Dialog for Expert Tier -->
+  <dialog id="expertAlertModal" style="padding: 0; border: none; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 440px; width: 90%; background: #ffffff; margin: auto;">
+    <div style="padding: 26px 22px; text-align: center;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px;">
+        ⚠️
+      </div>
+      <h3 id="expertAlertTitle" style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">
+        Datos de Contacto Requeridos
+      </h3>
+      <p id="expertAlertMessage" style="font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 22px;">
+        Para coordinar tu asesoría 1 a 1 con el experto, es obligatorio ingresar tanto tu <strong>correo electrónico</strong> como tu <strong>número de WhatsApp/Teléfono</strong>.
+      </p>
+      <button type="button" class="btn" id="expertAlertOkBtn" style="width: 100%; margin-top: 0; padding: 12px; font-size: 15px;">
+        Completar Datos
+      </button>
+    </div>
+  </dialog>
+
 </body>
 </html>

@@ -32,6 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const optimizeExpertBtn = document.getElementById('optimizeExpertBtn');
   const expertEmail = document.getElementById('expertEmail');
   const expertPhone = document.getElementById('expertPhone');
+  const expertPlanCard = document.getElementById('expertPlanCard');
+  const expertCardError = document.getElementById('expertCardError');
+  const expertAlertModal = document.getElementById('expertAlertModal');
+  const expertAlertTitle = document.getElementById('expertAlertTitle');
+  const expertAlertMessage = document.getElementById('expertAlertMessage');
+  const expertAlertOkBtn = document.getElementById('expertAlertOkBtn');
   
   const checkoutModal = document.getElementById('checkoutModal');
   const checkoutTitle = document.getElementById('checkoutTitle');
@@ -142,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       expertEmailLabel: "Correo Electrónico",
       expertEmailPlaceholder: "nombre@correo.com",
       expertPhoneLabel: "Número de Celular o WhatsApp",
-      expertContactHint: "* Proporciona al menos uno de los dos medios de contacto.",
+      expertContactHint: "* Ambos datos de contacto son obligatorios para garantizar la coordinación de tu sesión.",
       expertPlanF1: "Optimización de tu CV por parte de un experto humano en RRHH y reclutamiento.",
       expertPlanF2: "Sesión de asesoría experta: 1 hora y media de apoyo, entrega de la información y entrevista con el usuario titular del CV.",
       expertPlanF3: "Entrega del CV optimizado en formato PDF y Word editable.",
@@ -218,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       expertEmailLabel: "Email Address",
       expertEmailPlaceholder: "name@email.com",
       expertPhoneLabel: "Cell Phone or WhatsApp Number",
-      expertContactHint: "* Provide at least one of the two contact methods.",
+      expertContactHint: "* Both contact details are required to guarantee the coordination of your session.",
       expertPlanF1: "Resume optimization by an HR and recruitment human expert.",
       expertPlanF2: "Expert Advisory Session: 1.5 hours of dedicated support, feedback delivery, and personalized interview.",
       expertPlanF3: "Delivery of the optimized resume in PDF and editable Word formats.",
@@ -1024,16 +1030,96 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // Expert Request: collect contact, validate, then open PayPal checkout
+  function showExpertError(message, targetInput = null) {
+    if (expertCardError) {
+      expertCardError.textContent = message;
+      expertCardError.style.display = 'block';
+    }
+    if (targetInput) {
+      targetInput.style.borderColor = '#ef4444';
+      targetInput.focus();
+    }
+    if (expertAlertModal) {
+      if (expertAlertTitle) {
+        expertAlertTitle.textContent = currentLanguage === 'en'
+          ? 'Contact Information Required'
+          : 'Datos de Contacto Requeridos';
+      }
+      if (expertAlertMessage) {
+        expertAlertMessage.textContent = message;
+      }
+      if (expertAlertOkBtn) {
+        expertAlertOkBtn.textContent = currentLanguage === 'en'
+          ? 'Complete Information'
+          : 'Completar Datos';
+      }
+      expertAlertModal.showModal();
+    }
+  }
+
+  function clearExpertErrors() {
+    if (expertCardError) {
+      expertCardError.textContent = '';
+      expertCardError.style.display = 'none';
+    }
+    if (expertEmail) expertEmail.style.borderColor = '';
+    if (expertPhone) expertPhone.style.borderColor = '';
+  }
+
+  if (expertEmail) expertEmail.addEventListener('input', () => { expertEmail.style.borderColor = ''; if (expertCardError) expertCardError.style.display = 'none'; });
+  if (expertPhone) expertPhone.addEventListener('input', () => { expertPhone.style.borderColor = ''; if (expertCardError) expertCardError.style.display = 'none'; });
+
+  if (expertAlertOkBtn) {
+    expertAlertOkBtn.addEventListener('click', () => {
+      if (expertAlertModal) expertAlertModal.close();
+      if (expertPlanCard) {
+        expertPlanCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const email = expertEmail ? expertEmail.value.trim() : '';
+      const phone = expertPhone ? expertPhone.value.trim() : '';
+      if (!email && expertEmail) {
+        expertEmail.focus();
+      } else if (!phone && expertPhone) {
+        expertPhone.focus();
+      }
+    });
+  }
+
+  // Expert Request: collect contact, validate both fields strictly, then open PayPal checkout
   optimizeExpertBtn.addEventListener('click', () => {
     hideError();
+    clearExpertErrors();
     const email = expertEmail.value.trim();
     const phone = expertPhone.value.trim();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneClean = phone.replace(/\D/g, '');
+
     if (!email && !phone) {
-      showError(currentLanguage === 'en'
-        ? 'Please provide at least your email or WhatsApp/Phone number so Cintia can contact you.'
-        : 'Por favor, proporciona al menos tu correo o tu WhatsApp/Teléfono para que Cintia te contacte.');
+      showExpertError(currentLanguage === 'en'
+        ? 'Please enter both your email address and WhatsApp/phone number so our team can coordinate your expert mentoring session.'
+        : 'Por favor ingresa tanto tu correo electrónico como tu número de WhatsApp/teléfono para coordinar tu sesión con el experto.',
+        expertEmail
+      );
+      if (expertPhone) expertPhone.style.borderColor = '#ef4444';
+      return;
+    }
+
+    if (!email || !emailRegex.test(email)) {
+      showExpertError(currentLanguage === 'en'
+        ? 'Please enter a valid email address (e.g., name@example.com) to coordinate your session.'
+        : 'Por favor ingresa un correo electrónico válido (ej. tu_nombre@correo.com) para coordinar tu sesión.',
+        expertEmail
+      );
+      return;
+    }
+
+    if (!phone || phoneClean.length < 7) {
+      showExpertError(currentLanguage === 'en'
+        ? 'Please enter a valid cell phone or WhatsApp number with at least 7 digits to coordinate your session.'
+        : 'Por favor ingresa un número de WhatsApp o teléfono válido con al menos 7 dígitos para coordinar tu sesión.',
+        expertPhone
+      );
       return;
     }
 
