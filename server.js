@@ -1062,6 +1062,11 @@ app.post('/api/expert-request', async (req, res) => {
 
 // ─── PayPal Orders API v2 Integration ──────────────────────────────────────
 
+// In-memory cache: maps PayPal orderID → { analysisId, analysis }
+// Acts as a safety net in case Firestore/memory lookup fails in capture-order
+// (Vercel can spin a new serverless instance between create-order and capture-order)
+const paypalOrderCache = new Map();
+
 // Helper: get PayPal OAuth2 access token
 async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -1105,7 +1110,18 @@ app.post('/api/paypal/create-order', async (req, res) => {
 
     const analysis = await getAnalysisDoc(analysisId);
     if (!analysis) {
-      return res.status(404).json({ error: 'Análisis no encontrado.' });
+      return res.status(404).json({ error: `Análisis no encontrado (id: ${analysisId}).` });
+    }
+
+    // Explicitly re-save to Firestore to guarantee capture-order can find it
+    // (safety measure for Vercel serverless multi-instance environments)
+    const dbFs = initFirebase();
+    if (dbFs) {
+      try {
+        await dbFs.collection('analyses').doc(analysisId).set(analysis, { merge: true });
+      } catch (fsErr) {
+        console.warn('Firestore re-save warning in create-order:', fsErr.message);
+      }
     }
 
     const config = await getConfigDoc();
@@ -1146,6 +1162,15 @@ app.post('/api/paypal/create-order', async (req, res) => {
     }
 
     const orderData = await orderResponse.json();
+
+    // Cache analysis by orderID — fallback for capture-order on different instances
+    paypalOrderCache.set(orderData.id, { analysisId, analysis });
+    // Clean up old entries (keep max 200 pending orders in memory)
+    if (paypalOrderCache.size > 200) {
+      const firstKey = paypalOrderCache.keys().next().value;
+      paypalOrderCache.delete(firstKey);
+    }
+
     res.json({ orderID: orderData.id });
 
   } catch (err) {
@@ -1163,9 +1188,21 @@ app.post('/api/paypal/capture-order', async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos: orderID, analysisId y tier son requeridos.' });
     }
 
-    const analysis = await getAnalysisDoc(analysisId);
+    // Primary lookup: Firestore / local db
+    let analysis = await getAnalysisDoc(analysisId);
+
+    // Fallback: in-memory cache by orderID (for Vercel multi-instance scenarios)
+    if (!analysis && paypalOrderCache.has(orderID)) {
+      const cached = paypalOrderCache.get(orderID);
+      if (cached.analysisId === analysisId) {
+        analysis = cached.analysis;
+        console.log(`[capture-order] Used orderCache fallback for analysisId=${analysisId}`);
+      }
+    }
+
     if (!analysis) {
-      return res.status(404).json({ error: 'Análisis no encontrado.' });
+      console.error(`[capture-order] Analysis not found: analysisId=${analysisId}, orderID=${orderID}`);
+      return res.status(404).json({ error: `Análisis no encontrado (id: ${analysisId}). Por favor recarga la página y vuelve a intentarlo.` });
     }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
@@ -1192,6 +1229,9 @@ app.post('/api/paypal/capture-order', async (req, res) => {
     }
 
     const paypalTransactionId = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+
+    // Clean up cache entry now that payment is confirmed
+    paypalOrderCache.delete(orderID);
 
     if (tier === 'ai') {
       let optimizedText = analysis.optimizedText;
