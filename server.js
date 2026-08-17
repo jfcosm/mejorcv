@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const AdmZip = require('adm-zip');
+const admin = require('firebase-admin');
 require('dotenv').config();
 
 const app = express();
@@ -28,6 +29,36 @@ try {
 // Memory cache variables for serverless environments (Vercel)
 let inMemoryDb = null;
 let inMemoryConfig = null;
+let firestoreDb = null;
+
+// Firebase Firestore Initializer
+function initFirebase() {
+  if (firestoreDb) return firestoreDb;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      let serviceAccount;
+      if (typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string') {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      } else {
+        serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+      }
+      
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount)
+        });
+      }
+      firestoreDb = admin.firestore();
+      console.log("Connected to Firebase Cloud Firestore successfully.");
+      return firestoreDb;
+    } catch (err) {
+      console.error("Error initializing Firebase Firestore from FIREBASE_SERVICE_ACCOUNT:", err.message);
+    }
+  }
+  return null;
+}
+
+initFirebase();
 
 // Helper functions for Database
 function readDb() {
@@ -47,6 +78,142 @@ function writeDb(data) {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
     console.warn("Read-only filesystem detected. Database updated in memory only.");
+  }
+}
+
+// Database Operations Adapter (Firestore with local disk / memory fallback)
+async function saveAnalysisDoc(logEntry) {
+  const db = readDb();
+  db.analyses.push(logEntry);
+  writeDb(db);
+  
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      await dbFs.collection('analyses').doc(logEntry.id).set(logEntry);
+    } catch (err) {
+      console.error("Firestore saveAnalysisDoc error:", err.message);
+    }
+  }
+}
+
+async function updateAnalysisDoc(analysisId, updateData) {
+  const db = readDb();
+  const idx = db.analyses.findIndex(a => a.id === analysisId);
+  if (idx !== -1) {
+    Object.assign(db.analyses[idx], updateData);
+    writeDb(db);
+  }
+  
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      await dbFs.collection('analyses').doc(analysisId).set(updateData, { merge: true });
+    } catch (err) {
+      console.error("Firestore updateAnalysisDoc error:", err.message);
+    }
+  }
+}
+
+async function getAnalysisDoc(analysisId) {
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      const doc = await dbFs.collection('analyses').doc(analysisId).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+    } catch (err) {
+      console.error("Firestore getAnalysisDoc error:", err.message);
+    }
+  }
+  const db = readDb();
+  return db.analyses.find(a => a.id === analysisId) || null;
+}
+
+async function getAdminData(config) {
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      // Get visits
+      const statsDoc = await dbFs.collection('app_stats').doc('general').get();
+      const totalVisits = statsDoc.exists ? (statsDoc.data().visits || 0) : (readDb().visits || 0);
+
+      // Get analyses
+      const snap = await dbFs.collection('analyses').orderBy('uploadedAt', 'desc').limit(300).get();
+      const analysesList = snap.docs.map(d => d.data());
+
+      const totalAnalyses = analysesList.length;
+      const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
+      const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
+      const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
+      const paidExpert = paidExpertPending + paidExpertCompleted;
+      const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
+
+      const documentLog = analysesList.map(a => ({
+        id: a.id,
+        filename: a.filename,
+        fileSize: a.fileSize,
+        fileType: a.fileType,
+        uploadedAt: a.uploadedAt,
+        ip: a.ip,
+        rating: a.rating,
+        paymentStatus: a.paymentStatus,
+        expertContact: a.expertContact
+      }));
+
+      return {
+        stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue },
+        documentLog
+      };
+    } catch (err) {
+      console.error("Firestore getAdminData error, falling back to local:", err.message);
+    }
+  }
+
+  // Local fallback
+  const db = readDb();
+  const totalVisits = db.visits || 0;
+  const analysesList = db.analyses || [];
+  const totalAnalyses = analysesList.length;
+  const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
+  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
+  const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
+  const paidExpert = paidExpertPending + paidExpertCompleted;
+  const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
+
+  const documentLog = analysesList.map(a => ({
+    id: a.id,
+    filename: a.filename,
+    fileSize: a.fileSize,
+    fileType: a.fileType,
+    uploadedAt: a.uploadedAt,
+    ip: a.ip,
+    rating: a.rating,
+    paymentStatus: a.paymentStatus,
+    expertContact: a.expertContact
+  })).reverse();
+
+  return {
+    stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue },
+    documentLog
+  };
+}
+
+async function incrementVisitsCounter() {
+  const db = readDb();
+  db.visits = (db.visits || 0) + 1;
+  writeDb(db);
+
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      await dbFs.collection('app_stats').doc('general').set({
+        visits: admin.firestore.FieldValue.increment(1)
+      }, { merge: true });
+    } catch (err) {
+      console.error("Firestore incrementVisits error:", err.message);
+    }
   }
 }
 
@@ -79,6 +246,12 @@ function writeConfig(data) {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
     console.warn("Read-only filesystem detected. Configuration updated in memory only.");
+  }
+  const dbFs = initFirebase();
+  if (dbFs) {
+    dbFs.collection('app_config').doc('settings').set(data, { merge: true }).catch(err => {
+      console.error("Firestore writeConfig error:", err.message);
+    });
   }
 }
 
@@ -318,9 +491,7 @@ const upload = multer({
 // Increment visits on main load
 app.use((req, res, next) => {
   if (req.method === 'GET' && (req.path === '/' || req.path === '/index.html')) {
-    const db = readDb();
-    db.visits = (db.visits || 0) + 1;
-    writeDb(db);
+    incrementVisitsCounter();
   }
   next();
 });
@@ -561,7 +732,6 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     }
 
     // 6. Log entry to db
-    const db = readDb();
     const analysisId = crypto.randomUUID();
     const logEntry = {
       id: analysisId,
@@ -579,8 +749,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       expertContact: null,
       lang: lang
     };
-    db.analyses.push(logEntry);
-    writeDb(db);
+    await saveAnalysisDoc(logEntry);
 
     res.json({
       success: true,
@@ -603,8 +772,7 @@ app.post('/api/payment/simulate', async (req, res) => {
       return res.status(400).json({ error: "Datos de pago incompletos." });
     }
 
-    const db = readDb();
-    const analysis = db.analyses.find(a => a.id === analysisId);
+    const analysis = await getAnalysisDoc(analysisId);
     if (!analysis) {
       return res.status(404).json({ error: "Análisis no encontrado." });
     }
@@ -696,11 +864,12 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas c
         );
       }
 
-      analysis.paymentStatus = 'completed_ai';
-      analysis.paymentMethod = paymentMethod || 'paypal';
-      analysis.optimizedText = optimizedText;
+      await updateAnalysisDoc(analysisId, {
+        paymentStatus: 'completed_ai',
+        paymentMethod: paymentMethod || 'paypal',
+        optimizedText: optimizedText
+      });
       
-      writeDb(db);
       res.json({
         success: true,
         tier: 'ai',
@@ -711,14 +880,15 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas c
         return res.status(400).json({ error: "Para optimización manual, debes dejar correo y celular." });
       }
       
-      analysis.paymentStatus = 'pending_expert'; // Needs expert manual evaluation
-      analysis.paymentMethod = paymentMethod || 'paypal';
-      analysis.expertContact = {
-        email: contact.email,
-        phone: contact.phone
-      };
+      await updateAnalysisDoc(analysisId, {
+        paymentStatus: 'pending_expert',
+        paymentMethod: paymentMethod || 'paypal',
+        expertContact: {
+          email: contact.email,
+          phone: contact.phone
+        }
+      });
 
-      writeDb(db);
       res.json({
         success: true,
         tier: 'expert',
@@ -756,15 +926,15 @@ app.post('/api/expert-request', async (req, res) => {
       return res.status(400).json({ error: "Debe proporcionar correo o teléfono de contacto." });
     }
     
-    const db = readDb();
-    const idx = db.analyses.findIndex(a => a.id === analysisId);
-    if (idx === -1) {
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
       return res.status(404).json({ error: "Análisis no encontrado." });
     }
     
-    db.analyses[idx].paymentStatus = 'pending_expert';
-    db.analyses[idx].expertContact = { email, phone };
-    writeDb(db);
+    await updateAnalysisDoc(analysisId, {
+      paymentStatus: 'pending_expert',
+      expertContact: { email, phone, requestedAt: new Date().toISOString() }
+    });
     
     res.json({
       success: true,
@@ -778,9 +948,8 @@ app.post('/api/expert-request', async (req, res) => {
 
 
 // Retrieve optimized CV for completed AI sessions (useful on refresh/recovery)
-app.get('/api/analysis/:id', (req, res) => {
-  const db = readDb();
-  const analysis = db.analyses.find(a => a.id === req.params.id);
+app.get('/api/analysis/:id', async (req, res) => {
+  const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) {
     return res.status(404).json({ error: "Análisis no encontrado." });
   }
@@ -848,59 +1017,18 @@ app.post('/api/admin/logout', (req, res) => {
 });
 
 // Admin stats
-app.get('/api/admin/stats', requireAdminAuth, (req, res) => {
-  const db = readDb();
+app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
   const config = readConfig();
-  
-  // Calculate total counts
-  const totalVisits = db.visits || 0;
-  const analysesList = db.analyses || [];
-  
-  const totalAnalyses = analysesList.length;
-  const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
-  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
-  const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
-  const paidExpert = paidExpertPending + paidExpertCompleted;
-
-  const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
-
-  // Return statistics and table details (omit raw text in table list for performance)
-  const documentLog = analysesList.map(a => ({
-    id: a.id,
-    filename: a.filename,
-    fileSize: a.fileSize,
-    fileType: a.fileType,
-    uploadedAt: a.uploadedAt,
-    ip: a.ip,
-    rating: a.rating,
-    paymentStatus: a.paymentStatus,
-    expertContact: a.expertContact
-  })).reverse(); // Return latest first
-
-  res.json({
-    stats: {
-      totalVisits,
-      totalAnalyses,
-      paidAi,
-      paidExpertPending,
-      paidExpertCompleted,
-      totalRevenue
-    },
-    documentLog
-  });
+  const adminData = await getAdminData(config);
+  res.json(adminData);
 });
 
 // Mark expert review as completed
-app.post('/api/admin/expert-complete', requireAdminAuth, (req, res) => {
+app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
   const { analysisId } = req.body;
   if (!analysisId) return res.status(400).json({ error: "ID faltante" });
   
-  const db = readDb();
-  const idx = db.analyses.findIndex(a => a.id === analysisId);
-  if (idx === -1) return res.status(404).json({ error: "No encontrado" });
-  
-  db.analyses[idx].paymentStatus = 'completed_expert';
-  writeDb(db);
+  await updateAnalysisDoc(analysisId, { paymentStatus: 'completed_expert' });
   
   res.json({ success: true });
 });
@@ -953,9 +1081,8 @@ app.post('/api/admin/settings', requireAdminAuth, (req, res) => {
 });
 
 // Fallback for download file (optional helper if needed, we just serve text in dashboard)
-app.get('/api/admin/download-text/:id', requireAdminAuth, (req, res) => {
-  const db = readDb();
-  const analysis = db.analyses.find(a => a.id === req.params.id);
+app.get('/api/admin/download-text/:id', requireAdminAuth, async (req, res) => {
+  const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).send("No encontrado");
   
   res.setHeader('Content-disposition', `attachment; filename=cv_${analysis.filename}.txt`);
