@@ -255,8 +255,60 @@ function writeConfig(data) {
   }
 }
 
-// Active admin sessions in memory
-const activeSessions = new Map();
+// Admin Session Token (Stateless HMAC-signed token for Serverless compatibility across lambdas)
+function getSessionSecret() {
+  return process.env.ADMIN_PASSWORD || 'cintia_secret_session_key_2026';
+}
+
+function generateAdminToken(email) {
+  const expiresAt = Date.now() + 8 * 60 * 60 * 1000; // 8 hours
+  const payload = `${email}:${expiresAt}`;
+  const hmac = crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('hex');
+  return Buffer.from(`${payload}:${hmac}`).toString('base64url');
+}
+
+function verifyAdminToken(token) {
+  if (!token) return false;
+  try {
+    const decoded = Buffer.from(token, 'base64url').toString('utf8');
+    const parts = decoded.split(':');
+    if (parts.length !== 3) return false;
+    const [email, expiresAtStr, receivedHmac] = parts;
+    const expiresAt = parseInt(expiresAtStr, 10);
+    if (isNaN(expiresAt) || Date.now() > expiresAt) return false;
+
+    const payload = `${email}:${expiresAtStr}`;
+    const expectedHmac = crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('hex');
+    
+    if (crypto.timingSafeEqual(Buffer.from(receivedHmac, 'hex'), Buffer.from(expectedHmac, 'hex'))) {
+      const expectedEmail = process.env.ADMIN_EMAIL || 'admin@cintia.net';
+      return email === expectedEmail;
+    }
+  } catch (err) {
+    return false;
+  }
+  return false;
+}
+
+async function getConfigDoc() {
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      const doc = await dbFs.collection('app_config').doc('settings').get();
+      if (doc.exists) {
+        inMemoryConfig = { ...readConfig(), ...doc.data() };
+        return inMemoryConfig;
+      } else {
+        const initialConfig = readConfig();
+        await dbFs.collection('app_config').doc('settings').set(initialConfig);
+        return initialConfig;
+      }
+    } catch (err) {
+      console.error("Firestore getConfigDoc error, falling back to local:", err.message);
+    }
+  }
+  return readConfig();
+}
 
 // Captcha System (Stateless with AES encryption)
 const CAPTCHA_SECRET = crypto.randomBytes(32).toString('hex');
@@ -905,8 +957,8 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas c
 });
 
 // Public settings endpoint
-app.get('/api/config', (req, res) => {
-  const config = readConfig();
+app.get('/api/config', async (req, res) => {
+  const config = await getConfigDoc();
   res.json({
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
@@ -967,16 +1019,9 @@ app.get('/api/analysis/:id', async (req, res) => {
 // Admin Authorization Middleware
 function requireAdminAuth(req, res, next) {
   const token = req.headers['authorization'];
-  if (!token || !activeSessions.has(token)) {
-    return res.status(401).json({ error: "No autorizado." });
+  if (!token || !verifyAdminToken(token)) {
+    return res.status(401).json({ error: "No autorizado o sesión expirada." });
   }
-  const expiresAt = activeSessions.get(token);
-  if (Date.now() > expiresAt) {
-    activeSessions.delete(token);
-    return res.status(401).json({ error: "Sesión expirada." });
-  }
-  // Extend session
-  activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000);
   next();
 }
 
@@ -998,8 +1043,7 @@ app.post('/api/admin/login', (req, res) => {
   
   if (email === expectedEmail && password === expectedPassword) {
     registerAdminLoginAttempt(clientIp, true);
-    const token = crypto.randomBytes(32).toString('hex');
-    activeSessions.set(token, Date.now() + 2 * 60 * 60 * 1000); // 2 hours
+    const token = generateAdminToken(email);
     res.json({ success: true, token });
   } else {
     registerAdminLoginAttempt(clientIp, false);
@@ -1009,10 +1053,6 @@ app.post('/api/admin/login', (req, res) => {
 
 // Admin logout
 app.post('/api/admin/logout', (req, res) => {
-  const token = req.headers['authorization'];
-  if (token) {
-    activeSessions.delete(token);
-  }
   res.json({ success: true });
 });
 
@@ -1034,8 +1074,8 @@ app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
 });
 
 // Get admin settings
-app.get('/api/admin/settings', requireAdminAuth, (req, res) => {
-  const config = readConfig();
+app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
+  const config = await getConfigDoc();
   const secureConfig = { ...config };
   
   // Mask the API Key to protect it from exposure
@@ -1052,10 +1092,10 @@ app.get('/api/admin/settings', requireAdminAuth, (req, res) => {
 });
 
 // Update admin settings
-app.post('/api/admin/settings', requireAdminAuth, (req, res) => {
+app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   try {
     const newSettings = req.body;
-    const config = readConfig();
+    const config = await getConfigDoc();
     
     // Validate and update fields
     if (newSettings.hasOwnProperty('geminiApiKey')) {

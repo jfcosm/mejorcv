@@ -399,14 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       setGeminiKey.value = '';
 
-      setPriceAi.value = settings.priceAi;
-      setPriceExpert.value = settings.priceExpert;
-      setRateLimit.value = settings.rateLimitPerHour;
+      setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 1.0;
+      setPriceExpert.value = settings.priceExpert !== undefined ? settings.priceExpert : 25.0;
+      setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
       setOptExpertEnabled.checked = settings.optExpertEnabled !== false;
-      setCaptchaEnabled.checked = settings.captchaEnabled;
-      setEvalPrompt.value = settings.evaluationPrompt;
-      setOptPrompt.value = settings.optimizationPrompt;
+      setCaptchaEnabled.checked = settings.captchaEnabled !== false;
+      setEvalPrompt.value = settings.evaluationPrompt || '';
+      setOptPrompt.value = settings.optimizationPrompt || '';
       // Password managed via environment variables
 
     } catch (err) {
