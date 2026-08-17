@@ -255,16 +255,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) throw new Error('Could not fetch stats');
       const data = await response.json();
 
-      // Set statistics
-      statVisits.textContent = data.stats.totalVisits;
-      statAnalyses.textContent = data.stats.totalAnalyses;
-      statPaidAi.textContent = data.stats.paidAi;
-      statExpertPending.textContent = data.stats.paidExpertPending;
-      statRevenue.textContent = `$${data.stats.totalRevenue.toFixed(2)} USD`;
+      // Set statistics with safe fallbacks
+      const stats = data.stats || {};
+      statVisits.textContent = stats.totalVisits ?? 0;
+      statAnalyses.textContent = stats.totalAnalyses ?? 0;
+      statPaidAi.textContent = stats.paidAi ?? 0;
+      statExpertPending.textContent = stats.paidExpertPending ?? 0;
+      statRevenue.textContent = `$${(Number(stats.totalRevenue) || 0).toFixed(2)} USD`;
 
       // Set Gemini usage statistics
-      if (data.stats.geminiStats) {
-        const gStats = data.stats.geminiStats;
+      if (stats.geminiStats) {
+        const gStats = stats.geminiStats;
         if (statGeminiCalls) statGeminiCalls.textContent = gStats.totalCalls || 0;
         if (statGeminiSub) statGeminiSub.textContent = `${gStats.evaluations || 0} eval / ${gStats.optimizations || 0} opt`;
         
@@ -280,9 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (geminiCallsCount) geminiCallsCount.textContent = gStats.totalCalls || 0;
       }
 
+      const docLog = Array.isArray(data.documentLog) ? data.documentLog : [];
+
       // Render Recent Table (max 5 rows)
       recentActivityTableBody.innerHTML = '';
-      const recent = data.documentLog.slice(0, 5);
+      const recent = docLog.slice(0, 5);
       if (recent.length === 0) {
         recentActivityTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay actividad registrada aún.</td></tr>';
       } else {
@@ -301,10 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Render History Table
       historyTableBody.innerHTML = '';
-      if (data.documentLog.length === 0) {
+      if (docLog.length === 0) {
         historyTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No se han subido currículums aún.</td></tr>';
       } else {
-        data.documentLog.forEach(row => {
+        docLog.forEach(row => {
           const contact = renderContactColumn(row.expertContact);
           
           let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
@@ -334,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Leads Table
         leadsTableBody.innerHTML = '';
-        const leads = data.documentLog.filter(row => row.paymentStatus && row.paymentStatus !== 'free');
+        const leads = docLog.filter(row => row.paymentStatus && row.paymentStatus !== 'free');
         if (leads.length === 0) {
           leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay leads registrados aún.</td></tr>';
         } else {

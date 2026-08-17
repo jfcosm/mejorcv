@@ -132,6 +132,10 @@ async function getAnalysisDoc(analysisId) {
 }
 
 async function getAdminData(config) {
+  const priceAi = parseFloat(config?.priceAi) || 1.0;
+  const priceExpert = parseFloat(config?.priceExpert) || 25.0;
+  const geminiStats = await getGeminiStats(config);
+
   const dbFs = initFirebase();
   if (dbFs) {
     try {
@@ -139,31 +143,48 @@ async function getAdminData(config) {
       const statsDoc = await dbFs.collection('app_stats').doc('general').get();
       const totalVisits = statsDoc.exists ? (statsDoc.data().visits || 0) : (readDb().visits || 0);
 
-      // Get analyses
-      const snap = await dbFs.collection('analyses').orderBy('uploadedAt', 'desc').limit(300).get();
-      const analysesList = snap.docs.map(d => d.data());
+      // Get analyses (try ordered, fallback to regular get if index/field issue)
+      let snap;
+      try {
+        snap = await dbFs.collection('analyses').orderBy('uploadedAt', 'desc').limit(300).get();
+      } catch (orderErr) {
+        console.warn("Firestore orderBy uploadedAt failed, reading without orderBy:", orderErr.message);
+        snap = await dbFs.collection('analyses').limit(300).get();
+      }
+
+      let analysesList = snap.docs.map(d => d.data());
+      // Ensure sorted by uploadedAt descending
+      analysesList.sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0));
 
       const totalAnalyses = analysesList.length;
       const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
-      const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
+      const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert').length;
       const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
       const paidExpert = paidExpertPending + paidExpertCompleted;
-      const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
+      const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
       const documentLog = analysesList.map(a => ({
         id: a.id,
-        filename: a.filename,
-        fileSize: a.fileSize,
-        fileType: a.fileType,
-        uploadedAt: a.uploadedAt,
-        ip: a.ip,
-        rating: a.rating,
-        paymentStatus: a.paymentStatus,
-        expertContact: a.expertContact
+        filename: a.filename || 'cv_documento',
+        fileSize: a.fileSize || 0,
+        fileType: a.fileType || '.pdf',
+        uploadedAt: a.uploadedAt || new Date().toISOString(),
+        ip: a.ip || '127.0.0.1',
+        rating: a.rating || 3,
+        paymentStatus: a.paymentStatus || 'free',
+        expertContact: a.expertContact || null
       }));
 
       return {
-        stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue },
+        stats: {
+          totalVisits: Number(totalVisits) || 0,
+          totalAnalyses: Number(totalAnalyses) || 0,
+          paidAi: Number(paidAi) || 0,
+          paidExpertPending: Number(paidExpertPending) || 0,
+          paidExpertCompleted: Number(paidExpertCompleted) || 0,
+          totalRevenue: Number(totalRevenue) || 0,
+          geminiStats
+        },
         documentLog
       };
     } catch (err) {
@@ -177,26 +198,33 @@ async function getAdminData(config) {
   const analysesList = db.analyses || [];
   const totalAnalyses = analysesList.length;
   const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
-  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert').length;
+  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert').length;
   const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
   const paidExpert = paidExpertPending + paidExpertCompleted;
-  const totalRevenue = (paidAi * config.priceAi) + (paidExpert * config.priceExpert);
+  const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
   const documentLog = analysesList.map(a => ({
     id: a.id,
-    filename: a.filename,
-    fileSize: a.fileSize,
-    fileType: a.fileType,
-    uploadedAt: a.uploadedAt,
-    ip: a.ip,
-    rating: a.rating,
-    paymentStatus: a.paymentStatus,
-    expertContact: a.expertContact
+    filename: a.filename || 'cv_documento',
+    fileSize: a.fileSize || 0,
+    fileType: a.fileType || '.pdf',
+    uploadedAt: a.uploadedAt || new Date().toISOString(),
+    ip: a.ip || '127.0.0.1',
+    rating: a.rating || 3,
+    paymentStatus: a.paymentStatus || 'free',
+    expertContact: a.expertContact || null
   })).reverse();
 
-  const geminiStats = await getGeminiStats(config);
   return {
-    stats: { totalVisits, totalAnalyses, paidAi, paidExpertPending, paidExpertCompleted, totalRevenue, geminiStats },
+    stats: {
+      totalVisits: Number(totalVisits) || 0,
+      totalAnalyses: Number(totalAnalyses) || 0,
+      paidAi: Number(paidAi) || 0,
+      paidExpertPending: Number(paidExpertPending) || 0,
+      paidExpertCompleted: Number(paidExpertCompleted) || 0,
+      totalRevenue: Number(totalRevenue) || 0,
+      geminiStats
+    },
     documentLog
   };
 }
