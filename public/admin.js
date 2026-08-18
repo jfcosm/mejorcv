@@ -378,20 +378,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cardsDoing) cardsDoing.innerHTML = '';
         if (cardsDone) cardsDone.innerHTML = '';
 
-        const leads = docLog.filter(row => row.paymentStatus && row.paymentStatus !== 'free');
+        // All uploaded CVs are tracked as leads
+        const leads = docLog;
         
         // 1. Render Table View
         if (leads.length === 0) {
-          leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay leads registrados aún.</td></tr>';
+          leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay currículums subidos aún.</td></tr>';
         } else {
           leads.forEach(row => {
-            const isAiPaid = Boolean(row.hasAiPaid || row.paymentStatus === 'completed_ai');
-            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+            const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
             const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
             const contact = row.expertContact 
               ? renderContactColumn(row.expertContact) 
-              : '<span style="color:var(--text-light);">Descarga Directa (IA)</span>';
+              : (isAiPaid ? '<span style="color:var(--text-light);">Descarga Directa (IA)</span>' : '<span style="color:var(--text-light);">Sin contacto (Gratis)</span>');
             
             let statusBadges = [];
             if (isAiPaid) {
@@ -404,12 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
               statusBadges.push('<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Entregado</span>');
             }
             if (statusBadges.length === 0) {
-              statusBadges.push(`<span class="badge">${row.paymentStatus}</span>`);
+              statusBadges.push('<span class="badge free" style="background-color:#f1f5f9; color:#475569; font-weight:600;">Evaluación Gratuita</span>');
             }
 
-            let serviceName = 'IA ($1)';
+            let serviceName = 'Evaluación Gratuita';
             if (row.hasExpertPaid || row.paymentStatus.includes('expert')) {
               serviceName = (row.hasAiPaid || row.paymentStatus === 'completed_ai') ? 'Experto ($25) + IA ($1)' : 'Experto Humano ($25)';
+            } else if (isAiPaid) {
+              serviceName = 'IA ($1)';
             }
 
             let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
@@ -440,11 +443,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const doneList = [];
 
         leads.forEach(row => {
+          const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
           const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
-          if (isExpertPending) {
-            doingList.push(row);
-          } else {
+          const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
+          if (isExpertDone || (isAiPaid && !row.hasExpertPaid)) {
             doneList.push(row);
+          } else {
+            doingList.push(row);
           }
         });
 
@@ -458,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
           list.forEach(row => {
-            const isAiPaid = Boolean(row.hasAiPaid || row.paymentStatus === 'completed_ai');
+            const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
             const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
             const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
@@ -491,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </a>` : ''}
                     </div>
                   ` : `
-                    <div style="color: var(--text-medium); font-size: 11.5px;">Optimización automática de CV procesada</div>
+                    <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : 'Evaluación gratuita realizada'}</div>
                   `}
 
                   <!-- 3 Status Dots Indicators -->
