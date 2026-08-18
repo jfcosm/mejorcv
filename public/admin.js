@@ -766,9 +766,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const dbStorageText = document.getElementById('dbStorageText');
       if (dbStorageText) {
         if (settings.firestoreConnected) {
-          dbStorageText.innerHTML = '<span style="color:#059669;">🔥 Cloud Firestore (Persistente en la nube)</span>';
+          dbStorageText.innerHTML = `<span style="color:#059669;">🔥 Cloud Firestore Activo (Proyecto: <code>${settings.firestoreProjectId || 'cintia'}</code> - Persistente)</span>`;
         } else {
-          dbStorageText.innerHTML = '<span style="color:#d97706;">⚠️ Memoria Local / Efímera (Se reinicia en cada nuevo deploy en Vercel)</span>';
+          const errDetail = settings.firestoreError ? `<div style="font-size:11px; color:#b45309; margin-top:2px;">Detalle: ${escapeHtml(settings.firestoreError)}</div>` : '';
+          dbStorageText.innerHTML = `<div><span style="color:#d97706;">⚠️ Memoria Local / Efímera</span> ${errDetail}</div>`;
         }
       }
 

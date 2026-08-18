@@ -30,37 +30,79 @@ try {
 let inMemoryDb = null;
 let inMemoryConfig = null;
 let firestoreDb = null;
+let lastFirebaseError = null;
+let firebaseProjectId = null;
 
-// Firebase Firestore Initializer
+// Firebase Firestore Initializer (Supports raw JSON, Base64, escaped newlines, and Vercel string formats)
 function initFirebase() {
   if (firestoreDb) return firestoreDb;
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    try {
-      let serviceAccount;
-      if (typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string') {
-        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      } else {
-        serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
-      }
-      
-      // Fix escaped newlines in private key when set in Vercel environment variables
-      if (serviceAccount && serviceAccount.private_key) {
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-      }
-
-      if (!admin.apps.length) {
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount)
-        });
-      }
-      firestoreDb = admin.firestore();
-      console.log("Connected to Firebase Cloud Firestore successfully.");
-      return firestoreDb;
-    } catch (err) {
-      console.error("Error initializing Firebase Firestore from FIREBASE_SERVICE_ACCOUNT:", err.message);
-    }
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) {
+    lastFirebaseError = "Variable de entorno FIREBASE_SERVICE_ACCOUNT no encontrada en el runtime de Vercel.";
+    return null;
   }
-  return null;
+
+  try {
+    let serviceAccount;
+    let rawStr = typeof raw === 'string' ? raw.trim() : JSON.stringify(raw);
+    
+    // Check if it's base64 encoded
+    if (rawStr.startsWith('ey') || (!rawStr.startsWith('{') && !rawStr.startsWith('"') && !rawStr.startsWith("'"))) {
+      try {
+        const decoded = Buffer.from(rawStr, 'base64').toString('utf8');
+        if (decoded.trim().startsWith('{')) {
+          rawStr = decoded.trim();
+        }
+      } catch (e) {}
+    }
+    
+    // Remove outer quotes if accidentally wrapped by environment variable editor
+    if ((rawStr.startsWith("'") && rawStr.endsWith("'")) || (rawStr.startsWith('"') && rawStr.endsWith('"'))) {
+      if (!rawStr.includes('{\\n') && !rawStr.includes('{\n')) {
+        rawStr = rawStr.slice(1, -1);
+      }
+    }
+
+    try {
+      serviceAccount = JSON.parse(rawStr);
+    } catch (parseErr) {
+      // If parsing fails, try unescaping backslashes
+      try {
+        serviceAccount = JSON.parse(rawStr.replace(/\\"/g, '"'));
+      } catch (innerErr) {
+        throw new Error(`Error parseando JSON de FIREBASE_SERVICE_ACCOUNT: ${parseErr.message}`);
+      }
+    }
+
+    if (typeof serviceAccount === 'string') {
+      serviceAccount = JSON.parse(serviceAccount);
+    }
+
+    if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key) {
+      throw new Error(`Estructura inválida: faltan campos obligatorios (project_id o private_key). Campos encontrados: ${Object.keys(serviceAccount || {}).join(', ')}`);
+    }
+
+    // Fix escaped newlines in private key if set in Vercel environment variables
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+    }
+
+    firestoreDb = admin.firestore();
+    firebaseProjectId = serviceAccount.project_id;
+    lastFirebaseError = null;
+    console.log("Connected to Firebase Cloud Firestore successfully for project:", firebaseProjectId);
+    return firestoreDb;
+  } catch (err) {
+    lastFirebaseError = err.message;
+    console.error("Error initializing Firebase Firestore from FIREBASE_SERVICE_ACCOUNT:", err.message);
+    return null;
+  }
 }
 
 initFirebase();
@@ -1525,7 +1567,10 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   // Omit password from responses for safety
   delete secureConfig.adminPassword;
   
-  secureConfig.firestoreConnected = Boolean(initFirebase());
+  const isConnected = Boolean(initFirebase());
+  secureConfig.firestoreConnected = isConnected;
+  secureConfig.firestoreError = lastFirebaseError;
+  secureConfig.firestoreProjectId = firebaseProjectId;
   
   res.json(secureConfig);
 });
