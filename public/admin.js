@@ -40,13 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const leadsListView = document.getElementById('leadsListView');
   const leadsBoardView = document.getElementById('leadsBoardView');
 
-  // Kanban Board Columns & Badges
-  const cardsPendingExpert = document.getElementById('cardsPendingExpert');
-  const cardsCompletedAi = document.getElementById('cardsCompletedAi');
-  const cardsCompletedExpert = document.getElementById('cardsCompletedExpert');
-  const badgePendingExpert = document.getElementById('badgePendingExpert');
-  const badgeCompletedAi = document.getElementById('badgeCompletedAi');
-  const badgeCompletedExpert = document.getElementById('badgeCompletedExpert');
+  // Kanban Board Columns & Badges (Doing vs Done)
+  const cardsDoing = document.getElementById('cardsDoing');
+  const cardsDone = document.getElementById('cardsDone');
+  const badgeDoing = document.getElementById('badgeDoing');
+  const badgeDone = document.getElementById('badgeDone');
   
   // Settings Form
   const settingsForm = document.getElementById('settingsForm');
@@ -375,11 +373,10 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
         });
 
-        // Render Leads Table & Kanban Board
+        // Render Leads Table & Kanban Board (Doing vs Done)
         leadsTableBody.innerHTML = '';
-        if (cardsPendingExpert) cardsPendingExpert.innerHTML = '';
-        if (cardsCompletedAi) cardsCompletedAi.innerHTML = '';
-        if (cardsCompletedExpert) cardsCompletedExpert.innerHTML = '';
+        if (cardsDoing) cardsDoing.innerHTML = '';
+        if (cardsDone) cardsDone.innerHTML = '';
 
         const leads = docLog.filter(row => row.paymentStatus && row.paymentStatus !== 'free');
         
@@ -388,33 +385,45 @@ document.addEventListener('DOMContentLoaded', () => {
           leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay leads registrados aún.</td></tr>';
         } else {
           leads.forEach(row => {
+            const isAiPaid = Boolean(row.hasAiPaid || row.paymentStatus === 'completed_ai');
+            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+            const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
             const contact = row.expertContact 
               ? renderContactColumn(row.expertContact) 
               : '<span style="color:var(--text-light);">Descarga Directa (IA)</span>';
             
-            let statusBadge = '';
-            if (row.paymentStatus === 'completed_ai') {
-              statusBadge = '<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado por IA</span>';
-            } else if (row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert') {
-              statusBadge = '<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>';
-            } else if (row.paymentStatus === 'completed_expert') {
-              statusBadge = '<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Completado</span>';
-            } else {
-              statusBadge = `<span class="badge">${row.paymentStatus}</span>`;
+            let statusBadges = [];
+            if (isAiPaid) {
+              statusBadges.push('<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado IA</span>');
+            }
+            if (isExpertPending) {
+              statusBadges.push('<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>');
+            }
+            if (isExpertDone) {
+              statusBadges.push('<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Entregado</span>');
+            }
+            if (statusBadges.length === 0) {
+              statusBadges.push(`<span class="badge">${row.paymentStatus}</span>`);
+            }
+
+            let serviceName = 'IA ($1)';
+            if (row.hasExpertPaid || row.paymentStatus.includes('expert')) {
+              serviceName = (row.hasAiPaid || row.paymentStatus === 'completed_ai') ? 'Experto ($25) + IA ($1)' : 'Experto Humano ($25)';
             }
 
             let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
-            if (row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert') {
+            if (isExpertPending) {
               actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar como Entregado</button>`;
             }
 
             leadsTableBody.innerHTML += `
               <tr>
                 <td><strong>${escapeHtml(row.filename)}</strong></td>
-                <td>${row.paymentStatus.includes('expert') ? 'Experto Humano ($25)' : 'IA Instantánea ($1)'}</td>
+                <td>${serviceName}</td>
                 <td>${formatDate(row.uploadedAt)}</td>
                 <td>${contact}</td>
-                <td>${statusBadge}</td>
+                <td>${statusBadges.join(' ')}</td>
                 <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
                 <td>
                   <div class="actions-cell">
@@ -426,28 +435,39 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
 
-        // 2. Render Kanban Board View
-        const pendingExpertList = leads.filter(row => row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
-        const completedAiList = leads.filter(row => row.paymentStatus === 'completed_ai');
-        const completedExpertList = leads.filter(row => row.paymentStatus === 'completed_expert');
+        // 2. Render Kanban Board View (1 Card per User with Status Dots)
+        const doingList = [];
+        const doneList = [];
 
-        if (badgePendingExpert) badgePendingExpert.textContent = pendingExpertList.length;
-        if (badgeCompletedAi) badgeCompletedAi.textContent = completedAiList.length;
-        if (badgeCompletedExpert) badgeCompletedExpert.textContent = completedExpertList.length;
+        leads.forEach(row => {
+          const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+          if (isExpertPending) {
+            doingList.push(row);
+          } else {
+            doneList.push(row);
+          }
+        });
 
-        function renderKanbanCards(list, container, isPendingExpert = false) {
+        if (badgeDoing) badgeDoing.textContent = doingList.length;
+        if (badgeDone) badgeDone.textContent = doneList.length;
+
+        function renderKanbanCards(list, container, isDoingColumn = false) {
           if (!container) return;
           if (list.length === 0) {
             container.innerHTML = '<div class="kanban-empty-hint">Sin registros en esta columna</div>';
             return;
           }
           list.forEach(row => {
+            const isAiPaid = Boolean(row.hasAiPaid || row.paymentStatus === 'completed_ai');
+            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+            const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
             const cleanPhone = row.expertContact?.phone ? row.expertContact.phone.replace(/[^0-9]/g, '') : '';
             const emailEscaped = row.expertContact?.email ? escapeHtml(row.expertContact.email) : '';
             const phoneEscaped = row.expertContact?.phone ? escapeHtml(row.expertContact.phone) : '';
 
             container.innerHTML += `
-              <div class="kanban-card" data-id="${row.id}" title="Clic para abrir detalle e inspección de CV">
+              <div class="kanban-card" data-id="${row.id}" title="Clic para abrir detalle e inspección completa del CV">
                 <div class="kanban-card-header">
                   <div class="kanban-card-title">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-mint); flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
@@ -459,8 +479,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="kanban-card-body">
                   ${row.expertContact ? `
                     <div style="font-weight: 600; color: var(--text-dark);">${emailEscaped}</div>
-                    ${phoneEscaped ? `<div style="font-size: 11px; color: var(--text-light);">${phoneEscaped}</div>` : ''}
-                    <div style="display:flex; gap:6px; margin-top:4px;">
+                    ${phoneEscaped ? `<div style="font-size: 11.5px; color: var(--text-medium); margin-top:2px;">${phoneEscaped}</div>` : ''}
+                    <div style="display:flex; gap:6px; margin-top:6px;">
                       ${emailEscaped ? `
                         <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:2px 6px; font-size:10px; border-radius:4px; margin:0;" onclick="event.stopPropagation();">
                           Copiar Email
@@ -471,14 +491,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         </a>` : ''}
                     </div>
                   ` : `
-                    <div style="color: var(--text-medium); font-size: 11.5px;">Optimización automática procesada ($1 USD)</div>
+                    <div style="color: var(--text-medium); font-size: 11.5px;">Optimización automática de CV procesada</div>
                   `}
+
+                  <!-- 3 Status Dots Indicators -->
+                  <div class="status-indicators-bar">
+                    <div class="status-item" title="${isAiPaid ? 'Optimización IA: Completada' : 'Optimización IA: No solicitada'}">
+                      <span class="status-dot dot-ai ${isAiPaid ? 'solid' : 'outline'}"></span>
+                      <span style="color:${isAiPaid ? 'var(--text-dark)' : 'var(--text-light)'}">IA</span>
+                    </div>
+                    <div class="status-item" title="${isExpertPending ? 'Asesoría Experta: Pendiente de entrega' : 'Asesoría Experta: No pendiente'}">
+                      <span class="status-dot dot-expert-pending ${isExpertPending ? 'solid' : 'outline'}"></span>
+                      <span style="color:${isExpertPending ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Solicitada</span>
+                    </div>
+                    <div class="status-item" title="${isExpertDone ? 'Asesoría Experta: Entregada y completada' : 'Asesoría Experta: No entregada'}">
+                      <span class="status-dot dot-expert-done ${isExpertDone ? 'solid' : 'outline'}"></span>
+                      <span style="color:${isExpertDone ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Entregada</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="kanban-card-footer">
                   <span>${formatDate(row.uploadedAt)}</span>
                   <div style="display:flex; gap:6px; align-items:center;">
-                    ${isPendingExpert ? `
+                    ${isExpertPending ? `
                       <button type="button" class="btn btn-sm complete-expert-btn" data-id="${row.id}" style="background-color:#059669; font-size:11px; padding:3px 8px; margin:0;" onclick="event.stopPropagation();">
                         Entregar
                       </button>
@@ -493,9 +529,8 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
 
-        renderKanbanCards(completedAiList, cardsCompletedAi, false);
-        renderKanbanCards(pendingExpertList, cardsPendingExpert, true);
-        renderKanbanCards(completedExpertList, cardsCompletedExpert, false);
+        renderKanbanCards(doingList, cardsDoing, true);
+        renderKanbanCards(doneList, cardsDone, false);
       }
 
       // Add action button listeners

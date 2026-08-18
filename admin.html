@@ -340,6 +340,83 @@
       font-size: 13px;
       font-style: italic;
     }
+
+    /* Status Dots System for Cards */
+    .status-indicators-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      margin: 10px 0;
+    }
+    .status-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    .status-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .status-dot.dot-ai {
+      border: 2px solid #10b981;
+    }
+    .status-dot.dot-ai.solid {
+      background: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    .status-dot.dot-ai.outline {
+      background: transparent;
+      border-color: #cbd5e1;
+    }
+    .status-dot.dot-expert-pending {
+      border: 2px solid #f59e0b;
+    }
+    .status-dot.dot-expert-pending.solid {
+      background: #f59e0b;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+    .status-dot.dot-expert-pending.outline {
+      background: transparent;
+      border-color: #cbd5e1;
+    }
+    .status-dot.dot-expert-done {
+      border: 2px solid #3b82f6;
+    }
+    .status-dot.dot-expert-done.solid {
+      background: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    .status-dot.dot-expert-done.outline {
+      background: transparent;
+      border-color: #cbd5e1;
+    }
+
+    /* Kanban Legend */
+    .kanban-legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      font-size: 12px;
+      color: var(--text-medium);
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
@@ -509,45 +586,49 @@
           </table>
         </div>
 
-        <!-- 2. Board View (Jira-style Kanban Board) -->
+        <!-- 2. Board View (2 Columns: Doing vs Done) -->
         <div id="leadsBoardView" style="display: none;">
-          <div class="kanban-board">
-            
-            <!-- Column 1: AI Optimization Completed (Automated) -->
-            <div class="kanban-column" id="colCompletedAi" style="border-top: 3px solid var(--color-mint);">
-              <div class="kanban-col-header">
-                <div class="kanban-col-title" style="color: var(--color-mint-hover);">
-                  <span>🟢 Optimizado por IA</span>
-                </div>
-                <span class="kanban-col-badge" id="badgeCompletedAi" style="background: var(--color-mint-light); color: var(--color-mint-hover);">0</span>
-              </div>
-              <div class="kanban-cards-container" id="cardsCompletedAi">
-                <!-- Cards injected dynamically -->
-              </div>
+          <!-- Status Indicators Legend -->
+          <div class="kanban-legend">
+            <span style="font-weight: 700; color: var(--text-dark);">Estado de Solicitudes:</span>
+            <div class="status-item">
+              <span class="status-dot dot-ai solid"></span> <span>Optimización IA</span>
             </div>
+            <div class="status-item">
+              <span class="status-dot dot-expert-pending solid"></span> <span>Asesoría Solicitada</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot dot-expert-done solid"></span> <span>Asesoría Entregada</span>
+            </div>
+            <span style="color: var(--text-light); font-size: 11px; margin-left: auto;">
+              ● Relleno = Activo / Realizado &nbsp;|&nbsp; ○ Borde = No solicitado / Inactivo
+            </span>
+          </div>
 
-            <!-- Column 2: Pending Human Expert (To Do / Action Required) -->
-            <div class="kanban-column" id="colPendingExpert" style="border-top: 3px solid #f59e0b;">
+          <div class="kanban-board" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));">
+            
+            <!-- Column 1: Doing (En Proceso / Por Atender) -->
+            <div class="kanban-column" id="colDoing" style="border-top: 3px solid #f59e0b;">
               <div class="kanban-col-header">
                 <div class="kanban-col-title" style="color: #b45309;">
-                  <span>🟡 Asesoría solicitada (por hacer)</span>
+                  <span>🟡 En Proceso / Por Atender (Doing)</span>
                 </div>
-                <span class="kanban-col-badge" id="badgePendingExpert" style="background: #fef3c7; color: #b45309;">0</span>
+                <span class="kanban-col-badge" id="badgeDoing" style="background: #fef3c7; color: #b45309;">0</span>
               </div>
-              <div class="kanban-cards-container" id="cardsPendingExpert">
+              <div class="kanban-cards-container" id="cardsDoing">
                 <!-- Cards injected dynamically -->
               </div>
             </div>
 
-            <!-- Column 3: Human Expert Completed (Done) -->
-            <div class="kanban-column" id="colCompletedExpert" style="border-top: 3px solid #3b82f6;">
+            <!-- Column 2: Done (Finalizado / Hecho) -->
+            <div class="kanban-column" id="colDone" style="border-top: 3px solid #10b981;">
               <div class="kanban-col-header">
-                <div class="kanban-col-title" style="color: #1d4ed8;">
-                  <span>🔵 Asesoría entregada (hecho)</span>
+                <div class="kanban-col-title" style="color: var(--color-mint-hover);">
+                  <span>🟢 Finalizado / Todo Entregado (Done)</span>
                 </div>
-                <span class="kanban-col-badge" id="badgeCompletedExpert" style="background: #dbeafe; color: #1d4ed8;">0</span>
+                <span class="kanban-col-badge" id="badgeDone" style="background: var(--color-mint-light); color: var(--color-mint-hover);">0</span>
               </div>
-              <div class="kanban-cards-container" id="cardsCompletedExpert">
+              <div class="kanban-cards-container" id="cardsDone">
                 <!-- Cards injected dynamically -->
               </div>
             </div>

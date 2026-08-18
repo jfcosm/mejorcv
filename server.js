@@ -1316,30 +1316,50 @@ app.post('/api/paypal/capture-order', async (req, res) => {
           config
         );
       }
-      await updateAnalysisDoc(analysisId, {
-        paymentStatus: 'completed_ai',
+      const updatePayload = {
+        hasAiPaid: true,
+        aiPaidAt: new Date().toISOString(),
+        aiOrderId: orderID,
+        aiTransactionId: paypalTransactionId,
         paymentMethod: 'paypal',
-        paypalOrderId: orderID,
-        paypalTransactionId,
         paidAt: new Date().toISOString(),
         optimizedText
-      });
+      };
+      // Maintain expert status if already acquired
+      if (analysis.hasExpertPaid || analysis.paymentStatus === 'pending_expert' || analysis.expertContact) {
+        updatePayload.hasExpertPaid = true;
+        updatePayload.expertStatus = analysis.expertStatus || 'pending';
+        updatePayload.paymentStatus = updatePayload.expertStatus === 'completed' ? 'completed_expert' : 'pending_expert';
+      } else {
+        updatePayload.paymentStatus = 'completed_ai';
+      }
+
+      await updateAnalysisDoc(analysisId, updatePayload);
       recordGeminiCall('optimization');
       return res.json({ success: true, tier: 'ai', optimizedText });
 
     } else if (tier === 'expert') {
-      await updateAnalysisDoc(analysisId, {
-        paymentStatus: 'pending_expert',
+      const updatePayload = {
+        hasExpertPaid: true,
+        expertStatus: 'pending',
+        expertPaidAt: new Date().toISOString(),
+        expertOrderId: orderID,
+        expertTransactionId: paypalTransactionId,
         paymentMethod: 'paypal',
-        paypalOrderId: orderID,
-        paypalTransactionId,
         paidAt: new Date().toISOString(),
         expertContact: {
           email: contact?.email || '',
           phone: contact?.phone || '',
           requestedAt: new Date().toISOString()
-        }
-      });
+        },
+        paymentStatus: 'pending_expert'
+      };
+      // Maintain AI status if already acquired
+      if (analysis.hasAiPaid || analysis.paymentStatus === 'completed_ai') {
+        updatePayload.hasAiPaid = true;
+      }
+
+      await updateAnalysisDoc(analysisId, updatePayload);
       return res.json({
         success: true,
         tier: 'expert',
@@ -1457,7 +1477,11 @@ app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
   const { analysisId } = req.body;
   if (!analysisId) return res.status(400).json({ error: "ID faltante" });
   
-  await updateAnalysisDoc(analysisId, { paymentStatus: 'completed_expert' });
+  await updateAnalysisDoc(analysisId, {
+    expertStatus: 'completed',
+    expertCompletedAt: new Date().toISOString(),
+    paymentStatus: 'completed_expert'
+  });
   
   res.json({ success: true });
 });
