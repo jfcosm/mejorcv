@@ -43,6 +43,11 @@ function initFirebase() {
         serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
       }
       
+      // Fix escaped newlines in private key when set in Vercel environment variables
+      if (serviceAccount && serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+
       if (!admin.apps.length) {
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount)
@@ -1519,6 +1524,8 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   
   // Omit password from responses for safety
   delete secureConfig.adminPassword;
+  
+  secureConfig.firestoreConnected = Boolean(initFirebase());
   
   res.json(secureConfig);
 });

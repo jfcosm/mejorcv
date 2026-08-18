@@ -762,7 +762,15 @@ document.addEventListener('DOMContentLoaded', () => {
       setCaptchaEnabled.checked = settings.captchaEnabled !== false;
       setEvalPrompt.value = settings.evaluationPrompt || '';
       setOptPrompt.value = settings.optimizationPrompt || '';
-      // Password managed via environment variables
+
+      const dbStorageText = document.getElementById('dbStorageText');
+      if (dbStorageText) {
+        if (settings.firestoreConnected) {
+          dbStorageText.innerHTML = '<span style="color:#059669;">🔥 Cloud Firestore (Persistente en la nube)</span>';
+        } else {
+          dbStorageText.innerHTML = '<span style="color:#d97706;">⚠️ Memoria Local / Efímera (Se reinicia en cada nuevo deploy en Vercel)</span>';
+        }
+      }
 
     } catch (err) {
       console.error(err);
