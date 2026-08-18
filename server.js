@@ -169,8 +169,8 @@ async function getAdminData(config) {
       const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
       const documentLog = analysesList.map(a => {
-        const hasAiPaid = Boolean(a.hasAiPaid || a.paymentStatus === 'completed_ai' || a.optimizedText);
-        const hasExpertPaid = Boolean(a.hasExpertPaid || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
+        const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
+        const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
         const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
         return {
@@ -218,8 +218,8 @@ async function getAdminData(config) {
   const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
   const documentLog = analysesList.map(a => {
-    const hasAiPaid = Boolean(a.hasAiPaid || a.paymentStatus === 'completed_ai' || a.optimizedText);
-    const hasExpertPaid = Boolean(a.hasExpertPaid || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
+    const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
+    const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
     const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
     return {
