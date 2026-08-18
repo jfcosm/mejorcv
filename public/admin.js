@@ -440,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const doneList = [];
 
         leads.forEach(row => {
-          const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+          const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
           if (isExpertPending) {
             doingList.push(row);
           } else {
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           list.forEach(row => {
             const isAiPaid = Boolean(row.hasAiPaid || row.paymentStatus === 'completed_ai');
-            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert');
+            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
             const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
             const cleanPhone = row.expertContact?.phone ? row.expertContact.phone.replace(/[^0-9]/g, '') : '';

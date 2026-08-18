@@ -162,23 +162,32 @@ async function getAdminData(config) {
       analysesList.sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0));
 
       const totalAnalyses = analysesList.length;
-      const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
-      const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert').length;
-      const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
+      const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
+      const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
+      const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
       const paidExpert = paidExpertPending + paidExpertCompleted;
       const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
-      const documentLog = analysesList.map(a => ({
-        id: a.id,
-        filename: a.filename || 'cv_documento',
-        fileSize: a.fileSize || 0,
-        fileType: a.fileType || '.pdf',
-        uploadedAt: a.uploadedAt || new Date().toISOString(),
-        ip: a.ip || '127.0.0.1',
-        rating: a.rating || 3,
-        paymentStatus: a.paymentStatus || 'free',
-        expertContact: a.expertContact || null
-      }));
+      const documentLog = analysesList.map(a => {
+        const hasAiPaid = Boolean(a.hasAiPaid || a.paymentStatus === 'completed_ai' || a.optimizedText);
+        const hasExpertPaid = Boolean(a.hasExpertPaid || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
+        const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
+
+        return {
+          id: a.id,
+          filename: a.filename || 'cv_documento',
+          fileSize: a.fileSize || 0,
+          fileType: a.fileType || '.pdf',
+          uploadedAt: a.uploadedAt || new Date().toISOString(),
+          ip: a.ip || '127.0.0.1',
+          rating: a.rating || 3,
+          paymentStatus: a.paymentStatus || 'free',
+          hasAiPaid,
+          hasExpertPaid,
+          expertStatus,
+          expertContact: a.expertContact || null
+        };
+      });
 
       return {
         stats: {
@@ -202,23 +211,32 @@ async function getAdminData(config) {
   const totalVisits = db.visits || 0;
   const analysesList = db.analyses || [];
   const totalAnalyses = analysesList.length;
-  const paidAi = analysesList.filter(a => a.paymentStatus === 'completed_ai').length;
-  const paidExpertPending = analysesList.filter(a => a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert').length;
-  const paidExpertCompleted = analysesList.filter(a => a.paymentStatus === 'completed_expert').length;
+  const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
+  const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
+  const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
   const paidExpert = paidExpertPending + paidExpertCompleted;
   const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
 
-  const documentLog = analysesList.map(a => ({
-    id: a.id,
-    filename: a.filename || 'cv_documento',
-    fileSize: a.fileSize || 0,
-    fileType: a.fileType || '.pdf',
-    uploadedAt: a.uploadedAt || new Date().toISOString(),
-    ip: a.ip || '127.0.0.1',
-    rating: a.rating || 3,
-    paymentStatus: a.paymentStatus || 'free',
-    expertContact: a.expertContact || null
-  })).reverse();
+  const documentLog = analysesList.map(a => {
+    const hasAiPaid = Boolean(a.hasAiPaid || a.paymentStatus === 'completed_ai' || a.optimizedText);
+    const hasExpertPaid = Boolean(a.hasExpertPaid || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
+    const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
+
+    return {
+      id: a.id,
+      filename: a.filename || 'cv_documento',
+      fileSize: a.fileSize || 0,
+      fileType: a.fileType || '.pdf',
+      uploadedAt: a.uploadedAt || new Date().toISOString(),
+      ip: a.ip || '127.0.0.1',
+      rating: a.rating || 3,
+      paymentStatus: a.paymentStatus || 'free',
+      hasAiPaid,
+      hasExpertPaid,
+      expertStatus,
+      expertContact: a.expertContact || null
+    };
+  }).reverse();
 
   return {
     stats: {
