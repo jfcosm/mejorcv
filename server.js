@@ -6,7 +6,8 @@ const crypto = require('crypto');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const AdmZip = require('adm-zip');
-const admin = require('firebase-admin');
+const { initializeApp, getApps, cert } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 require('dotenv').config();
 
 const app = express();
@@ -87,13 +88,17 @@ function initFirebase() {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
 
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+    let appInstance;
+    const activeApps = getApps();
+    if (!activeApps.length) {
+      appInstance = initializeApp({
+        credential: cert(serviceAccount)
       });
+    } else {
+      appInstance = activeApps[0];
     }
 
-    firestoreDb = admin.firestore();
+    firestoreDb = getFirestore(appInstance);
     firebaseProjectId = serviceAccount.project_id;
     lastFirebaseError = null;
     console.log("Connected to Firebase Cloud Firestore successfully for project:", firebaseProjectId);
