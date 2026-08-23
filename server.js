@@ -1529,7 +1529,7 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
 
     res.json({
       preferenceId: created.id,
-      initPoint: created.sandbox_init_point || created.init_point,
+      initPoint: created.init_point || created.sandbox_init_point,
       sandboxInitPoint: created.sandbox_init_point
     });
 
