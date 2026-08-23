@@ -1332,6 +1332,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Quick Test Payment from Navbar ($1.000 CLP)
+  const navQuickTestPayBtn = document.getElementById('navQuickTestPayBtn');
+  if (navQuickTestPayBtn) {
+    navQuickTestPayBtn.addEventListener('click', async () => {
+      const originalHtml = navQuickTestPayBtn.innerHTML;
+      navQuickTestPayBtn.disabled = true;
+      navQuickTestPayBtn.innerHTML = '⏳ Conectando...';
+
+      try {
+        const testAnalysisId = currentAnalysisId || ('test_nav_' + Date.now());
+        const resp = await fetch('/api/mercadopago/create-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: testAnalysisId,
+            tier: 'ai'
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.error || 'Error al iniciar pago de prueba');
+        }
+
+        const targetUrl = data.initPoint || data.sandboxInitPoint;
+        if (!targetUrl) {
+          throw new Error('No se recibió la URL de pago de Mercado Pago.');
+        }
+
+        window.location.href = targetUrl;
+
+      } catch (err) {
+        navQuickTestPayBtn.disabled = false;
+        navQuickTestPayBtn.innerHTML = originalHtml;
+        alert('❌ Error al iniciar prueba rápida de Mercado Pago:\n' + err.message);
+      }
+    });
+  }
+
   // Render official PayPal smart buttons inside #paypalButtonContainer
   async function initPayPalButtons(amount) {
     if (!paypalButtonContainer) return;
