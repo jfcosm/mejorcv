@@ -689,6 +689,17 @@
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="form-group">
+              <label for="setPriceAiClp">Precio Optimización IA (CLP - Mercado Pago)</label>
+              <input type="number" step="100" id="setPriceAiClp" class="form-control" placeholder="1000" required>
+            </div>
+            <div class="form-group">
+              <label for="setPriceExpertClp">Precio Experto Manual (CLP - Mercado Pago)</label>
+              <input type="number" step="500" id="setPriceExpertClp" class="form-control" placeholder="25000" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="form-group">
               <label for="setRateLimit">Límite de subidas por IP (por hora)</label>
               <input type="number" id="setRateLimit" class="form-control" required>
             </div>

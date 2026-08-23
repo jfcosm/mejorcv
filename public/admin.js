@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const setGeminiKey = document.getElementById('setGeminiKey');
   const setPriceAi = document.getElementById('setPriceAi');
   const setPriceExpert = document.getElementById('setPriceExpert');
+  const setPriceAiClp = document.getElementById('setPriceAiClp');
+  const setPriceExpertClp = document.getElementById('setPriceExpertClp');
   const setRateLimit = document.getElementById('setRateLimit');
   const setAdminPassword = null;
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
@@ -756,6 +758,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 1.0;
       setPriceExpert.value = settings.priceExpert !== undefined ? settings.priceExpert : 25.0;
+      if (setPriceAiClp) setPriceAiClp.value = settings.priceAiClp !== undefined ? settings.priceAiClp : 1000;
+      if (setPriceExpertClp) setPriceExpertClp.value = settings.priceExpertClp !== undefined ? settings.priceExpertClp : 25000;
       setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
       setOptExpertEnabled.checked = settings.optExpertEnabled !== false;
@@ -786,6 +790,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       priceAi: parseFloat(setPriceAi.value),
       priceExpert: parseFloat(setPriceExpert.value),
+      priceAiClp: setPriceAiClp ? parseInt(setPriceAiClp.value, 10) : 1000,
+      priceExpertClp: setPriceExpertClp ? parseInt(setPriceExpertClp.value, 10) : 25000,
       rateLimitPerHour: parseInt(setRateLimit.value, 10),
       optAiEnabled: setOptAiEnabled.checked,
       optExpertEnabled: setOptExpertEnabled.checked,

@@ -3,6 +3,8 @@
   "geminiApiKey": "",
   "priceAi": 1,
   "priceExpert": 25,
+  "priceAiClp": 1000,
+  "priceExpertClp": 25000,
   "optAiEnabled": false,
   "optExpertEnabled": true,
   "captchaEnabled": true,

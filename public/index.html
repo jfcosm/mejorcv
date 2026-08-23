@@ -400,18 +400,37 @@
         </div>
         <div class="checkout-row">
           <span>Impuestos</span>
-          <span>$0.00 USD</span>
+          <span>$0.00</span>
         </div>
-        <div class="checkout-row">
+        <div class="checkout-row highlight" style="font-weight: 700;">
           <span>Total a pagar</span>
-          <span id="checkoutTotal">$1.00 USD</span>
+          <div style="text-align: right;">
+            <span id="checkoutTotal">$1.00 USD</span>
+            <div id="checkoutTotalClp" style="font-size: 12px; color: var(--text-light); font-weight: 500;">(~ $1.000 CLP)</div>
+          </div>
         </div>
       </div>
 
-      <!-- Payment Buttons: PayPal JS SDK renders here -->
+      <!-- Payment Buttons -->
       <div class="payment-methods" id="paymentMethodsView">
+        <!-- Mercado Pago / Webpay (Débito/Crédito en CLP) -->
+        <button type="button" class="payment-btn mercadopago" id="mpCheckoutBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+          <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left; line-height: 1.25;">
+            <span id="mpCheckoutBtnTitle" style="font-size: 14px; font-weight: 700;">Pagar con Mercado Pago / Webpay</span>
+            <span id="mpCheckoutBtnSubtitle" style="font-size: 11px; opacity: 0.92; font-weight: 400;">Débito (CuentaRUT/Redcompra), Crédito y Transferencias en CLP</span>
+          </div>
+        </button>
+        <div id="mpLoadingHint" style="display: none; text-align:center; font-size:12px; color: var(--text-light); margin-top: -6px;">Conectando con Mercado Pago...</div>
+
+        <div class="payment-divider" id="paymentDivider"><span>o pagar con PayPal (USD)</span></div>
+
+        <!-- PayPal JS SDK renders here -->
         <div id="paypalButtonContainer"></div>
-        <p class="paypal-loading-hint" id="paypalLoadingHint" style="text-align:center; font-size:13px; color: var(--text-light); margin-top: 12px;">Cargando métodos de pago...</p>
+        <p class="paypal-loading-hint" id="paypalLoadingHint" style="text-align:center; font-size:13px; color: var(--text-light); margin-top: 4px;">Cargando métodos de pago...</p>
+        <div id="paymentInlineError" style="display:none; color: #ef4444; font-size: 13px; text-align: center; margin-top: 8px;"></div>
       </div>
 
       <!-- Success View (hidden initially) -->

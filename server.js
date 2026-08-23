@@ -8,6 +8,7 @@ const mammoth = require('mammoth');
 const AdmZip = require('adm-zip');
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 require('dotenv').config();
 
 const app = express();
@@ -387,6 +388,8 @@ function readConfig() {
       geminiApiKey: "",
       priceAi: 1.0,
       priceExpert: 25.0,
+      priceAiClp: 1000,
+      priceExpertClp: 25000,
       optAiEnabled: false,
       optExpertEnabled: true,
       captchaEnabled: true,
@@ -1175,7 +1178,11 @@ app.get('/api/config', async (req, res) => {
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     priceAi: config.priceAi || 1.0,
     priceExpert: config.priceExpert || 25.0,
-    paypalClientId: process.env.PAYPAL_CLIENT_ID || ''
+    priceAiClp: config.priceAiClp || 1000,
+    priceExpertClp: config.priceExpertClp || 25000,
+    paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
+    mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
+    mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN
   });
 });
 
@@ -1211,11 +1218,89 @@ app.post('/api/expert-request', async (req, res) => {
 });
 
 
+// ─── Unified Payment Processing Helper ────────────────────────────────────
+
+async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mercadopago', transactionId = '', orderId = '', contact = null }) {
+  let analysis = await getAnalysisDoc(analysisId);
+  if (!analysis) {
+    analysis = {
+      id: analysisId,
+      filename: 'cv_usuario',
+      uploadedAt: new Date().toISOString(),
+      rating: 4,
+      paymentStatus: 'free',
+      originalText: '',
+      optimizedText: ''
+    };
+  }
+
+  if (tier === 'ai') {
+    let optimizedText = analysis.optimizedText;
+    if (!optimizedText) {
+      const config = await getConfigDoc();
+      optimizedText = await generateAiOptimization(
+        analysis.filename,
+        analysis.originalText,
+        analysis.lang || 'es',
+        config
+      );
+    }
+    const updatePayload = {
+      hasAiPaid: true,
+      aiPaidAt: new Date().toISOString(),
+      aiOrderId: orderId || transactionId,
+      aiTransactionId: transactionId,
+      paymentMethod,
+      paidAt: new Date().toISOString(),
+      optimizedText
+    };
+    if (analysis.hasExpertPaid || analysis.paymentStatus === 'pending_expert' || analysis.expertContact) {
+      updatePayload.hasExpertPaid = true;
+      updatePayload.expertStatus = analysis.expertStatus || 'pending';
+      updatePayload.paymentStatus = updatePayload.expertStatus === 'completed' ? 'completed_expert' : 'pending_expert';
+    } else {
+      updatePayload.paymentStatus = 'completed_ai';
+    }
+
+    await updateAnalysisDoc(analysisId, updatePayload);
+    recordGeminiCall('optimization');
+    return { success: true, tier: 'ai', optimizedText };
+
+  } else if (tier === 'expert') {
+    const updatePayload = {
+      hasExpertPaid: true,
+      expertStatus: 'pending',
+      expertPaidAt: new Date().toISOString(),
+      expertOrderId: orderId || transactionId,
+      expertTransactionId: transactionId,
+      paymentMethod,
+      paidAt: new Date().toISOString(),
+      expertContact: {
+        email: contact?.email || analysis.expertContact?.email || '',
+        phone: contact?.phone || analysis.expertContact?.phone || '',
+        requestedAt: new Date().toISOString()
+      },
+      paymentStatus: 'pending_expert'
+    };
+    if (analysis.hasAiPaid || analysis.paymentStatus === 'completed_ai') {
+      updatePayload.hasAiPaid = true;
+    }
+
+    await updateAnalysisDoc(analysisId, updatePayload);
+    return {
+      success: true,
+      tier: 'expert',
+      message: '¡Pago completado! Un experto de Cintia te contactará en máximo 24 horas para coordinar tu sesión de asesoría.'
+    };
+  } else {
+    throw new Error('Tier de pago inválido.');
+  }
+}
+
+
 // ─── PayPal Orders API v2 Integration ──────────────────────────────────────
 
 // In-memory cache: maps PayPal orderID → { analysisId, analysis }
-// Acts as a safety net in case Firestore/memory lookup fails in capture-order
-// (Vercel can spin a new serverless instance between create-order and capture-order)
 const paypalOrderCache = new Map();
 
 // Helper: get PayPal OAuth2 access token
@@ -1251,7 +1336,6 @@ async function getPayPalAccessToken() {
 }
 
 // POST /api/paypal/create-order
-// Creates a PayPal order for the given tier (ai=$1, expert=$25)
 app.post('/api/paypal/create-order', async (req, res) => {
   try {
     const { analysisId, tier } = req.body;
@@ -1317,7 +1401,6 @@ app.post('/api/paypal/create-order', async (req, res) => {
 });
 
 // POST /api/paypal/capture-order
-// Captures the payment after PayPal approval. Handles AI unlock or expert registration.
 app.post('/api/paypal/capture-order', async (req, res) => {
   try {
     const { orderID, analysisId, tier, contact } = req.body;
@@ -1325,31 +1408,8 @@ app.post('/api/paypal/capture-order', async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos: orderID, analysisId y tier son requeridos.' });
     }
 
-    // Primary lookup: Firestore / local db / orderCache
-    let analysis = await getAnalysisDoc(analysisId);
-    if (!analysis && paypalOrderCache.has(orderID)) {
-      const cached = paypalOrderCache.get(orderID);
-      if (cached.analysisId === analysisId) {
-        analysis = cached.analysis;
-      }
-    }
-
-    // Resilient fallback: create analysis record if missing on this instance
-    if (!analysis) {
-      analysis = {
-        id: analysisId,
-        filename: 'cv_usuario',
-        uploadedAt: new Date().toISOString(),
-        rating: 4,
-        paymentStatus: 'free',
-        originalText: '',
-        optimizedText: ''
-      };
-    }
-
     const { accessToken, baseUrl } = await getPayPalAccessToken();
 
-    // Capture the payment with PayPal
     const captureResponse = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
       method: 'POST',
       headers: {
@@ -1371,74 +1431,18 @@ app.post('/api/paypal/capture-order', async (req, res) => {
     }
 
     const paypalTransactionId = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-
-    // Clean up cache entry
     paypalOrderCache.delete(orderID);
 
-    if (tier === 'ai') {
-      let optimizedText = analysis.optimizedText;
-      if (!optimizedText) {
-        const config = await getConfigDoc();
-        optimizedText = await generateAiOptimization(
-          analysis.filename,
-          analysis.originalText,
-          analysis.lang || 'es',
-          config
-        );
-      }
-      const updatePayload = {
-        hasAiPaid: true,
-        aiPaidAt: new Date().toISOString(),
-        aiOrderId: orderID,
-        aiTransactionId: paypalTransactionId,
-        paymentMethod: 'paypal',
-        paidAt: new Date().toISOString(),
-        optimizedText
-      };
-      // Maintain expert status if already acquired
-      if (analysis.hasExpertPaid || analysis.paymentStatus === 'pending_expert' || analysis.expertContact) {
-        updatePayload.hasExpertPaid = true;
-        updatePayload.expertStatus = analysis.expertStatus || 'pending';
-        updatePayload.paymentStatus = updatePayload.expertStatus === 'completed' ? 'completed_expert' : 'pending_expert';
-      } else {
-        updatePayload.paymentStatus = 'completed_ai';
-      }
+    const result = await processSuccessfulPayment({
+      analysisId,
+      tier,
+      paymentMethod: 'paypal',
+      transactionId: paypalTransactionId,
+      orderId: orderID,
+      contact
+    });
 
-      await updateAnalysisDoc(analysisId, updatePayload);
-      recordGeminiCall('optimization');
-      return res.json({ success: true, tier: 'ai', optimizedText });
-
-    } else if (tier === 'expert') {
-      const updatePayload = {
-        hasExpertPaid: true,
-        expertStatus: 'pending',
-        expertPaidAt: new Date().toISOString(),
-        expertOrderId: orderID,
-        expertTransactionId: paypalTransactionId,
-        paymentMethod: 'paypal',
-        paidAt: new Date().toISOString(),
-        expertContact: {
-          email: contact?.email || '',
-          phone: contact?.phone || '',
-          requestedAt: new Date().toISOString()
-        },
-        paymentStatus: 'pending_expert'
-      };
-      // Maintain AI status if already acquired
-      if (analysis.hasAiPaid || analysis.paymentStatus === 'completed_ai') {
-        updatePayload.hasAiPaid = true;
-      }
-
-      await updateAnalysisDoc(analysisId, updatePayload);
-      return res.json({
-        success: true,
-        tier: 'expert',
-        message: '¡Pago completado! Un experto de Cintia te contactará en máximo 24 horas para coordinar tu sesión de asesoría.'
-      });
-
-    } else {
-      return res.status(400).json({ error: 'Tier de pago inválido.' });
-    }
+    res.json(result);
 
   } catch (err) {
     console.error('Error in /api/paypal/capture-order:', err);
@@ -1447,6 +1451,194 @@ app.post('/api/paypal/capture-order', async (req, res) => {
 });
 
 // ─── End PayPal Integration ─────────────────────────────────────────────────
+
+
+// ─── Mercado Pago Integration ──────────────────────────────────────────────
+
+function getMercadoPagoClient() {
+  const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!token) {
+    throw new Error('Mercado Pago no está configurado (MERCADOPAGO_ACCESS_TOKEN no encontrado).');
+  }
+  return new MercadoPagoConfig({
+    accessToken: token,
+    options: { timeout: 7000 }
+  });
+}
+
+const mpPreferenceCache = new Map();
+
+// POST /api/mercadopago/create-preference
+app.post('/api/mercadopago/create-preference', async (req, res) => {
+  try {
+    const { analysisId, tier, contact } = req.body;
+    if (!analysisId || !tier) {
+      return res.status(400).json({ error: 'Faltan datos: analysisId y tier son requeridos.' });
+    }
+
+    const config = await getConfigDoc();
+    const amountClp = tier === 'ai'
+      ? Number(config.priceAiClp || 1000)
+      : Number(config.priceExpertClp || 25000);
+
+    const description = tier === 'ai'
+      ? 'Cintia - Optimización de CV con IA'
+      : 'Cintia - Asesoría y Optimización por Experto Humano';
+
+    const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+    const client = getMercadoPagoClient();
+    const preference = new Preference(client);
+
+    const externalRefObj = {
+      analysisId,
+      tier,
+      contact: contact || null
+    };
+
+    const preferenceData = {
+      items: [
+        {
+          id: `${tier}_${analysisId}`,
+          title: description,
+          description,
+          unit_price: amountClp,
+          quantity: 1,
+          currency_id: 'CLP'
+        }
+      ],
+      back_urls: {
+        success: `${origin}/?payment=success&tier=${tier}&analysisId=${analysisId}&provider=mercadopago`,
+        failure: `${origin}/?payment=failure&tier=${tier}&analysisId=${analysisId}&provider=mercadopago`,
+        pending: `${origin}/?payment=pending&tier=${tier}&analysisId=${analysisId}&provider=mercadopago`
+      },
+      auto_return: 'approved',
+      notification_url: (origin.includes('localhost') || origin.includes('127.0.0.1'))
+        ? undefined
+        : `${origin}/api/mercadopago/webhook`,
+      external_reference: JSON.stringify(externalRefObj),
+      statement_descriptor: 'CINTIA PRO'
+    };
+
+    const created = await preference.create({ body: preferenceData });
+
+    mpPreferenceCache.set(created.id, { analysisId, tier, contact });
+    if (mpPreferenceCache.size > 200) {
+      const firstKey = mpPreferenceCache.keys().next().value;
+      mpPreferenceCache.delete(firstKey);
+    }
+
+    res.json({
+      preferenceId: created.id,
+      initPoint: created.sandbox_init_point || created.init_point,
+      sandboxInitPoint: created.sandbox_init_point
+    });
+
+  } catch (err) {
+    console.error('Error in /api/mercadopago/create-preference:', err);
+    res.status(500).json({ error: err.message || 'Error al crear la preferencia de pago con Mercado Pago.' });
+  }
+});
+
+// POST /api/mercadopago/check-status
+// Instant validation upon user return to Cintia
+app.post('/api/mercadopago/check-status', async (req, res) => {
+  try {
+    const { paymentId, analysisId, tier, contact } = req.body;
+    if (!paymentId) {
+      return res.status(400).json({ error: 'Falta paymentId para verificar la transacción.' });
+    }
+
+    const client = getMercadoPagoClient();
+    const payment = new Payment(client);
+    const paymentData = await payment.get({ id: paymentId });
+
+    if (!paymentData || paymentData.status !== 'approved') {
+      return res.status(400).json({
+        error: `Estado del pago: '${paymentData?.status || 'desconocido'}'. El servicio se activará una vez aprobado.`
+      });
+    }
+
+    let extData = {};
+    try {
+      if (paymentData.external_reference) {
+        extData = JSON.parse(paymentData.external_reference);
+      }
+    } catch (e) {}
+
+    const targetAnalysisId = analysisId || extData.analysisId;
+    const targetTier = tier || extData.tier || 'ai';
+    const targetContact = contact || extData.contact;
+
+    if (!targetAnalysisId) {
+      return res.status(400).json({ error: 'No se pudo identificar el análisis asociado al pago.' });
+    }
+
+    const result = await processSuccessfulPayment({
+      analysisId: targetAnalysisId,
+      tier: targetTier,
+      paymentMethod: 'mercadopago',
+      transactionId: String(paymentData.id),
+      orderId: String(paymentData.order?.id || paymentData.id),
+      contact: targetContact
+    });
+
+    res.json({
+      ...result,
+      status: paymentData.status,
+      paymentId: paymentData.id
+    });
+
+  } catch (err) {
+    console.error('Error in /api/mercadopago/check-status:', err);
+    res.status(500).json({ error: err.message || 'Error al verificar el pago con Mercado Pago.' });
+  }
+});
+
+// POST /api/mercadopago/webhook
+app.post('/api/mercadopago/webhook', async (req, res) => {
+  try {
+    const topic = req.query.topic || req.query.type || req.body?.type || req.body?.topic;
+    const paymentId = req.body?.data?.id || req.query['data.id'] || req.query?.id;
+
+    res.status(200).send('OK');
+
+    if ((topic === 'payment' || req.body?.action?.startsWith('payment.')) && paymentId) {
+      try {
+        const client = getMercadoPagoClient();
+        const payment = new Payment(client);
+        const paymentData = await payment.get({ id: paymentId });
+
+        if (paymentData && paymentData.status === 'approved') {
+          let extData = {};
+          try {
+            if (paymentData.external_reference) {
+              extData = JSON.parse(paymentData.external_reference);
+            }
+          } catch (e) {}
+
+          if (extData.analysisId && extData.tier) {
+            await processSuccessfulPayment({
+              analysisId: extData.analysisId,
+              tier: extData.tier,
+              paymentMethod: 'mercadopago',
+              transactionId: String(paymentData.id),
+              orderId: String(paymentData.order?.id || paymentData.id),
+              contact: extData.contact
+            });
+            console.log(`[Mercado Pago Webhook] Payment ${paymentId} approved and unlocked for analysis ${extData.analysisId}`);
+          }
+        }
+      } catch (innerErr) {
+        console.error('[Mercado Pago Webhook] Error fetching payment:', innerErr.message);
+      }
+    }
+  } catch (err) {
+    console.error('[Mercado Pago Webhook] Outer error:', err);
+    if (!res.headersSent) res.status(500).send('Webhook processing error');
+  }
+});
+
+// ─── End Mercado Pago Integration ──────────────────────────────────────────
 
 // Retrieve optimized CV for completed AI sessions (useful on refresh/recovery)
 app.get('/api/analysis/:id', async (req, res) => {
@@ -1595,6 +1787,8 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     }
     if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
+    if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 1000;
+    if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
     if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
     if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = !!newSettings.captchaEnabled;

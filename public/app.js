@@ -44,9 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const checkoutService = document.getElementById('checkoutService');
   const checkoutPriceOriginal = document.getElementById('checkoutPriceOriginal');
   const checkoutTotal = document.getElementById('checkoutTotal');
+  const checkoutTotalClp = document.getElementById('checkoutTotalClp');
   const closeModalBtn = document.getElementById('closeModalBtn');
   
   const paymentMethodsView = document.getElementById('paymentMethodsView');
+  const mpCheckoutBtn = document.getElementById('mpCheckoutBtn');
+  const mpLoadingHint = document.getElementById('mpLoadingHint');
+  const mpCheckoutBtnTitle = document.getElementById('mpCheckoutBtnTitle');
+  const mpCheckoutBtnSubtitle = document.getElementById('mpCheckoutBtnSubtitle');
+  const paymentDivider = document.getElementById('paymentDivider');
+  const paymentInlineError = document.getElementById('paymentInlineError');
   const paypalButtonContainer = document.getElementById('paypalButtonContainer');
   const paypalLoadingHint = document.getElementById('paypalLoadingHint');
   
@@ -492,6 +499,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load configuration parameters
   fetchConfig();
+  checkPaymentReturnFromUrl();
+
+  // Handle return redirect from Mercado Pago Checkout Pro
+  async function checkPaymentReturnFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentState = urlParams.get('payment');
+    const analysisId = urlParams.get('analysisId');
+    const tier = urlParams.get('tier') || 'ai';
+    const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id');
+
+    if (paymentState === 'success' && analysisId) {
+      currentAnalysisId = analysisId;
+      currentTier = tier;
+
+      // Show payment confirmation in progress
+      checkoutModal.showModal();
+      paymentMethodsView.style.display = 'none';
+      successPaymentView.style.display = 'flex';
+      successPaymentIcon.style.display = 'none';
+      successPaymentSpinner.style.display = 'block';
+      successPaymentTitle.textContent = currentLanguage === 'en' ? 'Confirming Payment...' : 'Confirmando tu Pago...';
+      successPaymentMessage.textContent = currentLanguage === 'en'
+        ? 'Verifying transaction with Mercado Pago. Please wait a moment...'
+        : 'Verificando la transacción con Mercado Pago. Un momento por favor...';
+
+      try {
+        let result = null;
+
+        // Verify with backend check-status
+        if (paymentId) {
+          try {
+            const verifyResp = await fetch('/api/mercadopago/check-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, analysisId, tier })
+            });
+            if (verifyResp.ok) {
+              result = await verifyResp.json();
+            }
+          } catch (e) {
+            console.warn('check-status check warning:', e);
+          }
+        }
+
+        // If not retrieved via check-status, fetch analysis record
+        if (!result) {
+          const aResp = await fetch(`/api/analysis/${analysisId}`);
+          if (aResp.ok) {
+            result = await aResp.json();
+          }
+        }
+
+        // Clean up URL parameters cleanly
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Show results section
+        if (resultsSection) resultsSection.style.display = 'block';
+        if (loadingWrapper) loadingWrapper.style.display = 'none';
+        if (uploadWrapper) uploadWrapper.style.display = 'none';
+
+        if (result?.evaluation) {
+          renderEvaluation(result.evaluation);
+        }
+
+        // Show success state in modal
+        successPaymentIcon.style.display = 'block';
+        successPaymentSpinner.style.display = 'none';
+
+        if (tier === 'ai') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ CV Generated!' : '✅ ¡CV Generado!';
+          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your result...' : 'Redirigiendo a tu resultado...';
+          await new Promise(r => setTimeout(r, 1500));
+          checkoutModal.close();
+          unlockOptimizedCv(result?.optimizedText || '');
+        } else {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Payment Confirmed!' : '✅ ¡Pago Confirmado!';
+          successPaymentMessage.textContent = currentLanguage === 'en'
+            ? 'Your session has been registered. A Cintia expert will contact you within 24 hours to schedule your mentoring session.'
+            : 'Tu sesión ha sido registrada. Un experto de Cintia te contactará en un máximo de 24 horas para coordinar tu sesión de asesoría.';
+          if (expertWhatsappSupportBox) {
+            expertWhatsappSupportBox.style.display = 'block';
+          }
+        }
+
+      } catch (err) {
+        console.error('Error in checkPaymentReturnFromUrl:', err);
+        successPaymentIcon.style.display = 'block';
+        successPaymentSpinner.style.display = 'none';
+        successPaymentTitle.textContent = 'Pago Registrado';
+        successPaymentMessage.textContent = 'Tu pago está en proceso de acreditación. Si no ves tu reporte de inmediato, recarga la página en unos segundos.';
+      }
+    } else if (paymentState === 'failure') {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showError(currentLanguage === 'en' ? 'The payment could not be completed or was cancelled. Please try again.' : 'El pago no pudo ser completado o fue cancelado. Por favor inténtalo nuevamente.');
+    }
+  }
 
   // 1. Captcha Handlers
   async function loadCaptcha() {
@@ -1131,12 +1234,43 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
+  function showPaymentError(msg) {
+    if (paymentInlineError) {
+      paymentInlineError.textContent = msg;
+      paymentInlineError.style.display = 'block';
+    }
+  }
+
+  function clearPaymentError() {
+    if (paymentInlineError) {
+      paymentInlineError.textContent = '';
+      paymentInlineError.style.display = 'none';
+    }
+    const prevErr = document.getElementById('paypalInlineError');
+    if (prevErr) prevErr.style.display = 'none';
+  }
+
   function openCheckout(serviceName, priceStr) {
     hideError();
+    clearPaymentError();
     checkoutTitle.textContent = currentLanguage === 'en' ? `Pay: ${serviceName}` : `Pagar: ${serviceName}`;
     checkoutService.textContent = serviceName;
     checkoutPriceOriginal.textContent = `$${priceStr} USD`;
     checkoutTotal.textContent = `$${priceStr} USD`;
+
+    const priceClp = currentTier === 'ai'
+      ? (appConfig.priceAiClp || 1000)
+      : (appConfig.priceExpertClp || 25000);
+    if (checkoutTotalClp) {
+      checkoutTotalClp.textContent = `(~ $${priceClp.toLocaleString('es-CL')} CLP)`;
+    }
+
+    if (mpCheckoutBtn) {
+      mpCheckoutBtn.disabled = false;
+    }
+    if (mpLoadingHint) {
+      mpLoadingHint.style.display = 'none';
+    }
 
     // Reset modal views
     paymentMethodsView.style.display = 'flex';
@@ -1150,6 +1284,52 @@ document.addEventListener('DOMContentLoaded', () => {
     initPayPalButtons(parseFloat(priceStr));
 
     checkoutModal.showModal();
+  }
+
+  // Mercado Pago Checkout Pro Redirection
+  if (mpCheckoutBtn) {
+    mpCheckoutBtn.addEventListener('click', async () => {
+      if (!currentAnalysisId) {
+        showPaymentError(currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.');
+        return;
+      }
+
+      mpCheckoutBtn.disabled = true;
+      if (mpLoadingHint) {
+        mpLoadingHint.style.display = 'block';
+        mpLoadingHint.textContent = currentLanguage === 'en' ? 'Connecting to Mercado Pago...' : 'Conectando con Mercado Pago...';
+      }
+      clearPaymentError();
+
+      try {
+        const resp = await fetch('/api/mercadopago/create-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            tier: currentTier,
+            contact: currentTier === 'expert' ? pendingExpertContact : null
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.error || (currentLanguage === 'en' ? 'Could not initiate Mercado Pago payment.' : 'No se pudo iniciar el pago con Mercado Pago.'));
+        }
+
+        const targetUrl = data.initPoint || data.sandboxInitPoint;
+        if (!targetUrl) {
+          throw new Error('No se recibió la URL de pago de Mercado Pago.');
+        }
+
+        window.location.href = targetUrl;
+
+      } catch (err) {
+        mpCheckoutBtn.disabled = false;
+        if (mpLoadingHint) mpLoadingHint.style.display = 'none';
+        showPaymentError('❌ ' + err.message);
+      }
+    });
   }
 
   // Render official PayPal smart buttons inside #paypalButtonContainer
@@ -1184,15 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paypalErrorHandled = false;
     function showPaypalError(msg) {
       paypalErrorHandled = true;
-      let errEl = document.getElementById('paypalInlineError');
-      if (!errEl) {
-        errEl = document.createElement('p');
-        errEl.id = 'paypalInlineError';
-        errEl.style.cssText = 'color:#ef4444;font-size:13px;text-align:center;margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.25);';
-        paypalButtonContainer.after(errEl);
-      }
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
+      showPaymentError(msg);
     }
 
     paypal.Buttons({
@@ -1205,9 +1377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Step 1: Create order on server
       createOrder: async () => {
-        // Clear any previous inline error
-        const prevErr = document.getElementById('paypalInlineError');
-        if (prevErr) prevErr.style.display = 'none';
+        clearPaymentError();
         paypalErrorHandled = false;
 
         const resp = await fetch('/api/paypal/create-order', {

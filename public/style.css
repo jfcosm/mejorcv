@@ -1286,6 +1286,55 @@ dialog[open]::backdrop {
   background-color: #f2ba32;
 }
 
+.payment-btn.mercadopago {
+  background: linear-gradient(135deg, #009EE3 0%, #007EB5 100%);
+  color: #ffffff;
+  border: 1px solid #0087C2;
+  border-radius: var(--border-radius-sm, 10px);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 3px 10px rgba(0, 158, 227, 0.22);
+}
+
+.payment-btn.mercadopago:hover {
+  background: linear-gradient(135deg, #008cc9 0%, #006fa0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0, 158, 227, 0.32);
+}
+
+.payment-btn.mercadopago:active {
+  transform: translateY(0);
+}
+
+.payment-btn.mercadopago:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.payment-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 4px 0;
+}
+
+.payment-divider::before,
+.payment-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-grey);
+}
+
+.payment-divider span {
+  padding: 0 10px;
+}
+
 /* Success Modal View */
 .success-view {
   text-align: center;
