@@ -287,27 +287,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helper to render copy email and whatsapp quick action buttons
   function renderContactColumn(expertContact) {
-    if (!expertContact) return '<span style="color:var(--text-light);">-</span>';
+    if (!expertContact) return '<span style="color:var(--text-light); font-size:12px;">-</span>';
     
-    const emailEscaped = escapeHtml(expertContact.email);
-    const phoneEscaped = escapeHtml(expertContact.phone);
-    const cleanPhone = expertContact.phone.replace(/[^0-9]/g, '');
+    const emailEscaped = escapeHtml(expertContact.email || '');
+    const phoneEscaped = escapeHtml(expertContact.phone || '');
+    const cleanPhone = (expertContact.phone || '').replace(/[^0-9]/g, '');
     
     return `
-      <div style="display:flex; flex-direction:column; gap:4px; white-space:nowrap;">
-        <span style="font-weight: 600;">${emailEscaped}</span>
-        <span style="font-size: 11px; color: var(--text-light);">${phoneEscaped}</span>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:2px 6px; font-size:10px; min-height:auto; width:auto; border-radius:4px; display:inline-flex; align-items:center; gap:4px; margin-top:0;">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            Copiar
-          </button>
+      <div style="display:flex; flex-direction:column; gap:2px; max-width:180px;">
+        ${emailEscaped ? `<span style="font-weight:600; color:var(--text-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${emailEscaped}">${emailEscaped}</span>` : ''}
+        ${phoneEscaped ? `<span style="font-size:11px; color:var(--text-medium);">${phoneEscaped}</span>` : ''}
+        <div style="display:flex; gap:6px; margin-top:3px;">
+          ${emailEscaped ? `
+            <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:1px 6px; font-size:10px; border-radius:4px; margin:0;" title="Copiar correo">
+              Copiar
+            </button>` : ''}
           ${cleanPhone ? `
-            <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-secondary btn-sm" style="padding:2px 6px; font-size:10px; min-height:auto; width:auto; border-radius:4px; display:inline-flex; align-items:center; gap:4px; text-decoration:none; color:#25d366; border-color:rgba(37, 211, 102, 0.3); margin-top:0;">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 1.981 14.117.957 11.5.957c-5.442 0-9.866 4.372-9.87 9.802 0 1.672.43 3.302 1.256 4.745L1.87 20.894l5.777-1.74zm11.233-5.395c-.29-.144-1.711-.834-1.977-.929-.266-.094-.46-.142-.653.143-.194.286-.75.929-.918 1.12-.167.19-.335.213-.625.069-2.91-1.44-4.004-2.61-4.78-3.92-.2-.34-.02-.52.15-.69.15-.15.34-.39.51-.59.17-.19.23-.33.34-.55.11-.22.05-.41-.02-.55-.08-.144-.653-1.547-.895-2.12-.236-.563-.496-.486-.68-.496-.18-.01-.387-.01-.594-.01-.207 0-.544.077-.83.387-.285.31-1.088 1.047-1.088 2.551 0 1.505 1.11 2.96 1.26 3.16.15.19 2.186 3.3 5.297 4.62 1.63.69 2.905 1.1 3.905 1.41 1.01.32 1.93.27 2.65.17.8-.11 1.71-.69 1.95-1.33.24-.63.24-1.18.17-1.3-.07-.113-.266-.206-.557-.35z"/></svg>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-secondary btn-sm" style="padding:1px 6px; font-size:10px; border-radius:4px; margin:0; text-decoration:none; color:#25d366; border-color:rgba(37,211,102,0.3);" title="Abrir WhatsApp">
               WhatsApp
-            </a>
-          ` : ''}
+            </a>` : ''}
         </div>
       </div>
     `;
@@ -454,22 +452,28 @@ document.addEventListener('DOMContentLoaded', () => {
         historyTableBody.innerHTML += `
           <tr>
             <td>
-              <div style="display:flex; align-items:center; gap:6px;">
-                ${row.archived ? '<span title="Archivado" style="font-size:12px; opacity:0.7;">📦</span>' : ''}
-                <strong>${escapeHtml(row.filename)}</strong>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${row.archived ? '<span title="Archivado" style="font-size:13px; opacity:0.8;">📦</span>' : ''}
+                <div>
+                  <div style="font-weight:700; color:var(--text-dark); max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(row.filename)}">
+                    ${escapeHtml(row.filename)}
+                  </div>
+                  <div style="font-size:11px; color:var(--text-light); margin-top:2px;">
+                    ${(row.fileSize / 1024).toFixed(1)} KB
+                  </div>
+                </div>
               </div>
             </td>
-            <td>${(row.fileSize / 1024).toFixed(1)} KB</td>
             <td>${formatDate(row.uploadedAt)}</td>
-            <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
+            <td><span style="color:#f59e0b; font-size:13px; letter-spacing:1px;">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</span></td>
             <td>${getPaymentBadge(row.paymentStatus)}</td>
             <td>${contact}</td>
-            <td><code style="font-size:11px;">${row.ip}</code></td>
-            <td>
-              <div class="actions-cell">
+            <td><code style="font-size:11px; color:var(--text-medium);">${row.ip}</code></td>
+            <td style="text-align:right;">
+              <div class="actions-cell" style="justify-content:flex-end;">
                 ${actionBtn}
-                <a href="/api/admin/download-text/${row.id}" headers='{"Authorization":"${adminToken}"}' download class="btn-secondary btn-sm" style="display:inline-flex; align-items:center; text-decoration:none; padding:4px 8px;">Bajar</a>
-                <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" title="Eliminar registro permanentemente">🗑️</button>
+                <a href="/api/admin/download-text/${row.id}" headers='{"Authorization":"${adminToken}"}' download class="btn-secondary btn-sm" style="display:inline-flex; align-items:center; text-decoration:none; padding:4px 8px;" title="Descargar texto original">Bajar</a>
+                <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" style="padding:4px 8px;" title="Eliminar registro">🗑️</button>
               </div>
             </td>
           </tr>
@@ -562,14 +566,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         leadsTableBody.innerHTML += `
           <tr>
-            <td><strong>${escapeHtml(row.filename)}</strong></td>
-            <td>${serviceName}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${row.archived ? '<span title="Archivado" style="font-size:13px; opacity:0.8;">📦</span>' : ''}
+                <div>
+                  <div style="font-weight:700; color:var(--text-dark); max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(row.filename)}">
+                    ${escapeHtml(row.filename)}
+                  </div>
+                  <div style="font-size:11px; color:var(--text-light); margin-top:2px;">
+                    ${(row.fileSize / 1024).toFixed(1)} KB
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td style="font-weight:600; font-size:12px;">${serviceName}</td>
             <td>${formatDate(row.uploadedAt)}</td>
             <td>${contact}</td>
             <td>${statusBadges.join(' ')}</td>
-            <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
-            <td>
-              <div class="actions-cell">
+            <td><span style="color:#f59e0b; font-size:13px; letter-spacing:1px;">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</span></td>
+            <td style="text-align:right;">
+              <div class="actions-cell" style="justify-content:flex-end;">
                 ${actionBtn}
               </div>
             </td>
@@ -1167,13 +1183,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatDate(isoStr) {
     if (!isoStr) return '-';
     const date = new Date(isoStr);
-    return date.toLocaleString('es-ES', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    return `<div style="white-space:nowrap;">${day}/${month}/${year}</div><div style="font-size:11px; color:var(--text-light); line-height:1.2;">${hours}:${mins}</div>`;
   }
 
   function escapeHtml(str) {
