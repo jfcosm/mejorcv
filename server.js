@@ -189,6 +189,24 @@ async function getAnalysisDoc(analysisId) {
   return db.analyses.find(a => a.id === analysisId) || null;
 }
 
+async function deleteAnalysisDoc(analysisId) {
+  const db = readDb();
+  const idx = db.analyses.findIndex(a => a.id === analysisId);
+  if (idx !== -1) {
+    db.analyses.splice(idx, 1);
+    writeDb(db);
+  }
+  
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      await dbFs.collection('analyses').doc(analysisId).delete();
+    } catch (err) {
+      console.error("Firestore deleteAnalysisDoc error:", err.message);
+    }
+  }
+}
+
 async function getAdminData(config) {
   const priceAi = parseFloat(config?.priceAi) || 1.0;
   const priceExpert = parseFloat(config?.priceExpert) || 25.0;
@@ -238,7 +256,9 @@ async function getAdminData(config) {
           hasAiPaid,
           hasExpertPaid,
           expertStatus,
-          expertContact: a.expertContact || null
+          expertContact: a.expertContact || null,
+          archived: Boolean(a.archived),
+          archivedAt: a.archivedAt || null
         };
       });
 
@@ -287,7 +307,9 @@ async function getAdminData(config) {
       hasAiPaid,
       hasExpertPaid,
       expertStatus,
-      expertContact: a.expertContact || null
+      expertContact: a.expertContact || null,
+      archived: Boolean(a.archived),
+      archivedAt: a.archivedAt || null
     };
   }).reverse();
 
@@ -1746,6 +1768,29 @@ app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
   });
   
   res.json({ success: true });
+});
+
+// Toggle archive status of lead / analysis
+app.post('/api/admin/leads/archive', requireAdminAuth, async (req, res) => {
+  const { analysisId, archived } = req.body;
+  if (!analysisId) return res.status(400).json({ error: "ID faltante" });
+  
+  const isArchived = Boolean(archived);
+  await updateAnalysisDoc(analysisId, {
+    archived: isArchived,
+    archivedAt: isArchived ? new Date().toISOString() : null
+  });
+  
+  res.json({ success: true, archived: isArchived });
+});
+
+// Delete lead / analysis permanently
+app.post('/api/admin/leads/delete', requireAdminAuth, async (req, res) => {
+  const { analysisId } = req.body;
+  if (!analysisId) return res.status(400).json({ error: "ID faltante" });
+  
+  await deleteAnalysisDoc(analysisId);
+  res.json({ success: true, message: "Registro eliminado correctamente." });
 });
 
 // Get admin settings

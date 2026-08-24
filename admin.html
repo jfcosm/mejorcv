@@ -229,6 +229,73 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
+    /* Filter Tabs & Pagination Controls */
+    .filter-tab-group {
+      display: inline-flex;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-grey);
+      border-radius: var(--border-radius-sm);
+      padding: 3px;
+      gap: 3px;
+    }
+    .filter-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-medium);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .filter-tab-btn.active {
+      background: var(--color-mint);
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .page-nav-btn {
+      background: #ffffff;
+      border: 1px solid var(--border-grey);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .page-nav-btn:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      border-color: var(--color-mint);
+      color: var(--color-mint-hover);
+    }
+    .page-nav-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-action-delete {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-action-delete:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+    .btn-action-archive {
+      color: #64748b;
+      background: rgba(100, 116, 139, 0.08);
+      border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    .btn-action-archive:hover {
+      background: #64748b;
+      color: #ffffff;
+    }
+
     /* Agile Kanban Board */
     .kanban-board {
       display: grid;
@@ -520,7 +587,49 @@
     <!-- Panel 2: Document log -->
     <section class="admin-panel" id="panelDocs">
       <div class="card" style="padding: 24px;">
-        <h3 style="margin-bottom: 16px;">Historial Completo de Currículums Subidos</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h3 style="margin-bottom: 4px;">Historial Completo de Currículums Subidos</h3>
+            <p style="color: var(--text-medium); font-size: 13.5px; margin: 0;">Filtra, busca y audita todos los currículums procesados por Cintia.</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="history-toolbar" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-grey);">
+          <!-- Live Search Input -->
+          <div style="position: relative; flex: 1; min-width: 220px;">
+            <input type="text" id="historySearchInput" class="form-control" style="padding-left: 34px; height: 38px; margin: 0;" placeholder="Buscar por archivo, ID, email, teléfono, IP...">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-light); pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <!-- Payment Type Filter -->
+          <select id="historyPaymentFilter" class="form-control" style="width: auto; min-width: 155px; height: 38px; margin: 0;">
+            <option value="all">Estado: Todos</option>
+            <option value="paid_ai">IA Pagada ($1)</option>
+            <option value="paid_expert_pending">Experto: Pendiente ($25)</option>
+            <option value="paid_expert_completed">Experto: Entregado ($25)</option>
+            <option value="free">Gratuito / Sin Pago</option>
+          </select>
+          <!-- Stars Filter -->
+          <select id="historyRatingFilter" class="form-control" style="width: auto; min-width: 135px; height: 38px; margin: 0;">
+            <option value="all">Puntaje: Todos</option>
+            <option value="5">★★★★★ (5)</option>
+            <option value="4">★★★★☆ (4)</option>
+            <option value="3">★★★☆☆ (3)</option>
+            <option value="2">★★☆☆☆ (2)</option>
+            <option value="1">★☆☆☆☆ (1)</option>
+          </select>
+          <!-- Time Filter -->
+          <select id="historyTimeFilter" class="form-control" style="width: auto; min-width: 140px; height: 38px; margin: 0;">
+            <option value="all">Fecha: Todo</option>
+            <option value="7d">Últimos 7 días</option>
+            <option value="30d">Últimos 30 días</option>
+          </select>
+          <!-- Reset Filter Button -->
+          <button type="button" id="historyResetFiltersBtn" class="btn" style="padding: 8px 14px; font-size: 13px; height: 38px; margin: 0; background: #ffffff; color: var(--text-dark); border: 1px solid var(--border-grey);">
+            Limpiar
+          </button>
+        </div>
+
         <div class="table-container">
           <table id="historyTable">
             <thead>
@@ -540,6 +649,28 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-container" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-grey);">
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-medium);">
+            <span>Mostrar</span>
+            <select id="historyPageSize" class="form-control" style="width: auto; padding: 4px 8px; font-size: 13px; margin: 0; height: 32px;">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <span>por página</span>
+            <span style="margin-left: 12px; font-weight: 600; color: var(--text-dark);" id="historyShowingCount">Mostrando 0 - 0 de 0</span>
+          </div>
+          <div class="pagination-controls" style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="page-nav-btn" id="historyFirstPageBtn" title="Primera página">«</button>
+            <button type="button" class="page-nav-btn" id="historyPrevPageBtn" title="Página anterior">‹ Anterior</button>
+            <span style="font-size: 13px; font-weight: 600; padding: 0 8px;" id="historyPageInfo">Página 1 de 1</span>
+            <button type="button" class="page-nav-btn" id="historyNextPageBtn" title="Página siguiente">Siguiente ›</button>
+            <button type="button" class="page-nav-btn" id="historyLastPageBtn" title="Última página">»</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -553,16 +684,25 @@
               Gestiona el flujo de usuarios que han solicitado optimización con IA o asesoría de experto humano.
             </p>
           </div>
-          <!-- View Mode Switcher -->
-          <div class="view-switcher-group">
-            <button type="button" class="view-switch-btn active" id="viewModeListBtn" title="Ver en formato tabla">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              Lista
-            </button>
-            <button type="button" class="view-switch-btn" id="viewModeBoardBtn" title="Ver en tablero ágil tipo Jira">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="5" height="18" rx="1"></rect><rect x="10" y="3" width="5" height="12" rx="1"></rect><rect x="17" y="3" width="5" height="15" rx="1"></rect></svg>
-              Panel Ágil
-            </button>
+          <!-- Leads Filters & View Mode Switcher -->
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <!-- Archive Status Tabs -->
+            <div class="filter-tab-group" id="leadsArchiveFilter">
+              <button type="button" class="filter-tab-btn active" data-filter="active">Activos (<span id="leadsActiveCount">0</span>)</button>
+              <button type="button" class="filter-tab-btn" data-filter="archived">Archivados (<span id="leadsArchivedCount">0</span>)</button>
+              <button type="button" class="filter-tab-btn" data-filter="all">Todos (<span id="leadsTotalCount">0</span>)</button>
+            </div>
+            <!-- View Mode Switcher -->
+            <div class="view-switcher-group">
+              <button type="button" class="view-switch-btn active" id="viewModeListBtn" title="Ver en formato tabla">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                Lista
+              </button>
+              <button type="button" class="view-switch-btn" id="viewModeBoardBtn" title="Ver en tablero ágil tipo Jira">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="5" height="18" rx="1"></rect><rect x="10" y="3" width="5" height="12" rx="1"></rect><rect x="17" y="3" width="5" height="15" rx="1"></rect></svg>
+                Panel Ágil
+              </button>
+            </div>
           </div>
         </div>
 

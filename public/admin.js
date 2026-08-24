@@ -34,11 +34,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const historyTableBody = document.querySelector('#historyTable tbody');
   const leadsTableBody = document.querySelector('#leadsTable tbody');
   
-  // Leads Dual View Mode Switcher
+  // Leads Dual View Mode & Archive Switcher
   const viewModeListBtn = document.getElementById('viewModeListBtn');
   const viewModeBoardBtn = document.getElementById('viewModeBoardBtn');
   const leadsListView = document.getElementById('leadsListView');
   const leadsBoardView = document.getElementById('leadsBoardView');
+  const leadsArchiveFilter = document.getElementById('leadsArchiveFilter');
+  const leadsActiveCount = document.getElementById('leadsActiveCount');
+  const leadsArchivedCount = document.getElementById('leadsArchivedCount');
+  const leadsTotalCount = document.getElementById('leadsTotalCount');
+  let currentLeadsArchiveMode = 'active';
+
+  // History Toolbar & Pagination Elements
+  const historySearchInput = document.getElementById('historySearchInput');
+  const historyPaymentFilter = document.getElementById('historyPaymentFilter');
+  const historyRatingFilter = document.getElementById('historyRatingFilter');
+  const historyTimeFilter = document.getElementById('historyTimeFilter');
+  const historyResetFiltersBtn = document.getElementById('historyResetFiltersBtn');
+  const historyPageSize = document.getElementById('historyPageSize');
+  const historyShowingCount = document.getElementById('historyShowingCount');
+  const historyPageInfo = document.getElementById('historyPageInfo');
+  const historyFirstPageBtn = document.getElementById('historyFirstPageBtn');
+  const historyPrevPageBtn = document.getElementById('historyPrevPageBtn');
+  const historyNextPageBtn = document.getElementById('historyNextPageBtn');
+  const historyLastPageBtn = document.getElementById('historyLastPageBtn');
+
+  let rawDocLog = [];
+  let historySearchQuery = '';
+  let historyPaymentFilterVal = 'all';
+  let historyRatingFilterVal = 'all';
+  let historyTimeFilterVal = 'all';
+  let historyCurrentPage = 1;
+  let historyPageSizeVal = 25;
 
   // Kanban Board Columns & Badges (Doing vs Done)
   const cardsDoing = document.getElementById('cardsDoing');
@@ -321,11 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (geminiCallsCount) geminiCallsCount.textContent = gStats.totalCalls || 0;
       }
 
-      const docLog = Array.isArray(data.documentLog) ? data.documentLog : [];
+      rawDocLog = Array.isArray(data.documentLog) ? data.documentLog : [];
 
       // Render Recent Table (max 5 rows)
       recentActivityTableBody.innerHTML = '';
-      const recent = docLog.slice(0, 5);
+      const recent = rawDocLog.slice(0, 5);
       if (recent.length === 0) {
         recentActivityTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay actividad registrada aún.</td></tr>';
       } else {
@@ -342,241 +369,543 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Render History Table
-      historyTableBody.innerHTML = '';
-      if (docLog.length === 0) {
-        historyTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No se han subido currículums aún.</td></tr>';
-      } else {
-        docLog.forEach(row => {
-          const contact = renderContactColumn(row.expertContact);
-          
-          let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
-          
-          if (row.paymentStatus === 'pending_expert') {
-            actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar Entregado</button>`;
-          }
-          
-          historyTableBody.innerHTML += `
-            <tr>
-              <td><strong>${escapeHtml(row.filename)}</strong></td>
-              <td>${(row.fileSize / 1024).toFixed(1)} KB</td>
-              <td>${formatDate(row.uploadedAt)}</td>
-              <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
-              <td>${getPaymentBadge(row.paymentStatus)}</td>
-              <td>${contact}</td>
-              <td><code style="font-size:11px;">${row.ip}</code></td>
-              <td>
-                <div class="actions-cell">
-                  ${actionBtn}
-                  <a href="/api/admin/download-text/${row.id}" headers='{"Authorization":"${adminToken}"}' download class="btn-secondary btn-sm" style="display:inline-flex; align-items:center; text-decoration:none; padding:4px 8px;">Bajar</a>
-                </div>
-              </td>
-            </tr>
-          `;
-        });
+      // Render History Table & Leads Views
+      renderHistoryTable();
+      renderLeadsViews();
 
-        // Render Leads Table & Kanban Board (Doing vs Done)
-        leadsTableBody.innerHTML = '';
-        if (cardsDoing) cardsDoing.innerHTML = '';
-        if (cardsDone) cardsDone.innerHTML = '';
+    } catch (err) {
+      console.error(err);
+      alert('Error al cargar estadísticas.');
+    }
+  }
 
-        // All uploaded CVs are tracked as leads
-        const leads = docLog;
-        
-        // 1. Render Table View
-        if (leads.length === 0) {
-          leadsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay currículums subidos aún.</td></tr>';
-        } else {
-          leads.forEach(row => {
-            const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
-            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
-            const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
-
-            const contact = row.expertContact 
-              ? renderContactColumn(row.expertContact) 
-              : (isAiPaid ? '<span style="color:var(--text-light);">Descarga Directa (IA)</span>' : '<span style="color:var(--text-light);">Sin contacto (Gratis)</span>');
-            
-            let statusBadges = [];
-            if (isAiPaid) {
-              statusBadges.push('<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado IA</span>');
-            }
-            if (isExpertPending) {
-              statusBadges.push('<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>');
-            }
-            if (isExpertDone) {
-              statusBadges.push('<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Entregado</span>');
-            }
-            if (statusBadges.length === 0) {
-              statusBadges.push('<span class="badge free" style="background-color:#f1f5f9; color:#475569; font-weight:600;">Evaluación Gratuita</span>');
-            }
-
-            let serviceName = 'Evaluación Gratuita';
-            if (row.hasExpertPaid || row.paymentStatus.includes('expert')) {
-              serviceName = (row.hasAiPaid || row.paymentStatus === 'completed_ai') ? 'Experto ($25) + IA ($1)' : 'Experto Humano ($25)';
-            } else if (isAiPaid) {
-              serviceName = 'IA ($1)';
-            }
-
-            let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
-            if (isExpertPending) {
-              actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar como Entregado</button>`;
-            }
-
-            leadsTableBody.innerHTML += `
-              <tr>
-                <td><strong>${escapeHtml(row.filename)}</strong></td>
-                <td>${serviceName}</td>
-                <td>${formatDate(row.uploadedAt)}</td>
-                <td>${contact}</td>
-                <td>${statusBadges.join(' ')}</td>
-                <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
-                <td>
-                  <div class="actions-cell">
-                    ${actionBtn}
-                  </div>
-                </td>
-              </tr>
-            `;
-          });
+  // Filter and Paginate History
+  function getFilteredHistoryLog() {
+    return rawDocLog.filter(row => {
+      // 1. Search Query
+      if (historySearchQuery) {
+        const matchName = (row.filename || '').toLowerCase().includes(historySearchQuery);
+        const matchId = (row.id || '').toLowerCase().includes(historySearchQuery);
+        const matchIp = (row.ip || '').toLowerCase().includes(historySearchQuery);
+        const matchEmail = (row.expertContact?.email || '').toLowerCase().includes(historySearchQuery);
+        const matchPhone = (row.expertContact?.phone || '').toLowerCase().includes(historySearchQuery);
+        if (!matchName && !matchId && !matchIp && !matchEmail && !matchPhone) {
+          return false;
         }
-
-        // 2. Render Kanban Board View (1 Card per User with Status Dots)
-        const doingList = [];
-        const doneList = [];
-
-        leads.forEach(row => {
-          const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
-          const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
-          const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
-
-          if (isExpertDone || (isAiPaid && !row.hasExpertPaid)) {
-            doneList.push(row);
-          } else {
-            doingList.push(row);
-          }
-        });
-
-        if (badgeDoing) badgeDoing.textContent = doingList.length;
-        if (badgeDone) badgeDone.textContent = doneList.length;
-
-        function renderKanbanCards(list, container, isDoingColumn = false) {
-          if (!container) return;
-          if (list.length === 0) {
-            container.innerHTML = '<div class="kanban-empty-hint">Sin registros en esta columna</div>';
-            return;
-          }
-          list.forEach(row => {
-            const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
-            const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
-            const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
-
-            const cleanPhone = row.expertContact?.phone ? row.expertContact.phone.replace(/[^0-9]/g, '') : '';
-            const emailEscaped = row.expertContact?.email ? escapeHtml(row.expertContact.email) : '';
-            const phoneEscaped = row.expertContact?.phone ? escapeHtml(row.expertContact.phone) : '';
-
-            container.innerHTML += `
-              <div class="kanban-card" data-id="${row.id}" title="Clic para abrir detalle e inspección completa del CV">
-                <div class="kanban-card-header">
-                  <div class="kanban-card-title">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-mint); flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                    <span>${escapeHtml(row.filename)}</span>
-                  </div>
-                  <div class="kanban-card-score">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</div>
-                </div>
-
-                <div class="kanban-card-body">
-                  ${row.expertContact ? `
-                    <div style="font-weight: 600; color: var(--text-dark);">${emailEscaped}</div>
-                    ${phoneEscaped ? `<div style="font-size: 11.5px; color: var(--text-medium); margin-top:2px;">${phoneEscaped}</div>` : ''}
-                    <div style="display:flex; gap:6px; margin-top:6px;">
-                      ${emailEscaped ? `
-                        <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:2px 6px; font-size:10px; border-radius:4px; margin:0;" onclick="event.stopPropagation();">
-                          Copiar Email
-                        </button>` : ''}
-                      ${cleanPhone ? `
-                        <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-secondary btn-sm" style="padding:2px 6px; font-size:10px; border-radius:4px; margin:0; text-decoration:none; color:#25d366; border-color:rgba(37,211,102,0.3);" onclick="event.stopPropagation();">
-                          WhatsApp
-                        </a>` : ''}
-                    </div>
-                  ` : `
-                    <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : 'Evaluación gratuita realizada'}</div>
-                  `}
-
-                  <!-- 3 Status Dots Indicators -->
-                  <div class="status-indicators-bar">
-                    <div class="status-item" title="${isAiPaid ? 'Optimización IA: Completada' : 'Optimización IA: No solicitada'}">
-                      <span class="status-dot dot-ai ${isAiPaid ? 'solid' : 'outline'}"></span>
-                      <span style="color:${isAiPaid ? 'var(--text-dark)' : 'var(--text-light)'}">IA</span>
-                    </div>
-                    <div class="status-item" title="${isExpertPending ? 'Asesoría Experta: Pendiente de entrega' : 'Asesoría Experta: No pendiente'}">
-                      <span class="status-dot dot-expert-pending ${isExpertPending ? 'solid' : 'outline'}"></span>
-                      <span style="color:${isExpertPending ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Solicitada</span>
-                    </div>
-                    <div class="status-item" title="${isExpertDone ? 'Asesoría Experta: Entregada y completada' : 'Asesoría Experta: No entregada'}">
-                      <span class="status-dot dot-expert-done ${isExpertDone ? 'solid' : 'outline'}"></span>
-                      <span style="color:${isExpertDone ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Entregada</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="kanban-card-footer">
-                  <span>${formatDate(row.uploadedAt)}</span>
-                  <div style="display:flex; gap:6px; align-items:center;">
-                    ${isExpertPending ? `
-                      <button type="button" class="btn btn-sm complete-expert-btn" data-id="${row.id}" style="background-color:#059669; font-size:11px; padding:3px 8px; margin:0;" onclick="event.stopPropagation();">
-                        Entregar
-                      </button>
-                    ` : ''}
-                    <button type="button" class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}" style="font-size:11px; padding:3px 8px; margin:0;" onclick="event.stopPropagation();">
-                      Detalle
-                    </button>
-                  </div>
-                </div>
-              </div>
-            `;
-          });
-        }
-
-        renderKanbanCards(doingList, cardsDoing, true);
-        renderKanbanCards(doneList, cardsDone, false);
       }
 
-      // Add action button listeners
-      document.querySelectorAll('.cv-text-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          showCvText(e.currentTarget.getAttribute('data-id'));
-        });
-      });
+      // 2. Payment Status Filter
+      if (historyPaymentFilterVal !== 'all') {
+        const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+        const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
+        const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+        const isFree = !isAiPaid && !isExpertPending && !isExpertDone && row.paymentStatus === 'free';
 
-      // Kanban Card click handler (click anywhere on the card to inspect)
-      document.querySelectorAll('.kanban-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          showCvText(e.currentTarget.getAttribute('data-id'));
-        });
-      });
+        if (historyPaymentFilterVal === 'paid_ai' && !isAiPaid) return false;
+        if (historyPaymentFilterVal === 'paid_expert_pending' && !isExpertPending) return false;
+        if (historyPaymentFilterVal === 'paid_expert_completed' && !isExpertDone) return false;
+        if (historyPaymentFilterVal === 'free' && !isFree) return false;
+      }
 
-      document.querySelectorAll('.complete-expert-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          completeExpertReview(e.currentTarget.getAttribute('data-id'));
-        });
-      });
+      // 3. Rating Filter
+      if (historyRatingFilterVal !== 'all') {
+        if (row.rating !== parseInt(historyRatingFilterVal, 10)) {
+          return false;
+        }
+      }
 
-      // Add copy email listeners
-      document.querySelectorAll('.copy-email-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation(); // Avoid triggering any row/container parent click behaviors
-          const email = e.currentTarget.getAttribute('data-email');
-          navigator.clipboard.writeText(email).then(() => {
-            const originalText = e.currentTarget.innerHTML;
-            e.currentTarget.innerHTML = '¡Copiado!';
-            setTimeout(() => {
-              e.currentTarget.innerHTML = originalText;
-            }, 1500);
-          }).catch(err => console.error('Could not copy email:', err));
-        });
+      // 4. Time Filter
+      if (historyTimeFilterVal !== 'all') {
+        const uploadTime = new Date(row.uploadedAt || 0).getTime();
+        const now = Date.now();
+        if (historyTimeFilterVal === '7d' && (now - uploadTime > 7 * 86400000)) return false;
+        if (historyTimeFilterVal === '30d' && (now - uploadTime > 30 * 86400000)) return false;
+      }
+
+      return true;
+    });
+  }
+
+  function renderHistoryTable() {
+    if (!historyTableBody) return;
+    const filtered = getFilteredHistoryLog();
+    const totalCount = filtered.length;
+    const totalPages = Math.ceil(totalCount / historyPageSizeVal) || 1;
+
+    if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
+    if (historyCurrentPage < 1) historyCurrentPage = 1;
+
+    const startIndex = (historyCurrentPage - 1) * historyPageSizeVal;
+    const endIndex = Math.min(startIndex + historyPageSizeVal, totalCount);
+    const pageItems = filtered.slice(startIndex, endIndex);
+
+    historyTableBody.innerHTML = '';
+    if (totalCount === 0) {
+      historyTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-light);">No se encontraron currículums con los filtros seleccionados.</td></tr>';
+    } else {
+      pageItems.forEach(row => {
+        const contact = renderContactColumn(row.expertContact);
+        
+        let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
+        if (row.paymentStatus === 'pending_expert') {
+          actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar Entregado</button>`;
+        }
+        
+        historyTableBody.innerHTML += `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:6px;">
+                ${row.archived ? '<span title="Archivado" style="font-size:12px; opacity:0.7;">📦</span>' : ''}
+                <strong>${escapeHtml(row.filename)}</strong>
+              </div>
+            </td>
+            <td>${(row.fileSize / 1024).toFixed(1)} KB</td>
+            <td>${formatDate(row.uploadedAt)}</td>
+            <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
+            <td>${getPaymentBadge(row.paymentStatus)}</td>
+            <td>${contact}</td>
+            <td><code style="font-size:11px;">${row.ip}</code></td>
+            <td>
+              <div class="actions-cell">
+                ${actionBtn}
+                <a href="/api/admin/download-text/${row.id}" headers='{"Authorization":"${adminToken}"}' download class="btn-secondary btn-sm" style="display:inline-flex; align-items:center; text-decoration:none; padding:4px 8px;">Bajar</a>
+                <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" title="Eliminar registro permanentemente">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
       });
+    }
+
+    // Update Pagination UI
+    if (historyShowingCount) {
+      historyShowingCount.textContent = totalCount === 0 
+        ? 'Mostrando 0 de 0' 
+        : `Mostrando ${startIndex + 1} - ${endIndex} de ${totalCount} currículums`;
+    }
+    if (historyPageInfo) {
+      historyPageInfo.textContent = `Página ${historyCurrentPage} de ${totalPages}`;
+    }
+    if (historyFirstPageBtn) historyFirstPageBtn.disabled = historyCurrentPage <= 1;
+    if (historyPrevPageBtn) historyPrevPageBtn.disabled = historyCurrentPage <= 1;
+    if (historyNextPageBtn) historyNextPageBtn.disabled = historyCurrentPage >= totalPages;
+    if (historyLastPageBtn) historyLastPageBtn.disabled = historyCurrentPage >= totalPages;
+
+    attachRowActionListeners();
+  }
+
+  // Render Leads Table & Kanban Board (Doing vs Done)
+  function renderLeadsViews() {
+    if (!leadsTableBody) return;
+
+    // Update Count Badges
+    const activeLeads = rawDocLog.filter(r => !r.archived);
+    const archivedLeads = rawDocLog.filter(r => Boolean(r.archived));
+    const totalLeadsCount = rawDocLog.length;
+
+    if (leadsActiveCount) leadsActiveCount.textContent = activeLeads.length;
+    if (leadsArchivedCount) leadsArchivedCount.textContent = archivedLeads.length;
+    if (leadsTotalCount) leadsTotalCount.textContent = totalLeadsCount;
+
+    // Filter leads based on current archive filter
+    let visibleLeads = activeLeads;
+    if (currentLeadsArchiveMode === 'archived') {
+      visibleLeads = archivedLeads;
+    } else if (currentLeadsArchiveMode === 'all') {
+      visibleLeads = rawDocLog;
+    }
+
+    // 1. Render Table View
+    leadsTableBody.innerHTML = '';
+    if (visibleLeads.length === 0) {
+      leadsTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-light);">${currentLeadsArchiveMode === 'archived' ? 'No hay leads archivados.' : 'No hay leads activos.'}</td></tr>`;
+    } else {
+      visibleLeads.forEach(row => {
+        const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+        const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
+        const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
+        const contact = row.expertContact 
+          ? renderContactColumn(row.expertContact) 
+          : (isAiPaid ? '<span style="color:var(--text-light);">Descarga Directa (IA)</span>' : '<span style="color:var(--text-light);">Sin contacto (Gratis)</span>');
+        
+        let statusBadges = [];
+        if (row.archived) {
+          statusBadges.push('<span class="badge" style="background-color:#e2e8f0; color:#475569; font-weight:600;">📦 Archivado</span>');
+        }
+        if (isAiPaid) {
+          statusBadges.push('<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado IA</span>');
+        }
+        if (isExpertPending) {
+          statusBadges.push('<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>');
+        }
+        if (isExpertDone) {
+          statusBadges.push('<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Entregado</span>');
+        }
+        if (statusBadges.length === 0 || (statusBadges.length === 1 && row.archived)) {
+          statusBadges.push('<span class="badge free" style="background-color:#f1f5f9; color:#475569; font-weight:600;">Evaluación Gratuita</span>');
+        }
+
+        let serviceName = 'Evaluación Gratuita';
+        if (row.hasExpertPaid || row.paymentStatus.includes('expert')) {
+          serviceName = (row.hasAiPaid || row.paymentStatus === 'completed_ai') ? 'Experto ($25) + IA ($1)' : 'Experto Humano ($25)';
+        } else if (isAiPaid) {
+          serviceName = 'IA ($1)';
+        }
+
+        let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
+        if (isExpertPending) {
+          actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar como Entregado</button>`;
+        }
+        actionBtn += ` <button type="button" class="btn-secondary btn-sm btn-action-archive lead-archive-btn" data-id="${row.id}" data-archived="${row.archived ? 'true' : 'false'}" title="${row.archived ? 'Desarchivar lead' : 'Archivar lead'}">${row.archived ? '📦 Desarchivar' : '📦 Archivar'}</button>`;
+        actionBtn += ` <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" title="Eliminar lead permanentemente">🗑️</button>`;
+
+        leadsTableBody.innerHTML += `
+          <tr>
+            <td><strong>${escapeHtml(row.filename)}</strong></td>
+            <td>${serviceName}</td>
+            <td>${formatDate(row.uploadedAt)}</td>
+            <td>${contact}</td>
+            <td>${statusBadges.join(' ')}</td>
+            <td>${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</td>
+            <td>
+              <div class="actions-cell">
+                ${actionBtn}
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // 2. Render Kanban Board View (filtered)
+    if (cardsDoing) cardsDoing.innerHTML = '';
+    if (cardsDone) cardsDone.innerHTML = '';
+
+    const doingList = [];
+    const doneList = [];
+
+    visibleLeads.forEach(row => {
+      const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+      const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
+      const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
+      if (isExpertDone || (isAiPaid && !row.hasExpertPaid)) {
+        doneList.push(row);
+      } else {
+        doingList.push(row);
+      }
+    });
+
+    if (badgeDoing) badgeDoing.textContent = doingList.length;
+    if (badgeDone) badgeDone.textContent = doneList.length;
+
+    renderKanbanCards(doingList, cardsDoing, true);
+    renderKanbanCards(doneList, cardsDone, false);
+
+    attachRowActionListeners();
+  }
+
+  function renderKanbanCards(list, container, isDoingColumn = false) {
+    if (!container) return;
+    if (list.length === 0) {
+      container.innerHTML = '<div class="kanban-empty-hint">Sin registros en esta columna</div>';
+      return;
+    }
+    list.forEach(row => {
+      const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+      const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
+      const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+
+      const cleanPhone = row.expertContact?.phone ? row.expertContact.phone.replace(/[^0-9]/g, '') : '';
+      const emailEscaped = row.expertContact?.email ? escapeHtml(row.expertContact.email) : '';
+      const phoneEscaped = row.expertContact?.phone ? escapeHtml(row.expertContact.phone) : '';
+
+      container.innerHTML += `
+        <div class="kanban-card" data-id="${row.id}" title="Clic para abrir detalle e inspección completa del CV">
+          <div class="kanban-card-header">
+            <div class="kanban-card-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-mint); flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <span>${escapeHtml(row.filename)}</span>
+            </div>
+            <div class="kanban-card-score">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</div>
+          </div>
+
+          <div class="kanban-card-body">
+            ${row.expertContact ? `
+              <div style="font-weight: 600; color: var(--text-dark);">${emailEscaped}</div>
+              ${phoneEscaped ? `<div style="font-size: 11.5px; color: var(--text-medium); margin-top:2px;">${phoneEscaped}</div>` : ''}
+              <div style="display:flex; gap:6px; margin-top:6px;">
+                ${emailEscaped ? `
+                  <button type="button" class="btn-secondary btn-sm copy-email-btn" data-email="${emailEscaped}" style="padding:2px 6px; font-size:10px; border-radius:4px; margin:0;" onclick="event.stopPropagation();">
+                    Copiar Email
+                  </button>` : ''}
+                ${cleanPhone ? `
+                  <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn-secondary btn-sm" style="padding:2px 6px; font-size:10px; border-radius:4px; margin:0; text-decoration:none; color:#25d366; border-color:rgba(37,211,102,0.3);" onclick="event.stopPropagation();">
+                    WhatsApp
+                  </a>` : ''}
+              </div>
+            ` : `
+              <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : 'Evaluación gratuita realizada'}</div>
+            `}
+
+            <!-- 3 Status Dots Indicators -->
+            <div class="status-indicators-bar">
+              <div class="status-item" title="${isAiPaid ? 'Optimización IA: Completada' : 'Optimización IA: No solicitada'}">
+                <span class="status-dot dot-ai ${isAiPaid ? 'solid' : 'outline'}"></span>
+                <span style="color:${isAiPaid ? 'var(--text-dark)' : 'var(--text-light)'}">IA</span>
+              </div>
+              <div class="status-item" title="${isExpertPending ? 'Asesoría Experta: Pendiente de entrega' : 'Asesoría Experta: No pendiente'}">
+                <span class="status-dot dot-expert-pending ${isExpertPending ? 'solid' : 'outline'}"></span>
+                <span style="color:${isExpertPending ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Solicitada</span>
+              </div>
+              <div class="status-item" title="${isExpertDone ? 'Asesoría Experta: Entregada y completada' : 'Asesoría Experta: No entregada'}">
+                <span class="status-dot dot-expert-done ${isExpertDone ? 'solid' : 'outline'}"></span>
+                <span style="color:${isExpertDone ? 'var(--text-dark)' : 'var(--text-light)'}">Asesoría Entregada</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-card-footer">
+            <span>${formatDate(row.uploadedAt)}</span>
+            <div style="display:flex; gap:5px; align-items:center;">
+              ${isExpertPending ? `
+                <button type="button" class="btn btn-sm complete-expert-btn" data-id="${row.id}" style="background-color:#059669; font-size:11px; padding:3px 8px; margin:0;" onclick="event.stopPropagation();">
+                  Entregar
+                </button>
+              ` : ''}
+              <button type="button" class="btn-secondary btn-sm btn-action-archive lead-archive-btn" data-id="${row.id}" data-archived="${row.archived ? 'true' : 'false'}" style="font-size:11px; padding:3px 6px; margin:0;" title="${row.archived ? 'Desarchivar lead' : 'Archivar lead'}" onclick="event.stopPropagation();">
+                ${row.archived ? '📦' : '📦'}
+              </button>
+              <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" style="font-size:11px; padding:3px 6px; margin:0;" title="Eliminar lead" onclick="event.stopPropagation();">
+                🗑️
+              </button>
+              <button type="button" class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}" style="font-size:11px; padding:3px 8px; margin:0;" onclick="event.stopPropagation();">
+                Detalle
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Attach action button listeners for both tables & cards
+  function attachRowActionListeners() {
+    // 1. Text detail inspection
+    document.querySelectorAll('.cv-text-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        showCvText(e.currentTarget.getAttribute('data-id'));
+      };
+    });
+
+    // 2. Kanban Card click
+    document.querySelectorAll('.kanban-card').forEach(card => {
+      card.onclick = (e) => {
+        showCvText(e.currentTarget.getAttribute('data-id'));
+      };
+    });
+
+    // 3. Mark complete
+    document.querySelectorAll('.complete-expert-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        completeExpertReview(e.currentTarget.getAttribute('data-id'));
+      };
+    });
+
+    // 4. Archive / Unarchive
+    document.querySelectorAll('.lead-archive-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = e.currentTarget.getAttribute('data-id');
+        const isArchived = e.currentTarget.getAttribute('data-archived') === 'true';
+        archiveLead(id, !isArchived);
+      };
+    });
+
+    // 5. Delete document or lead
+    document.querySelectorAll('.doc-delete-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = e.currentTarget.getAttribute('data-id');
+        const fname = e.currentTarget.getAttribute('data-filename');
+        deleteLeadOrDoc(id, fname);
+      };
+    });
+
+    // 6. Copy email
+    document.querySelectorAll('.copy-email-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const email = e.currentTarget.getAttribute('data-email');
+        navigator.clipboard.writeText(email).then(() => {
+          const originalText = e.currentTarget.innerHTML;
+          e.currentTarget.innerHTML = '¡Copiado!';
+          setTimeout(() => {
+            e.currentTarget.innerHTML = originalText;
+          }, 1500);
+        }).catch(err => console.error('Could not copy email:', err));
+      };
+    });
+  }
+
+  // Archive lead API call
+  async function archiveLead(analysisId, shouldArchive) {
+    try {
+      const resp = await fetch('/api/admin/leads/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
+        body: JSON.stringify({ analysisId, archived: shouldArchive })
+      });
+      if (!resp.ok) throw new Error('Error al actualizar estado de archivo.');
+      
+      const doc = rawDocLog.find(d => d.id === analysisId);
+      if (doc) {
+        doc.archived = shouldArchive;
+        doc.archivedAt = shouldArchive ? new Date().toISOString() : null;
+      }
+      renderLeadsViews();
+      renderHistoryTable();
+    } catch (err) {
+      console.error(err);
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Delete lead or doc API call
+  async function deleteLeadOrDoc(analysisId, filename) {
+    const confirmed = confirm(`¿Estás seguro de que deseas eliminar permanentemente el registro "${filename || analysisId}"?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmed) return;
+
+    try {
+      const resp = await fetch('/api/admin/leads/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
+        body: JSON.stringify({ analysisId })
+      });
+      if (!resp.ok) throw new Error('Error al eliminar registro.');
+
+      rawDocLog = rawDocLog.filter(d => d.id !== analysisId);
+      renderLeadsViews();
+      renderHistoryTable();
+      loadStats(); // update header counters
+    } catch (err) {
+      console.error(err);
+      alert('Error al eliminar: ' + err.message);
+    }
+  }
+
+  // Hook up Archive Filter Tabs
+  if (leadsArchiveFilter) {
+    leadsArchiveFilter.querySelectorAll('.filter-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        leadsArchiveFilter.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentLeadsArchiveMode = e.currentTarget.getAttribute('data-filter');
+        renderLeadsViews();
+      });
+    });
+  }
+
+  // Hook up History Toolbar & Pagination Listeners
+  if (historySearchInput) {
+    historySearchInput.addEventListener('input', (e) => {
+      historySearchQuery = e.target.value.toLowerCase().trim();
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyPaymentFilter) {
+    historyPaymentFilter.addEventListener('change', (e) => {
+      historyPaymentFilterVal = e.target.value;
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyRatingFilter) {
+    historyRatingFilter.addEventListener('change', (e) => {
+      historyRatingFilterVal = e.target.value;
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyTimeFilter) {
+    historyTimeFilter.addEventListener('change', (e) => {
+      historyTimeFilterVal = e.target.value;
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyResetFiltersBtn) {
+    historyResetFiltersBtn.addEventListener('click', () => {
+      historySearchQuery = '';
+      historyPaymentFilterVal = 'all';
+      historyRatingFilterVal = 'all';
+      historyTimeFilterVal = 'all';
+      historyCurrentPage = 1;
+      if (historySearchInput) historySearchInput.value = '';
+      if (historyPaymentFilter) historyPaymentFilter.value = 'all';
+      if (historyRatingFilter) historyRatingFilter.value = 'all';
+      if (historyTimeFilter) historyTimeFilter.value = 'all';
+      renderHistoryTable();
+    });
+  }
+
+  if (historyPageSize) {
+    historyPageSize.addEventListener('change', (e) => {
+      historyPageSizeVal = parseInt(e.target.value, 10) || 25;
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyFirstPageBtn) {
+    historyFirstPageBtn.addEventListener('click', () => {
+      historyCurrentPage = 1;
+      renderHistoryTable();
+    });
+  }
+
+  if (historyPrevPageBtn) {
+    historyPrevPageBtn.addEventListener('click', () => {
+      if (historyCurrentPage > 1) {
+        historyCurrentPage--;
+        renderHistoryTable();
+      }
+    });
+  }
+
+  if (historyNextPageBtn) {
+    historyNextPageBtn.addEventListener('click', () => {
+      const filtered = getFilteredHistoryLog();
+      const totalPages = Math.ceil(filtered.length / historyPageSizeVal) || 1;
+      if (historyCurrentPage < totalPages) {
+        historyCurrentPage++;
+        renderHistoryTable();
+      }
+    });
+  }
+
+  if (historyLastPageBtn) {
+    historyLastPageBtn.addEventListener('click', () => {
+      const filtered = getFilteredHistoryLog();
+      const totalPages = Math.ceil(filtered.length / historyPageSizeVal) || 1;
+      historyCurrentPage = totalPages;
+      renderHistoryTable();
+    });
+  }
 
     } catch (err) {
       console.error(err);
