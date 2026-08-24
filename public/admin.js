@@ -907,12 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-    } catch (err) {
-      console.error(err);
-      alert('Error al cargar estadísticas.');
-    }
-  }
-
   function getPaymentBadge(status) {
     switch (status) {
       case 'free': return '<span class="badge free">Gratis (Eval)</span>';
