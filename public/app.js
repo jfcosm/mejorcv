@@ -421,8 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Modal
     document.getElementById('checkoutTitle').textContent = t.modalTitle;
-    document.querySelectorAll('.checkout-row')[1].querySelectorAll('span')[0].textContent = t.modalTax;
-    document.querySelectorAll('.checkout-row')[2].querySelectorAll('span')[0].textContent = t.modalTotal;
+    const checkoutRows = document.querySelectorAll('.checkout-row');
+    if (checkoutRows.length > 1) {
+      checkoutRows[checkoutRows.length - 1].querySelectorAll('span')[0].textContent = t.modalTotal;
+    }
     document.querySelector('#successPaymentView h3').textContent = t.modalSuccessTitle;
     
     // Footer
