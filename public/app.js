@@ -505,9 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Load configuration parameters
-  fetchConfig();
-  checkPaymentReturnFromUrl();
+  // Load configuration parameters then handle return callback
+  fetchConfig().then(() => {
+    checkPaymentReturnFromUrl();
+  }).catch(() => {
+    checkPaymentReturnFromUrl();
+  });
 
   // Handle return redirect from Mercado Pago Checkout Pro
   async function checkPaymentReturnFromUrl() {
@@ -521,9 +524,30 @@ document.addEventListener('DOMContentLoaded', () => {
       currentAnalysisId = analysisId;
       currentTier = tier;
 
+      const isExpert = tier === 'expert';
+      const serviceName = isExpert
+        ? (currentLanguage === 'en' ? 'Human Expert Mentoring & CV Optimization' : 'Asesoría y Optimización con Experto Humano')
+        : (currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización Instantánea con IA');
+      
+      const priceUsd = isExpert
+        ? (appConfig.priceExpert || 25).toFixed(2)
+        : (appConfig.priceAi || 1).toFixed(2);
+      
+      const priceClp = isExpert
+        ? (appConfig.priceExpertClp || 25000)
+        : (appConfig.priceAiClp || 1000);
+
+      checkoutTitle.textContent = currentLanguage === 'en' ? `Confirmed: ${serviceName}` : `Confirmado: ${serviceName}`;
+      checkoutService.textContent = serviceName;
+      checkoutPriceOriginal.textContent = `$${priceUsd} USD`;
+      checkoutTotal.textContent = `$${priceUsd} USD`;
+      if (checkoutTotalClp) {
+        checkoutTotalClp.textContent = `(~ $${priceClp.toLocaleString('es-CL')} CLP)`;
+      }
+
       // Show payment confirmation in progress
-      checkoutModal.showModal();
       paymentMethodsView.style.display = 'none';
+      if (expertWhatsappSupportBox) expertWhatsappSupportBox.style.display = 'none';
       successPaymentView.style.display = 'flex';
       successPaymentIcon.style.display = 'none';
       successPaymentSpinner.style.display = 'block';
@@ -531,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
       successPaymentMessage.textContent = currentLanguage === 'en'
         ? 'Verifying transaction with Mercado Pago. Please wait a moment...'
         : 'Verificando la transacción con Mercado Pago. Un momento por favor...';
+      checkoutModal.showModal();
 
       try {
         let result = null;
@@ -576,18 +601,33 @@ document.addEventListener('DOMContentLoaded', () => {
         successPaymentSpinner.style.display = 'none';
 
         if (tier === 'ai') {
-          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ CV Generated!' : '✅ ¡CV Generado!';
-          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your result...' : 'Redirigiendo a tu resultado...';
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ AI Optimization Unlocked!' : '✅ ¡Optimización con IA Desbloqueada!';
+          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your optimized resume...' : 'Redirigiendo a tu currículum optimizado...';
           await new Promise(r => setTimeout(r, 1500));
           checkoutModal.close();
           unlockOptimizedCv(result?.optimizedText || '');
         } else {
-          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Payment Confirmed!' : '✅ ¡Pago Confirmado!';
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Expert Session Confirmed!' : '✅ ¡Sesión con Experto Confirmada!';
           successPaymentMessage.textContent = currentLanguage === 'en'
-            ? 'Your session has been registered. A Cintia expert will contact you within 24 hours to schedule your mentoring session.'
-            : 'Tu sesión ha sido registrada. Un experto de Cintia te contactará en un máximo de 24 horas para coordinar tu sesión de asesoría.';
+            ? 'Your payment for the 1-on-1 human expert session has been confirmed. A recruitment specialist from MelodIA Lab will contact you within 24 hours to schedule your session.'
+            : 'Tu pago para la sesión de asesoría y optimización 1 a 1 con un experto humano ha sido confirmado con éxito. Un especialista de MelodIA Lab te contactará en un máximo de 24 horas para coordinar tu sesión.';
           if (expertWhatsappSupportBox) {
             expertWhatsappSupportBox.style.display = 'block';
+            if (expertWhatsappNotice) {
+              expertWhatsappNotice.innerHTML = currentLanguage === 'en'
+                ? 'If you have not received any message from us in the next 24 hours, write to us directly on WhatsApp for immediate assistance from our team.'
+                : 'Si no te ha llegado ningún mensaje nuestro en las próximas 24 horas, escríbenos directamente por WhatsApp para recibir ayuda inmediata de nuestro equipo.';
+            }
+            if (expertWhatsappBtn) {
+              const waText = currentLanguage === 'en'
+                ? 'Hello MelodIA Lab team, I just paid for the human expert CV review ($25 USD) on Cintia.pro and would like to schedule my session.'
+                : 'Hola equipo de MelodIA Lab, acabo de pagar la asesoría de experto ($25.000 CLP) en Cintia.pro y quisiera coordinar mi sesión.';
+              expertWhatsappBtn.href = `https://wa.me/56930781181?text=${encodeURIComponent(waText)}`;
+              expertWhatsappBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                ${currentLanguage === 'en' ? 'Chat on WhatsApp' : 'Escribir por WhatsApp'}
+              `;
+            }
           }
         }
 
@@ -1494,17 +1534,17 @@ document.addEventListener('DOMContentLoaded', () => {
           successPaymentSpinner.style.display = 'none';
 
           if (currentTier === 'ai') {
-            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ CV Generated!' : '✅ ¡CV Generado!';
-            successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your result...' : 'Redirigiendo a tu resultado...';
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ AI Optimization Unlocked!' : '✅ ¡Optimización con IA Desbloqueada!';
+            successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your optimized resume...' : 'Redirigiendo a tu currículum optimizado...';
             await new Promise(resolve => setTimeout(resolve, 1500));
             checkoutModal.close();
             unlockOptimizedCv(result.optimizedText || optimizedContentText);
 
           } else if (currentTier === 'expert') {
-            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Payment Confirmed!' : '✅ ¡Pago Confirmado!';
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Expert Session Confirmed!' : '✅ ¡Sesión con Experto Confirmada!';
             successPaymentMessage.textContent = currentLanguage === 'en'
-              ? 'Your session has been registered. A Cintia expert will contact you within 24 hours to schedule your mentoring session.'
-              : 'Tu sesión ha sido registrada. Un experto de Cintia te contactará en un máximo de 24 horas para coordinar tu sesión de asesoría.';
+              ? 'Your payment for the 1-on-1 human expert session has been confirmed. A recruitment specialist from MelodIA Lab will contact you within 24 hours to schedule your session.'
+              : 'Tu pago para la sesión de asesoría y optimización 1 a 1 con un experto humano ha sido confirmado con éxito. Un especialista de MelodIA Lab te contactará en un máximo de 24 horas para coordinar tu sesión.';
             
             if (expertWhatsappSupportBox) {
               expertWhatsappSupportBox.style.display = 'block';
@@ -1515,8 +1555,8 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               if (expertWhatsappBtn) {
                 const waText = currentLanguage === 'en'
-                  ? 'Hello Cintia team, I just paid for the human expert CV review on Cintia.pro and would like to schedule my session.'
-                  : 'Hola Francisco / equipo de Cintia, acabo de pagar la asesoría de experto para mi CV en Cintia.pro y quisiera coordinar mi sesión.';
+                  ? 'Hello MelodIA Lab team, I just paid for the human expert CV review ($25 USD) on Cintia.pro and would like to schedule my session.'
+                  : 'Hola equipo de MelodIA Lab, acabo de pagar la asesoría de experto ($25.000 CLP) en Cintia.pro y quisiera coordinar mi sesión.';
                 expertWhatsappBtn.href = `https://wa.me/56930781181?text=${encodeURIComponent(waText)}`;
                 expertWhatsappBtn.innerHTML = `
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
