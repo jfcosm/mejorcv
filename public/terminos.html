@@ -100,6 +100,16 @@
     .back-nav-btn:hover {
       color: var(--color-mint, #00c48c);
     }
+    .lang-btn-toggle {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border-grey, #e2e8f0);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dark, #0f172a);
+    }
   </style>
 </head>
 <body>
@@ -108,27 +118,34 @@
   <header>
     <div class="app-container nav">
       <a href="/" class="logo"><span class="logo-text">Cint<span style="color: var(--color-mint)">ia</span></span><span class="logo-dot"></span></a>
-      <ul class="nav-links">
-        <li><a href="/">Inicio</a></li>
+      <ul class="nav-links" style="align-items: center;">
+        <li><a href="/" id="navHomeLink">Inicio</a></li>
         <li><a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer">MelodIA Lab</a></li>
+        <li class="lang-selector-container">
+          <select id="langSelector" class="lang-selector">
+            <option value="es" selected>ES</option>
+            <option value="en">EN</option>
+          </select>
+        </li>
       </ul>
     </div>
   </header>
 
   <!-- Content Container -->
   <main class="legal-container">
-    <a href="/" class="back-nav-btn">
+    <a href="/" class="back-nav-btn" id="backNavBtn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
       </svg>
-      Volver a Cintia.pro
+      <span id="backNavText">Volver a Cintia.pro</span>
     </a>
 
-    <div class="legal-card">
+    <!-- Spanish Version -->
+    <div class="legal-card" id="legalCardEs">
       <h1>Términos y Condiciones de Uso</h1>
       <div class="legal-meta">
-        <strong>Última actualización:</strong> 24 de agosto de 2026 | Operado por <strong>MelodIA Lab SpA</strong> (Santiago de Chile)
+        <strong>Última actualización:</strong> 24 de agosto de 2026 | Operado por <strong>MelodIA Lab SpA</strong> (La Serena, Chile)
       </div>
 
       <p>
@@ -137,7 +154,7 @@
 
       <h2>1. Identificación del Responsable y Titularidad</h2>
       <p>
-        La plataforma web <strong>Cintia.pro</strong> es propiedad exclusiva de, y es desarrollada, operada y mantenida por <strong>MelodIA Lab SpA</strong>, sociedad constituida bajo las leyes de la República de Chile, con domicilio en Santiago de Chile y presencia oficial en <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); text-decoration: underline; font-weight: 600;">www.melodialab.net</a>.
+        La plataforma web <strong>Cintia.pro</strong> es propiedad exclusiva de, y es desarrollada, operada y mantenida por <strong>MelodIA Lab SpA</strong>, sociedad constituida bajo las leyes de la República de Chile, con domicilio legal en <strong>La Serena, Chile</strong> y presencia oficial en <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); text-decoration: underline; font-weight: 600;">www.melodialab.net</a>.
       </p>
       <p>
         MelodIA Lab SpA es el punto de contacto formal y legal para cualquier consulta, requerimiento o aclaración respecto del funcionamiento de la plataforma y el tratamiento de los datos provistos por los usuarios.
@@ -204,8 +221,93 @@
       <ul>
         <li><strong>Razón Social:</strong> MelodIA Lab SpA</li>
         <li><strong>Sitio Web Oficial:</strong> <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); font-weight: 600; text-decoration: underline;">www.melodialab.net</a></li>
-        <li><strong>Correo Electrónico de Contacto:</strong> <a href="mailto:contacto@melodialab.net" style="color: var(--color-mint); font-weight: 600; text-decoration: underline;">contacto@melodialab.net</a></li>
-        <li><strong>Ubicación:</strong> Santiago de Chile</li>
+        <li><strong>Correo Electrónico de Contacto:</strong> <a href="mailto:francisco.carle@gmail.com" style="color: var(--color-mint); font-weight: 600; text-decoration: underline;">francisco.carle@gmail.com</a></li>
+        <li><strong>Ubicación:</strong> La Serena, Chile</li>
+      </ul>
+    </div>
+
+    <!-- English Version -->
+    <div class="legal-card" id="legalCardEn" style="display: none;">
+      <h1>Terms and Conditions of Use</h1>
+      <div class="legal-meta">
+        <strong>Last updated:</strong> August 24, 2026 | Operated by <strong>MelodIA Lab SpA</strong> (La Serena, Chile)
+      </div>
+
+      <p>
+        Welcome to <strong>Cintia.pro</strong>. By accessing, browsing, or using this web platform and its associated services for resume evaluation, ATS diagnostics, and AI-powered optimization or professional coaching, you freely, knowingly, and expressly agree to these Terms and Conditions.
+      </p>
+
+      <h2>1. Identification of the Responsible Entity & Ownership</h2>
+      <p>
+        The <strong>Cintia.pro</strong> web platform is the exclusive property of, and is developed, operated, and maintained by <strong>MelodIA Lab SpA</strong>, a company incorporated under the laws of the Republic of Chile, with its legal domicile in <strong>La Serena, Chile</strong> and official web presence at <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); text-decoration: underline; font-weight: 600;">www.melodialab.net</a>.
+      </p>
+      <p>
+        MelodIA Lab SpA is the formal and legal point of contact for any inquiries, requests, or clarifications regarding the operation of the platform and the processing of data provided by users.
+      </p>
+
+      <h2>2. Temporary Processing and Exclusive Purpose of Documents</h2>
+      <p>
+        By uploading a file (.pdf, .docx, .odt, or .txt format) to Cintia.pro, the user grants authorization for the temporary processing of the document content. Such processing has the <strong>sole and exclusive purpose</strong> of:
+      </p>
+      <ul>
+        <li>Performing automated ATS (Applicant Tracking Systems) compatibility diagnostics and readability analysis.</li>
+        <li>Generating quality evaluations, star ratings, and personalized recommendations.</li>
+        <li>Producing an optimized version of the Resume using advanced Artificial Intelligence models (when requested by the user).</li>
+        <li>Coordinating and conducting the 1-on-1 personalized advisory session with a human HR expert (when the Expert Tier is chosen).</li>
+      </ul>
+
+      <div class="legal-highlight">
+        <strong>🛡️ Strict Confidentiality and Single-Destination Commitment:</strong><br>
+        Uploaded resumes, biographical information, work history, academic records, and user contact details (email, phone, or WhatsApp) <strong>WILL NEVER be used for any purpose other</strong> than analysis, evaluation, delivering the optimized resume, and coordinating the requested session.
+      </div>
+
+      <h2>3. Absolute Prohibition of Data Selling and Zero Spam</h2>
+      <p>
+        MelodIA Lab SpA maintains a <strong>zero tolerance</strong> policy regarding the commercialization of personal data:
+      </p>
+      <ul>
+        <li><strong>We will never sell, lease, transfer, or commercialize</strong> user databases, resumes, or contact information to advertising companies, marketing agencies, or any third party.</li>
+        <li><strong>We will not use your contact information</strong> for unsolicited bulk emails (spam), unauthorized promotions, or marketing campaigns unrelated to delivering your requested services.</li>
+      </ul>
+
+      <h2>4. Security and Protection in Payment Processing</h2>
+      <p>
+        All monetary transactions carried out on Cintia.pro are processed with the highest security and encryption standards available in the financial industry (banking standard and <strong>PCI-DSS</strong> compliance):
+      </p>
+      <ul>
+        <li>We are backed by official integrations with leading global and regional payment gateways: <strong>Mercado Pago</strong> (for Chilean Peso CLP transactions, Webpay Plus, debit cards, credit cards, and bank transfers) and <strong>PayPal</strong> (for international USD transactions).</li>
+        <li><strong>Cintia.pro and MelodIA Lab SpA never collect, process, or store sensitive credit/debit card numbers, CVV security codes, or bank passwords on our servers.</strong> All payment data travels encrypted directly between the user and the certified payment gateways.</li>
+      </ul>
+
+      <div class="security-badge-box">
+        <span class="security-badge">🔒 256-bit SSL / TLS Encryption</span>
+        <span class="security-badge">💳 Backed by Mercado Pago & Webpay</span>
+        <span class="security-badge">🌍 Backed by PayPal</span>
+        <span class="security-badge">🛡️ PCI-DSS Compliance</span>
+      </div>
+
+      <h2>5. Intellectual Property</h2>
+      <p>
+        The user retains full ownership and intellectual authorship over the factual information and personal records contained in their resume.
+      </p>
+      <p>
+        The software, source code, algorithms, graphical interface, user experience design, copy, and trademarks associated with <strong>Cintia.pro</strong> and <strong>MelodIA Lab</strong> are the exclusive property of MelodIA Lab SpA.
+      </p>
+
+      <h2>6. Limitation of Liability</h2>
+      <p>
+        Cintia.pro provides technical diagnostics and professional recommendations based on industry standards and ATS algorithms to maximize the effectiveness of job applications. However, hiring and recruitment decisions remain entirely at the discretion of prospective employers; therefore, MelodIA Lab SpA cannot guarantee job placement or interview invitations.
+      </p>
+
+      <h2>7. Contact Channels and Rights Exercise</h2>
+      <p>
+        For any questions, clarifications, data deletion requests, or legal inquiries regarding these Terms and Conditions, users may formally contact us through:
+      </p>
+      <ul>
+        <li><strong>Company Name:</strong> MelodIA Lab SpA</li>
+        <li><strong>Official Website:</strong> <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); font-weight: 600; text-decoration: underline;">www.melodialab.net</a></li>
+        <li><strong>Contact Email:</strong> <a href="mailto:francisco.carle@gmail.com" style="color: var(--color-mint); font-weight: 600; text-decoration: underline;">francisco.carle@gmail.com</a></li>
+        <li><strong>Location:</strong> La Serena, Chile</li>
       </ul>
     </div>
   </main>
@@ -213,13 +315,58 @@
   <!-- Footer -->
   <footer>
     <div class="app-container" style="text-align: center;">
-      <p>&copy; 2026 Cintia. Todos los derechos reservados. Desarrollado y operado por <strong>MelodIA Lab SpA</strong>.</p>
-      <p style="margin-top: 8px; font-size: 13px; color: var(--text-light);">
-        <a href="/" style="color: var(--text-medium); text-decoration: underline; margin-right: 14px;">Volver al Inicio</a>
-        With ❤️ and ⚡ by <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: #e65c00; text-decoration: none; font-weight: 600;">MelodIA Lab</a>
+      <p id="footerCopyright">&copy; 2026 Cintia. Todos los derechos reservados. Desarrollado y operado por <strong>MelodIA Lab SpA</strong> (La Serena, Chile).</p>
+      <p style="margin-top: 8px; font-size: 13px; color: var(--text-light);" id="footerCredits">
+        <a href="/" style="color: var(--text-medium); text-decoration: underline; margin-right: 14px;" id="footerBackLink">Volver al Inicio</a>
+        <span id="footerBrandMade">Hecho con ❤️ y ⚡ por</span> <a href="https://www.melodialab.net" target="_blank" rel="noopener noreferrer" style="color: #e65c00; text-decoration: none; font-weight: 600;">MelodIA Lab</a>
       </p>
     </div>
   </footer>
+
+  <script>
+    const langSelector = document.getElementById('langSelector');
+    const legalCardEs = document.getElementById('legalCardEs');
+    const legalCardEn = document.getElementById('legalCardEn');
+    const navHomeLink = document.getElementById('navHomeLink');
+    const backNavText = document.getElementById('backNavText');
+    const footerCopyright = document.getElementById('footerCopyright');
+    const footerBackLink = document.getElementById('footerBackLink');
+    const footerBrandMade = document.getElementById('footerBrandMade');
+
+    function applyTermsLang(lang) {
+      if (lang === 'en') {
+        legalCardEs.style.display = 'none';
+        legalCardEn.style.display = 'block';
+        navHomeLink.textContent = 'Home';
+        backNavText.textContent = 'Back to Cintia.pro';
+        footerCopyright.innerHTML = '&copy; 2026 Cintia. All rights reserved. Developed and operated by <strong>MelodIA Lab SpA</strong> (La Serena, Chile).';
+        footerBackLink.textContent = 'Back to Home';
+        footerBrandMade.textContent = 'Made with ❤️ and ⚡ by';
+        document.documentElement.lang = 'en';
+      } else {
+        legalCardEs.style.display = 'block';
+        legalCardEn.style.display = 'none';
+        navHomeLink.textContent = 'Inicio';
+        backNavText.textContent = 'Volver a Cintia.pro';
+        footerCopyright.innerHTML = '&copy; 2026 Cintia. Todos los derechos reservados. Desarrollado y operado por <strong>MelodIA Lab SpA</strong> (La Serena, Chile).';
+        footerBackLink.textContent = 'Volver al Inicio';
+        footerBrandMade.textContent = 'Hecho con ❤️ y ⚡ por';
+        document.documentElement.lang = 'es';
+      }
+      langSelector.value = lang;
+    }
+
+    // Detect language from URL param ?lang=en, or localStorage, or default to es
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialLang = urlParams.get('lang') || localStorage.getItem('cvLang') || 'es';
+    applyTermsLang(initialLang);
+
+    langSelector.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      localStorage.setItem('cvLang', selected);
+      applyTermsLang(selected);
+    });
+  </script>
 
 </body>
 </html>
