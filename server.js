@@ -1844,6 +1844,11 @@ app.get('/api/admin/download-optimized/:id', requireAdminAuth, async (req, res) 
   res.send(analysis.optimizedText || "");
 });
 
+// Legal terms route
+app.get('/terminos', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'terminos.html'));
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

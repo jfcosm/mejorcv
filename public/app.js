@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshCaptchaBtn = document.getElementById('refreshCaptchaBtn');
   
   const consentCheckbox = document.getElementById('consentCheckbox');
+  const termsCheckbox = document.getElementById('termsCheckbox');
   const submitBtn = document.getElementById('submitBtn');
   const errorBanner = document.getElementById('errorBanner');
   const uploadWrapper = document.getElementById('uploadWrapper');
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaPlaceholder: "Resultado",
       captchaRefresh: "Recargar",
       consentText: "Acepto el procesamiento temporal de este documento para generar mi análisis.",
+      termsConsentText: "Acepto los <a href=\"/terminos.html\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">términos y condiciones</a> de uso de Cintia.pro.",
       submitBtn: "Analizar CV Gratis",
       loadingStatus: "Cintia está analizando tu Currículum...",
       step0: "Cintia está detectando el idioma del currículum...",
@@ -169,8 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Tarjeta de Crédito / Débito",
       modalSuccessTitle: "¡Pago Completado!",
       modalSuccessMessage: "Tu pago ha sido procesado correctamente. Cintia está procesando el documento...",
-      footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología basada en Google Gemini.",
-      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">OrangeVibe</a>",
+      footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Desarrollado y operado por <strong>MelodIA Lab SpA</strong>. Tecnología basada en Google Gemini.",
+      footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Términos y Condiciones</a> With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       howItWorksTitle: "¿Cómo funciona Cintia?",
       step1Title: "1. Sube tu Currículum",
       step1Desc: "Sube tu archivo (.pdf, .docx, .odt o .txt) de manera 100% segura. Cintia leerá y extraerá tu texto al instante.",
@@ -189,8 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
       captchaLabel: "Anti-abuse measure: Verify you are human",
       captchaPlaceholder: "Result",
       captchaRefresh: "Reload",
-      consentText: "I agree to the temporary processing of this document to generate my analysis.",
-      submitBtn: "Analyze CV for Free",
+      consentText: "I accept the temporary processing of this document to generate my analysis.",
+      termsConsentText: "I accept the <a href=\"/terminos.html\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">terms and conditions</a> of Cintia.pro.",
+      submitBtn: "Analyze Resume for Free",
       loadingStatus: "Cintia is analyzing your Resume...",
       step0: "Cintia is detecting the language of the resume...",
       step1: "Cintia is extracting text from document...",
@@ -245,8 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Credit / Debit Card",
       modalSuccessTitle: "Payment Completed!",
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
-      footerCopyright: "&copy; 2026 Cintia. All rights reserved. Powered by Google Gemini.",
-      footerCredits: "With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">OrangeVibe</a>",
+      footerCopyright: "&copy; 2026 Cintia. All rights reserved. Developed and operated by <strong>MelodIA Lab SpA</strong>. Powered by Google Gemini.",
+      footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Terms & Conditions</a> With ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       howItWorksTitle: "How Cintia Works",
       step1Title: "1. Upload Your Resume",
       step1Desc: "Upload your file (.pdf, .docx, .odt or .txt) 100% securely. Cintia will immediately read and analyze your details.",
@@ -290,6 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const consentTextEl = document.getElementById('consentText');
     if (consentTextEl) consentTextEl.textContent = t.consentText;
+
+    const termsConsentTextEl = document.getElementById('termsConsentText');
+    if (termsConsentTextEl) termsConsentTextEl.innerHTML = t.termsConsentText;
     
     document.getElementById('submitBtn').textContent = t.submitBtn;
     
@@ -711,11 +717,18 @@ document.addEventListener('DOMContentLoaded', () => {
     errorBanner.style.display = 'none';
   }
 
-  // Consent checkbox toggle
+  // Consent & Terms checkboxes toggle
+  function updateSubmitBtnState() {
+    const isConsentChecked = consentCheckbox ? consentCheckbox.checked : true;
+    const isTermsChecked = termsCheckbox ? termsCheckbox.checked : true;
+    submitBtn.disabled = !activeFile || !(isConsentChecked && isTermsChecked);
+  }
+
   if (consentCheckbox) {
-    consentCheckbox.addEventListener('change', () => {
-      submitBtn.disabled = !consentCheckbox.checked;
-    });
+    consentCheckbox.addEventListener('change', updateSubmitBtnState);
+  }
+  if (termsCheckbox) {
+    termsCheckbox.addEventListener('change', updateSubmitBtnState);
   }
 
   // 4. Form Submit & Progress Animation
@@ -727,6 +740,14 @@ document.addEventListener('DOMContentLoaded', () => {
       showError(currentLanguage === 'en'
         ? 'Please accept the temporary processing of this document to proceed.'
         : 'Por favor acepta el procesamiento temporal del documento para continuar.');
+      submitBtn.disabled = true;
+      return;
+    }
+
+    if (termsCheckbox && !termsCheckbox.checked) {
+      showError(currentLanguage === 'en'
+        ? 'Please accept the terms and conditions to proceed.'
+        : 'Por favor acepta los términos y condiciones de uso para continuar.');
       submitBtn.disabled = true;
       return;
     }
