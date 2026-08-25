@@ -1330,9 +1330,9 @@ const paypalOrderCache = new Map();
 // Helper: get PayPal OAuth2 access token
 async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
-  const secret = process.env.PAYPAL_SECRET_KEY;
+  const secret = process.env.PAYPAL_SECRET_KEY || process.env.PAYPAL_CLIENT_SECRET;
   const mode = (process.env.PAYPAL_MODE || 'sandbox').toLowerCase();
-  const baseUrl = mode === 'live'
+  const baseUrl = (mode === 'live' || mode === 'production')
     ? 'https://api-m.paypal.com'
     : 'https://api-m.sandbox.paypal.com';
 
