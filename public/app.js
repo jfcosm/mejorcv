@@ -510,6 +510,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pricingSection) {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
+
+    // 3. Dynamic test button label
+    const navTestBtn = document.getElementById('navQuickTestPayBtn');
+    if (navTestBtn) {
+      const clpFormatted = (appConfig.priceAiClp || 1000).toLocaleString('es-CL');
+      navTestBtn.innerHTML = `💳 Probar Pago ($${clpFormatted} CLP)`;
+      navTestBtn.title = `Probar pago de $${clpFormatted} CLP con Mercado Pago directamente`;
+    }
   }
 
   // Load configuration parameters then handle return callback
