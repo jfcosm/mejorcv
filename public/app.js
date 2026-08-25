@@ -97,8 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentLanguage = localStorage.getItem('cvLang') || 'es';
 
   let appConfig = {
-    optAiEnabled: false,
+    optAiEnabled: true,
     optExpertEnabled: true,
+    quickTestBtnEnabled: true,
     priceAi: 1.0,
     priceExpert: 25.0
   };
@@ -511,9 +512,10 @@ document.addEventListener('DOMContentLoaded', () => {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
 
-    // 3. Dynamic test button label
+    // 3. Dynamic test button label and visibility
     const navTestBtn = document.getElementById('navQuickTestPayBtn');
     if (navTestBtn) {
+      navTestBtn.style.display = appConfig.quickTestBtnEnabled !== false ? 'inline-flex' : 'none';
       const clpFormatted = (appConfig.priceAiClp || 1000).toLocaleString('es-CL');
       navTestBtn.innerHTML = `💳 Probar Pago ($${clpFormatted} CLP)`;
       navTestBtn.title = `Probar pago de $${clpFormatted} CLP con Mercado Pago directamente`;

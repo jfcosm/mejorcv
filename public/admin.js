@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
   const setOptAiEnabled = document.getElementById('setOptAiEnabled');
   const setOptExpertEnabled = document.getElementById('setOptExpertEnabled');
+  const setQuickTestBtnEnabled = document.getElementById('setQuickTestBtnEnabled');
   const setEvalPrompt = document.getElementById('setEvalPrompt');
   const setOptPrompt = document.getElementById('setOptPrompt');
   const settingsMessage = document.getElementById('settingsMessage');
@@ -1102,6 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
       setOptExpertEnabled.checked = settings.optExpertEnabled !== false;
+      if (setQuickTestBtnEnabled) setQuickTestBtnEnabled.checked = settings.quickTestBtnEnabled !== false;
       setCaptchaEnabled.checked = settings.captchaEnabled !== false;
       setEvalPrompt.value = settings.evaluationPrompt || '';
       setOptPrompt.value = settings.optimizationPrompt || '';
@@ -1134,6 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rateLimitPerHour: parseInt(setRateLimit.value, 10),
       optAiEnabled: setOptAiEnabled.checked,
       optExpertEnabled: setOptExpertEnabled.checked,
+      quickTestBtnEnabled: setQuickTestBtnEnabled ? setQuickTestBtnEnabled.checked : true,
       captchaEnabled: setCaptchaEnabled.checked,
       evaluationPrompt: setEvalPrompt.value,
       optimizationPrompt: setOptPrompt.value
