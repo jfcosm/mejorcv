@@ -108,38 +108,6 @@ header .nav {
   color: var(--color-mint);
 }
 
-.nav-test-pay-btn {
-  background: linear-gradient(135deg, #009EE3 0%, #007EB5 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(0, 158, 227, 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-}
-
-.nav-test-pay-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 158, 227, 0.35);
-  background: linear-gradient(135deg, #008cc9 0%, #006fa0 100%);
-}
-
-.nav-test-pay-btn:active {
-  transform: translateY(0);
-}
-
-.nav-test-pay-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* Hero Section */
 .hero {
   text-align: center;

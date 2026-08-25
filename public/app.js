@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let appConfig = {
     optAiEnabled: true,
     optExpertEnabled: true,
-    quickTestBtnEnabled: true,
     priceAi: 1.0,
     priceExpert: 25.0
   };
@@ -510,15 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pricingSection) {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
-    }
-
-    // 3. Dynamic test button label and visibility
-    const navTestBtn = document.getElementById('navQuickTestPayBtn');
-    if (navTestBtn) {
-      navTestBtn.style.display = appConfig.quickTestBtnEnabled !== false ? 'inline-flex' : 'none';
-      const clpFormatted = (appConfig.priceAiClp || 1000).toLocaleString('es-CL');
-      navTestBtn.innerHTML = `💳 Probar Pago ($${clpFormatted} CLP)`;
-      navTestBtn.title = `Probar pago de $${clpFormatted} CLP con Mercado Pago directamente`;
     }
   }
 
@@ -1410,45 +1400,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mpCheckoutBtn.disabled = false;
         if (mpLoadingHint) mpLoadingHint.style.display = 'none';
         showPaymentError('❌ ' + err.message);
-      }
-    });
-  }
-
-  // Quick Test Payment from Navbar ($1.000 CLP)
-  const navQuickTestPayBtn = document.getElementById('navQuickTestPayBtn');
-  if (navQuickTestPayBtn) {
-    navQuickTestPayBtn.addEventListener('click', async () => {
-      const originalHtml = navQuickTestPayBtn.innerHTML;
-      navQuickTestPayBtn.disabled = true;
-      navQuickTestPayBtn.innerHTML = '⏳ Conectando...';
-
-      try {
-        const testAnalysisId = currentAnalysisId || ('test_nav_' + Date.now());
-        const resp = await fetch('/api/mercadopago/create-preference', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysisId: testAnalysisId,
-            tier: 'ai'
-          })
-        });
-
-        const data = await resp.json();
-        if (!resp.ok) {
-          throw new Error(data.error || 'Error al iniciar pago de prueba');
-        }
-
-        const targetUrl = data.initPoint || data.sandboxInitPoint;
-        if (!targetUrl) {
-          throw new Error('No se recibió la URL de pago de Mercado Pago.');
-        }
-
-        window.location.href = targetUrl;
-
-      } catch (err) {
-        navQuickTestPayBtn.disabled = false;
-        navQuickTestPayBtn.innerHTML = originalHtml;
-        alert('❌ Error al iniciar prueba rápida de Mercado Pago:\n' + err.message);
       }
     });
   }
