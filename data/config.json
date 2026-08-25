@@ -5,7 +5,7 @@
   "priceExpert": 25,
   "priceAiClp": 1000,
   "priceExpertClp": 25000,
-  "optAiEnabled": false,
+  "optAiEnabled": true,
   "optExpertEnabled": true,
   "captchaEnabled": true,
   "rateLimitPerHour": 20,

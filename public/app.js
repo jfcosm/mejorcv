@@ -478,30 +478,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function applyConfigToUi() {
+    const aiPreviewSection = document.getElementById('aiPreviewSection');
     const pricingSection = document.getElementById('pricingSection');
-    const aiPlanCard = document.getElementById('aiPlanCard');
     const expertPlanCard = document.getElementById('expertPlanCard');
-    
-    if (aiPlanCard) {
-      aiPlanCard.querySelector('.plan-price').innerHTML = `$${appConfig.priceAi} <span>USD / ${currentLanguage === 'en' ? 'one-time payment' : 'pago único'}</span>`;
-      document.getElementById('optimizeAiBtn').textContent = currentLanguage === 'en' 
-        ? `Optimize with AI for $${appConfig.priceAi} USD` 
-        : `Optimizar con IA por $${appConfig.priceAi} USD`;
+    const unlockCtaPrice = document.getElementById('unlockCtaPrice');
+    const unlockActionBtnText = document.getElementById('unlockActionBtnText');
+
+    // 1. Apply AI optimization pricing & visibility
+    if (unlockCtaPrice) {
+      unlockCtaPrice.textContent = `$${appConfig.priceAi || 1}`;
     }
-    
-    if (expertPlanCard) {
-      expertPlanCard.querySelector('.plan-price').innerHTML = `$${appConfig.priceExpert} <span>USD / ${currentLanguage === 'en' ? 'per delivery' : 'por entrega'}</span>`;
-      document.getElementById('optimizeExpertBtn').textContent = currentLanguage === 'en'
-        ? `Request Expert Assistance`
-        : `Solicitar Asistencia de Experto`;
+    if (unlockActionBtnText) {
+      const btnBase = currentLanguage === 'en' ? 'Unlock & Download Resume' : 'Desbloquear y Descargar CV';
+      unlockActionBtnText.textContent = `${btnBase} ($${appConfig.priceAi || 1} USD)`;
+    }
+    if (aiPreviewSection) {
+      aiPreviewSection.style.display = appConfig.optAiEnabled ? 'block' : 'none';
     }
 
-    if (!appConfig.optAiEnabled && !appConfig.optExpertEnabled) {
-      pricingSection.style.display = 'none';
-    } else {
-      pricingSection.style.display = 'block';
-      if (aiPlanCard) aiPlanCard.style.display = appConfig.optAiEnabled ? 'block' : 'none';
-      if (expertPlanCard) expertPlanCard.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
+    // 2. Apply Expert consulting pricing & visibility
+    if (expertPlanCard) {
+      expertPlanCard.querySelector('.plan-price').innerHTML = `$${appConfig.priceExpert} <span>USD / ${currentLanguage === 'en' ? 'per delivery' : 'por entrega'}</span>`;
+      const optExpBtn = document.getElementById('optimizeExpertBtn');
+      if (optExpBtn) {
+        optExpBtn.textContent = currentLanguage === 'en'
+          ? `Request Expert Assistance ($${appConfig.priceExpert} USD)`
+          : `Solicitar Asistencia de Experto ($${appConfig.priceExpert} USD)`;
+      }
+    }
+
+    if (pricingSection) {
+      pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
   }
 
@@ -1187,14 +1194,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // State: contact data for expert tier, set before opening checkout
   let pendingExpertContact = null;
 
-  optimizeAiBtn.addEventListener('click', () => {
-    currentTier = 'ai';
-    pendingExpertContact = null;
-    openCheckout(
-      currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA',
-      appConfig.priceAi.toFixed(2)
-    );
-  });
+  if (optimizeAiBtn) {
+    optimizeAiBtn.addEventListener('click', () => {
+      currentTier = 'ai';
+      pendingExpertContact = null;
+      openCheckout(
+        currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización instantánea con IA',
+        appConfig.priceAi.toFixed(2)
+      );
+    });
+  }
 
   function showExpertError(message, targetInput = null) {
     if (expertCardError) {
@@ -1623,7 +1632,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 8. Render Blurred AI CV Preview
   function renderBlurredPreview(mdText) {
-    if (!mdText) return;
+    if (!mdText || !appConfig.optAiEnabled) {
+      if (aiPreviewSection) aiPreviewSection.style.display = 'none';
+      return;
+    }
+    if (aiPreviewSection) aiPreviewSection.style.display = 'block';
     optimizedContentText = mdText;
 
     if (blurredDocContent) {

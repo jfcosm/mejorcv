@@ -412,7 +412,7 @@ function readConfig() {
       priceExpert: 25.0,
       priceAiClp: 1000,
       priceExpertClp: 25000,
-      optAiEnabled: false,
+      optAiEnabled: true,
       optExpertEnabled: true,
       captchaEnabled: true,
       rateLimitPerHour: 20,
@@ -1089,13 +1089,15 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       }
     }
 
-    // 6. Generate AI Optimization preview simultaneously
+    // 6. Generate AI Optimization preview simultaneously (if enabled)
     let optimizedText = "";
-    try {
-      optimizedText = await generateAiOptimization(filename, extractedText, lang, config);
-    } catch (optErr) {
-      console.warn("Could not generate instant AI optimization during analyze, using fallback template:", optErr.message);
-      optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+    if (config.optAiEnabled !== false) {
+      try {
+        optimizedText = await generateAiOptimization(filename, extractedText, lang, config);
+      } catch (optErr) {
+        console.warn("Could not generate instant AI optimization during analyze, using fallback template:", optErr.message);
+        optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+      }
     }
 
     // 7. Log entry to db
