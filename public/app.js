@@ -95,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTier = null; // 'ai' or 'expert'
   let optimizedContentText = '';
   let currentLanguage = localStorage.getItem('cvLang') || 'es';
+  let bulletinIndex = 0;
+  let bulletinTimer = null;
 
   let appConfig = {
     optAiEnabled: true,
@@ -518,9 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Update & start live rotating bulletin news ticker
     startBulletinRotation();
   }
-
-  let bulletinIndex = 0;
-  let bulletinTimer = null;
 
   function getBulletinSlides(count, score) {
     if (currentLanguage === 'en') {
