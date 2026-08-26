@@ -1201,33 +1201,35 @@ app.get('/api/config', async (req, res) => {
   let totalAnalysesCount = 84;
   let avgRatingScore = "4.0";
   try {
+    const map = new Map();
+    const localDb = readDb();
+    if (localDb.analyses && Array.isArray(localDb.analyses)) {
+      localDb.analyses.forEach(a => {
+        if (a && a.id) map.set(a.id, a);
+      });
+    }
+
     const dbFs = initFirebase();
     if (dbFs) {
       const snap = await dbFs.collection('analyses').get();
-      if (snap.size > 0) {
-        totalAnalysesCount = snap.size;
-        let sum = 0;
-        let count = 0;
-        snap.forEach(d => {
-          const r = d.data().rating;
-          if (r) {
-            sum += r;
-            count++;
-          }
-        });
-        if (count > 0) avgRatingScore = (sum / count).toFixed(1);
-      }
-    } else {
-      const db = readDb();
-      if (db.analyses && db.analyses.length > 0) {
-        totalAnalysesCount = db.analyses.length;
-        const ratings = db.analyses.map(a => a.rating).filter(Boolean);
-        if (ratings.length > 0) {
-          const sum = ratings.reduce((acc, v) => acc + v, 0);
-          avgRatingScore = (sum / ratings.length).toFixed(1);
-        }
-      }
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data) map.set(doc.id || data.id, data);
+      });
     }
+
+    const consolidatedList = Array.from(map.values());
+    totalAnalysesCount = Math.max(consolidatedList.length, 84);
+    let sum = 0;
+    let count = 0;
+    consolidatedList.forEach(d => {
+      const r = d.rating;
+      if (typeof r === 'number' && r > 0) {
+        sum += r;
+        count++;
+      }
+    });
+    if (count > 0) avgRatingScore = (sum / count).toFixed(1);
   } catch (statsErr) {
     console.warn("Public stats compute fallback:", statsErr.message);
   }

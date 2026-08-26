@@ -26,22 +26,23 @@
     </div>
   </header>
 
-  <!-- Social Proof & Live Metrics Banner -->
-  <section class="metrics-banner" id="metricsBanner" aria-label="Métricas de impacto de Cintia">
-    <div class="app-container metrics-banner-content">
-      <div class="metrics-badge">
-        <span class="metrics-pulse"></span>
-        <span class="metrics-badge-text" id="metricsBadgeText">Métricas en Vivo</span>
+  <!-- Live Bulletin & Social Proof News Ticker -->
+  <section class="bulletin-banner" id="bulletinBanner" aria-label="Boletín en vivo y métricas de Cintia">
+    <div class="app-container bulletin-banner-content">
+      <div class="bulletin-badge">
+        <span class="bulletin-pulse"></span>
+        <span class="bulletin-badge-text" id="bulletinBadgeText">Boletín en Vivo</span>
       </div>
-      <div class="metrics-message" id="metricsMessage">
-        Cintia ha evaluado y analizado <span class="metrics-highlight" id="metricTotalAnalyses">84+ CVs</span> con una nota promedio de <span class="metrics-highlight" id="metricAvgScore">4.0 / 5.0 ★</span>. ¡Lleva tu Currículum al siguiente nivel!
+      <div class="bulletin-ticker">
+        <div class="bulletin-message" id="bulletinMessage">
+          <!-- Injected dynamically with smooth rotation animation -->
+        </div>
       </div>
-      <a href="#dropZone" class="metrics-cta-link" id="metricsCtaLink">
-        <span id="metricsCtaText">Analizar mi CV</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </a>
+      <div class="bulletin-dots" id="bulletinDots">
+        <span class="bulletin-dot active" data-index="0"></span>
+        <span class="bulletin-dot" data-index="1"></span>
+        <span class="bulletin-dot" data-index="2"></span>
+      </div>
     </div>
   </section>
 

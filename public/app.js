@@ -107,9 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     es: {
       navHome: "Inicio",
       navAdmin: "Panel Administrador",
-      metricsBadgeText: "Impacto Comprobado",
-      metricsMessage: (count, score) => `Cintia ha evaluado y analizado <span class="metrics-highlight">${count}+ CVs</span> con una nota promedio de <span class="metrics-highlight">${score} / 5.0 ★</span>. ¡Lleva tu Currículum al siguiente nivel gratis!`,
-      metricsCtaText: "Analizar mi CV",
+      bulletinBadgeText: "Boletín en Vivo",
       heroTitle: "Deja que <span>Cintia</span> perfeccione tu Currículum Vitae",
       heroDesc: "¿Sientes que envías tu CV y nadie te responde? Muchos currículums quedan descartados de forma automática por filtros invisibles (ATS). Sube tu currículum gratis: Cintia analizará cómo lo leen los reclutadores, te guiará con recomendaciones empáticas y te ayudará a brillar para conseguir esa entrevista que mereces.",
       uploadTitle: "Arrastra tu currículum aquí",
@@ -187,9 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     en: {
       navHome: "Home",
       navAdmin: "Admin Panel",
-      metricsBadgeText: "Proven Impact",
-      metricsMessage: (count, score) => `Cintia has evaluated & analyzed <span class="metrics-highlight">${count}+ resumes</span> with an average score of <span class="metrics-highlight">${score} / 5.0 ★</span>. Take your career to the next level for free!`,
-      metricsCtaText: "Analyze my CV",
+      bulletinBadgeText: "Live Bulletin",
       heroTitle: "Let <span>Cintia</span> perfect your Resume",
       heroDesc: "Sending out resumes and hearing only silence? Many applications are filtered out automatically by invisible recruitment software (ATS). Upload your CV for free: Cintia will reveal exactly how recruiters see your profile, provide supportive guidance, and help you stand out to land the interviews you deserve.",
       uploadTitle: "Drag your resume here",
@@ -293,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.upload-title').textContent = t.uploadTitle;
     document.querySelector('.upload-hint').textContent = t.uploadHint;
     
-    updateMetricsBanner();
+    updateBulletinSlide();
     
     document.querySelector('.captcha-label').textContent = t.captchaLabel;
     document.getElementById('captchaInput').placeholder = t.captchaPlaceholder;
@@ -519,22 +515,89 @@ document.addEventListener('DOMContentLoaded', () => {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
 
-    // 3. Update live social proof metrics banner
-    updateMetricsBanner();
+    // 3. Update & start live rotating bulletin news ticker
+    startBulletinRotation();
   }
 
-  function updateMetricsBanner() {
+  let bulletinIndex = 0;
+  let bulletinTimer = null;
+
+  function getBulletinSlides(count, score) {
+    if (currentLanguage === 'en') {
+      return [
+        `📊 Cintia has evaluated and analyzed <span class="bulletin-highlight">${count}+ resumes</span> with an average rating of <span class="bulletin-highlight">${score} / 5.0 ★</span>.`,
+        `⚡ <span class="bulletin-highlight">80% of resumes</span> contain invisible ATS keyword gaps that prevent recruiters from calling.`,
+        `🚀 Elevate your professional profile with honest feedback, actionable guidance, and instant AI optimization!`
+      ];
+    }
+    return [
+      `📊 Cintia ha evaluado y analizado <span class="bulletin-highlight">${count}+ CVs</span> con una nota promedio de <span class="bulletin-highlight">${score} / 5.0 ★</span>.`,
+      `⚡ El <span class="bulletin-highlight">80% de los CVs</span> presentan fallas en palabras clave ATS que impiden llegar a la entrevista laboral.`,
+      `🚀 Lleva tu perfil profesional al siguiente nivel con retroalimentación honesta y optimización al instante.`
+    ];
+  }
+
+  function startBulletinRotation() {
+    if (bulletinTimer) clearInterval(bulletinTimer);
+    updateBulletinSlide();
+    bulletinTimer = setInterval(() => {
+      rotateBulletinSlide(1);
+    }, 4500);
+
+    const dots = document.querySelectorAll('.bulletin-dot');
+    dots.forEach((dot, idx) => {
+      dot.onclick = () => {
+        bulletinIndex = idx;
+        updateBulletinSlide();
+      };
+    });
+  }
+
+  function rotateBulletinSlide(dir = 1) {
+    const msgEl = document.getElementById('bulletinMessage');
+    if (!msgEl) return;
+    
+    const count = (appConfig.publicStats && appConfig.publicStats.totalAnalyses) ? appConfig.publicStats.totalAnalyses : 84;
+    const score = (appConfig.publicStats && appConfig.publicStats.avgRating) ? appConfig.publicStats.avgRating : "4.0";
+    const slides = getBulletinSlides(count, score);
+
+    msgEl.classList.add('slide-out');
+    setTimeout(() => {
+      bulletinIndex = (bulletinIndex + dir + slides.length) % slides.length;
+      msgEl.innerHTML = slides[bulletinIndex];
+      msgEl.classList.remove('slide-out');
+      msgEl.classList.add('slide-in');
+      
+      const dots = document.querySelectorAll('.bulletin-dot');
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === bulletinIndex);
+      });
+
+      requestAnimationFrame(() => {
+        msgEl.classList.remove('slide-in');
+      });
+    }, 350);
+  }
+
+  function updateBulletinSlide() {
+    const msgEl = document.getElementById('bulletinMessage');
+    const badgeEl = document.getElementById('bulletinBadgeText');
     const t = translations[currentLanguage] || translations.es;
-    const badgeEl = document.getElementById('metricsBadgeText');
-    const msgEl = document.getElementById('metricsMessage');
-    const ctaEl = document.getElementById('metricsCtaText');
+    if (badgeEl) {
+      badgeEl.textContent = t.bulletinBadgeText || 'Boletín en Vivo';
+    }
+    if (!msgEl) return;
 
     const count = (appConfig.publicStats && appConfig.publicStats.totalAnalyses) ? appConfig.publicStats.totalAnalyses : 84;
     const score = (appConfig.publicStats && appConfig.publicStats.avgRating) ? appConfig.publicStats.avgRating : "4.0";
+    const slides = getBulletinSlides(count, score);
 
-    if (badgeEl) badgeEl.textContent = t.metricsBadgeText;
-    if (msgEl) msgEl.innerHTML = t.metricsMessage(count, score);
-    if (ctaEl) ctaEl.textContent = t.metricsCtaText;
+    msgEl.innerHTML = slides[bulletinIndex % slides.length];
+
+    const dots = document.querySelectorAll('.bulletin-dot');
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === (bulletinIndex % slides.length));
+    });
   }
 
   // Load configuration parameters then handle return callback
