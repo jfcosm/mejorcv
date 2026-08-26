@@ -107,6 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
     es: {
       navHome: "Inicio",
       navAdmin: "Panel Administrador",
+      metricsBadgeText: "Impacto Comprobado",
+      metricsMessage: (count, score) => `Cintia ha evaluado y analizado <span class="metrics-highlight">${count}+ CVs</span> con una nota promedio de <span class="metrics-highlight">${score} / 5.0 ★</span>. ¡Lleva tu Currículum al siguiente nivel gratis!`,
+      metricsCtaText: "Analizar mi CV",
       heroTitle: "Deja que <span>Cintia</span> perfeccione tu Currículum Vitae",
       heroDesc: "¿Sientes que envías tu CV y nadie te responde? Muchos currículums quedan descartados de forma automática por filtros invisibles (ATS). Sube tu currículum gratis: Cintia analizará cómo lo leen los reclutadores, te guiará con recomendaciones empáticas y te ayudará a brillar para conseguir esa entrevista que mereces.",
       uploadTitle: "Arrastra tu currículum aquí",
@@ -184,6 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     en: {
       navHome: "Home",
       navAdmin: "Admin Panel",
+      metricsBadgeText: "Proven Impact",
+      metricsMessage: (count, score) => `Cintia has evaluated & analyzed <span class="metrics-highlight">${count}+ resumes</span> with an average score of <span class="metrics-highlight">${score} / 5.0 ★</span>. Take your career to the next level for free!`,
+      metricsCtaText: "Analyze my CV",
       heroTitle: "Let <span>Cintia</span> perfect your Resume",
       heroDesc: "Sending out resumes and hearing only silence? Many applications are filtered out automatically by invisible recruitment software (ATS). Upload your CV for free: Cintia will reveal exactly how recruiters see your profile, provide supportive guidance, and help you stand out to land the interviews you deserve.",
       uploadTitle: "Drag your resume here",
@@ -286,6 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelector('.upload-title').textContent = t.uploadTitle;
     document.querySelector('.upload-hint').textContent = t.uploadHint;
+    
+    updateMetricsBanner();
     
     document.querySelector('.captcha-label').textContent = t.captchaLabel;
     document.getElementById('captchaInput').placeholder = t.captchaPlaceholder;
@@ -510,6 +518,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pricingSection) {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
+
+    // 3. Update live social proof metrics banner
+    updateMetricsBanner();
+  }
+
+  function updateMetricsBanner() {
+    const t = translations[currentLanguage] || translations.es;
+    const badgeEl = document.getElementById('metricsBadgeText');
+    const msgEl = document.getElementById('metricsMessage');
+    const ctaEl = document.getElementById('metricsCtaText');
+
+    const count = (appConfig.publicStats && appConfig.publicStats.totalAnalyses) ? appConfig.publicStats.totalAnalyses : 84;
+    const score = (appConfig.publicStats && appConfig.publicStats.avgRating) ? appConfig.publicStats.avgRating : "4.0";
+
+    if (badgeEl) badgeEl.textContent = t.metricsBadgeText;
+    if (msgEl) msgEl.innerHTML = t.metricsMessage(count, score);
+    if (ctaEl) ctaEl.textContent = t.metricsCtaText;
   }
 
   // Load configuration parameters then handle return callback

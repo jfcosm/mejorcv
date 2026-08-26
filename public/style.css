@@ -108,6 +108,126 @@ header .nav {
   color: var(--color-mint);
 }
 
+/* Social Proof & Metrics Banner below Navbar */
+.metrics-banner {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.08) 100%);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.16);
+  padding: 10px 0;
+  font-size: 13.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metrics-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  text-align: center;
+}
+
+.metrics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-mint-hover);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.1);
+}
+
+.metrics-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: metricsPulse 2s infinite;
+}
+
+@keyframes metricsPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.metrics-message {
+  color: var(--text-dark);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.metrics-highlight {
+  font-weight: 700;
+  color: var(--color-mint-hover);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.metrics-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--color-mint-hover);
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 12px;
+  border-radius: 20px;
+  transition: var(--transition-smooth);
+}
+
+.metrics-cta-link:hover {
+  background: var(--color-mint);
+  color: #ffffff;
+  border-color: var(--color-mint);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.metrics-cta-link svg {
+  transition: transform 0.2s ease;
+}
+
+.metrics-cta-link:hover svg {
+  transform: translateX(2px);
+}
+
+@media (max-width: 768px) {
+  .metrics-banner {
+    padding: 8px 0;
+    font-size: 12px;
+  }
+  .metrics-banner-content {
+    gap: 8px;
+    justify-content: center;
+  }
+  .metrics-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+}
+
 /* Hero Section */
 .hero {
   text-align: center;

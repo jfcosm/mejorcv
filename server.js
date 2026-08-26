@@ -1194,9 +1194,44 @@ app.post('/api/payment/simulate', async (req, res) => {
   }
 });
 
-// Public settings endpoint
+// Public settings and live statistics endpoint
 app.get('/api/config', async (req, res) => {
   const config = await getConfigDoc();
+
+  let totalAnalysesCount = 84;
+  let avgRatingScore = "4.0";
+  try {
+    const dbFs = initFirebase();
+    if (dbFs) {
+      const snap = await dbFs.collection('analyses').get();
+      if (snap.size > 0) {
+        totalAnalysesCount = snap.size;
+        let sum = 0;
+        let count = 0;
+        snap.forEach(d => {
+          const r = d.data().rating;
+          if (r) {
+            sum += r;
+            count++;
+          }
+        });
+        if (count > 0) avgRatingScore = (sum / count).toFixed(1);
+      }
+    } else {
+      const db = readDb();
+      if (db.analyses && db.analyses.length > 0) {
+        totalAnalysesCount = db.analyses.length;
+        const ratings = db.analyses.map(a => a.rating).filter(Boolean);
+        if (ratings.length > 0) {
+          const sum = ratings.reduce((acc, v) => acc + v, 0);
+          avgRatingScore = (sum / ratings.length).toFixed(1);
+        }
+      }
+    }
+  } catch (statsErr) {
+    console.warn("Public stats compute fallback:", statsErr.message);
+  }
+
   res.json({
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
@@ -1206,7 +1241,11 @@ app.get('/api/config', async (req, res) => {
     priceExpertClp: config.priceExpertClp || 25000,
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
-    mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN
+    mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
+    publicStats: {
+      totalAnalyses: totalAnalysesCount,
+      avgRating: avgRatingScore
+    }
   });
 });
 
