@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     es: {
       navHome: "Inicio",
       navAdmin: "Panel Administrador",
-      bulletinBadgeText: "Boletín en Vivo",
+      bulletinBadgeText: "¡BUENAS NOTICIAS!",
       heroTitle: "Deja que <span>Cintia</span> perfeccione tu Currículum Vitae",
       heroDesc: "¿Sientes que envías tu CV y nadie te responde? Muchos currículums quedan descartados de forma automática por filtros invisibles (ATS). Sube tu currículum gratis: Cintia analizará cómo lo leen los reclutadores, te guiará con recomendaciones empáticas y te ayudará a brillar para conseguir esa entrevista que mereces.",
       uploadTitle: "Arrastra tu currículum aquí",
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     en: {
       navHome: "Home",
       navAdmin: "Admin Panel",
-      bulletinBadgeText: "Live Bulletin",
+      bulletinBadgeText: "GREAT NEWS!",
       heroTitle: "Let <span>Cintia</span> perfect your Resume",
       heroDesc: "Sending out resumes and hearing only silence? Many applications are filtered out automatically by invisible recruitment software (ATS). Upload your CV for free: Cintia will reveal exactly how recruiters see your profile, provide supportive guidance, and help you stand out to land the interviews you deserve.",
       uploadTitle: "Drag your resume here",
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const badgeEl = document.getElementById('bulletinBadgeText');
     const t = translations[currentLanguage] || translations.es;
     if (badgeEl) {
-      badgeEl.textContent = t.bulletinBadgeText || 'Boletín en Vivo';
+      badgeEl.textContent = t.bulletinBadgeText || '¡BUENAS NOTICIAS!';
     }
     if (!msgEl) return;
 
@@ -599,6 +599,9 @@ document.addEventListener('DOMContentLoaded', () => {
       dot.classList.toggle('active', idx === (bulletinIndex % slides.length));
     });
   }
+
+  // Start rotation immediately
+  startBulletinRotation();
 
   // Load configuration parameters then handle return callback
   fetchConfig().then(() => {
