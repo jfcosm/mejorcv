@@ -6,7 +6,7 @@
   <title>Cintia - Deja que la IA perfeccione tu Currículum</title>
   <meta name="description" content="Sube tu currículum, evalúa su compatibilidad con filtros ATS y optimízalo al instante con Inteligencia Artificial.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="style.css?v=2.2">
+  <link rel="stylesheet" href="style.css?v=2.3">
 </head>
 <body>
 
@@ -60,7 +60,7 @@
       <!-- Upload Form Wrapper -->
       <div id="uploadWrapper">
         <form id="cvForm">
-          <div class="upload-zone" id="dropZone">
+          <div class="upload-zone" id="dropZone" role="button" tabindex="0" aria-label="Zona para subir archivo de currículum">
             <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
@@ -68,8 +68,8 @@
             </svg>
             <h3 class="upload-title">Arrastra tu currículum aquí</h3>
             <p class="upload-hint">Formatos aceptados: .pdf, .docx, .odt, .txt (Menos de 5 MB)</p>
-            <input type="file" id="cvFileInput" name="cv" class="file-input" accept=".pdf,.docx,.odt,.txt">
           </div>
+          <input type="file" id="cvFileInput" name="cv" class="file-input" accept=".pdf,.docx,.odt,.txt" style="display: none;">
 
           <!-- Selected File Display -->
           <div class="selected-file-container" id="selectedFileContainer">
@@ -460,7 +460,7 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.2"></script>
+  <script src="app.js?v=2.3"></script>
   <!-- Contact Validation Dialog for Expert Tier -->
   <dialog id="expertAlertModal" style="padding: 0; border: none; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 440px; width: 90%; background: #ffffff; margin: auto;">
     <div style="padding: 26px 22px; text-align: center;">

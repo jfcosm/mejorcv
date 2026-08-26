@@ -769,39 +769,59 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshCaptchaBtn.addEventListener('click', loadCaptcha);
 
   // 2. Drag & Drop Upload Handlers
-  dropZone.addEventListener('click', () => cvFileInput.click());
+  if (dropZone) {
+    dropZone.addEventListener('click', (e) => {
+      if (cvFileInput) {
+        cvFileInput.click();
+      }
+    });
 
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropZone.addEventListener(eventName, (e) => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    }, false);
-  });
+    dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (cvFileInput) cvFileInput.click();
+      }
+    });
 
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropZone.addEventListener(eventName, (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-    }, false);
-  });
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      }, false);
+    });
 
-  dropZone.addEventListener('drop', (e) => {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    if (files.length > 0) {
-      handleFile(files[0]);
-    }
-  });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      }, false);
+    });
 
-  cvFileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      handleFile(e.target.files[0]);
-    }
-  });
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt ? dt.files : null;
+      if (files && files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+  }
+
+  if (cvFileInput) {
+    cvFileInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    cvFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+  }
 
   function handleFile(file) {
+    if (!file) return;
     const validExtensions = ['.pdf', '.docx', '.odt', '.txt'];
-    const filename = file.name;
+    const filename = file.name || '';
     const ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
     
     if (!validExtensions.includes(ext)) {
@@ -827,6 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fileSizeDisplay.textContent = formatBytes(file.size);
     dropZone.style.display = 'none';
     selectedFileContainer.style.display = 'flex';
+    updateSubmitBtnState();
   }
 
   removeFileBtn.addEventListener('click', () => {
@@ -834,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cvFileInput.value = '';
     selectedFileContainer.style.display = 'none';
     dropZone.style.display = 'block';
+    updateSubmitBtnState();
   });
 
   function formatBytes(bytes) {
@@ -868,6 +890,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (termsCheckbox) {
     termsCheckbox.addEventListener('change', updateSubmitBtnState);
   }
+
+  // Initial state check
+  updateSubmitBtnState();
 
   // 4. Form Submit & Progress Animation
   cvForm.addEventListener('submit', async (e) => {
