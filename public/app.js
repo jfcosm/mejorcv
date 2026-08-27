@@ -1868,6 +1868,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── Local / Demo Payment Simulation Button ───
+  const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+  if (simulatePaymentBtn) {
+    simulatePaymentBtn.addEventListener('click', async () => {
+      simulatePaymentBtn.disabled = true;
+      const origText = simulatePaymentBtn.textContent;
+      simulatePaymentBtn.textContent = 'Simulando pago y activando servicio...';
+
+      try {
+        const jobOfferText = jobOfferInput ? jobOfferInput.value.trim() : '';
+        const resp = await fetch('/api/payment/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            tier: currentTier,
+            paymentMethod: 'simulate',
+            contact: pendingExpertContact,
+            jobOfferText: jobOfferText
+          })
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error en simulación');
+
+        checkoutModal.close();
+
+        if (currentTier === 'ai') {
+          unlockOptimizedCv(result.optimizedText || optimizedContentText);
+        } else if (currentTier === 'cover_letter') {
+          if (coverLetterContentText && result.coverLetterText) {
+            coverLetterContentText.textContent = result.coverLetterText;
+          } else {
+            await generateAndDisplayCoverLetter();
+          }
+          if (coverLetterOutputBox) {
+            coverLetterOutputBox.style.display = 'block';
+            coverLetterOutputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          const ctaBox = document.getElementById('coverLetterCtaBox');
+          if (ctaBox) ctaBox.style.display = 'none';
+        } else if (currentTier === 'expert') {
+          alert('¡Simulación exitosa! Solicitud de experto registrada correctamente.');
+        }
+
+      } catch (err) {
+        alert('Error en simulación: ' + err.message);
+      } finally {
+        simulatePaymentBtn.disabled = false;
+        simulatePaymentBtn.textContent = origText;
+      }
+    });
+  }
+
   // ─── End PayPal Checkout Flow ──────────────────────────────────────────────
 
   // 8. Render Blurred AI CV Preview
