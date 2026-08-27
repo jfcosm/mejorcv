@@ -1456,7 +1456,9 @@ document.addEventListener('DOMContentLoaded', () => {
     lastEvaluationData = evalData;
 
     // Set text summaries with clean bold tag rendering
-    resultsSummary.innerHTML = parseFeedbackMarkdown(evalData.summary || (currentLanguage === 'en' ? 'Quality Evaluation' : 'Evaluación de Calidad'));
+    if (resultsSummary) {
+      resultsSummary.innerHTML = parseFeedbackMarkdown(evalData.summary || (currentLanguage === 'en' ? 'Quality Evaluation' : 'Evaluación de Calidad'));
+    }
     
     // Render Visual Charts (Radar Heptagon + Score Gauge + KPIs)
     renderRadarChart(evalData);
@@ -1495,58 +1497,63 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    critiqueGrid.innerHTML = '';
-    
-    for (const [key, config] of Object.entries(criteriaMapping)) {
-      const data = evalData[key];
-      if (!data) continue;
+    const targetCritiqueGrid = critiqueGrid || document.getElementById('critiqueGrid') || document.getElementById('critiqueList');
+    if (targetCritiqueGrid) {
+      targetCritiqueGrid.innerHTML = '';
       
-      const starsValue = data.stars || 3;
-      const pct = (starsValue / 5) * 100;
-      
-      // Qualitative badge text & class
-      let badgeClass = 'badge-3';
-      let badgeText = isEn ? 'Fair' : 'Aceptable';
-      let fillClass = 'fill-warn';
+      for (const [key, config] of Object.entries(criteriaMapping)) {
+        const data = evalData[key];
+        if (!data) continue;
+        
+        const starsValue = data.stars || 3;
+        const pct = (starsValue / 5) * 100;
+        
+        // Qualitative badge text & class
+        let badgeClass = 'badge-3';
+        let badgeText = isEn ? 'Fair' : 'Aceptable';
+        let fillClass = 'fill-warn';
 
-      if (starsValue >= 5) {
-        badgeClass = 'badge-5';
-        badgeText = isEn ? 'Outstanding' : 'Sobresaliente';
-        fillClass = '';
-      } else if (starsValue === 4) {
-        badgeClass = 'badge-4';
-        badgeText = isEn ? 'Solid' : 'Bueno';
-        fillClass = '';
-      } else if (starsValue <= 2) {
-        badgeClass = 'badge-1';
-        badgeText = isEn ? 'Needs Work' : 'Por Mejorar';
-        fillClass = 'fill-danger';
+        if (starsValue >= 5) {
+          badgeClass = 'badge-5';
+          badgeText = isEn ? 'Outstanding' : 'Sobresaliente';
+          fillClass = '';
+        } else if (starsValue === 4) {
+          badgeClass = 'badge-4';
+          badgeText = isEn ? 'Solid' : 'Bueno';
+          fillClass = '';
+        } else if (starsValue <= 2) {
+          badgeClass = 'badge-1';
+          badgeText = isEn ? 'Needs Work' : 'Por Mejorar';
+          fillClass = 'fill-danger';
+        }
+
+        targetCritiqueGrid.innerHTML += `
+          <div class="critique-item">
+            <div class="critique-item-header">
+              <div class="critique-title-wrap">
+                <div class="critique-icon">${config.icon}</div>
+                <div class="critique-title">${config.title}</div>
+              </div>
+              <span class="critique-badge ${badgeClass}">${badgeText}</span>
+            </div>
+
+            <div class="critique-progress-wrap">
+              <div class="critique-progress-track">
+                <div class="critique-progress-fill ${fillClass}" style="width: ${pct}%;"></div>
+              </div>
+              <span class="critique-stars-count">${starsValue} / 5 ★</span>
+            </div>
+
+            <div class="critique-feedback">${parseFeedbackMarkdown(data.feedback)}</div>
+          </div>
+        `;
       }
-
-      critiqueGrid.innerHTML += `
-        <div class="critique-item">
-          <div class="critique-item-header">
-            <div class="critique-title-wrap">
-              <div class="critique-icon">${config.icon}</div>
-              <div class="critique-title">${config.title}</div>
-            </div>
-            <span class="critique-badge ${badgeClass}">${badgeText}</span>
-          </div>
-
-          <div class="critique-progress-wrap">
-            <div class="critique-progress-track">
-              <div class="critique-progress-fill ${fillClass}" style="width: ${pct}%;"></div>
-            </div>
-            <span class="critique-stars-count">${starsValue} / 5 ★</span>
-          </div>
-
-          <div class="critique-feedback">${parseFeedbackMarkdown(data.feedback)}</div>
-        </div>
-      `;
     }
     
     // Parse detailed explanation markdown to clean HTML bold tags
-    detailedExplanationText.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation);
+    if (detailedExplanationText) {
+      detailedExplanationText.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation);
+    }
   }
 
   // ─── 6. Pricing Plan Actions & PayPal Checkout Flow ───────────────────────
