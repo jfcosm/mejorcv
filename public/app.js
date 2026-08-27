@@ -211,20 +211,22 @@ document.addEventListener('DOMContentLoaded', () => {
       faqSubtitle: "Todo lo que necesitas saber antes de analizar u optimizar tu currículum.",
       faqQ1: "¿Quién desarrolló Cintia.pro?",
       faqA1: "Cintia.pro fue desarrollada por el estudio de software chileno <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">MelodIA Lab</a>, ubicado en La Serena, Chile, y liderado por su fundador <a href=\"https://www.franciscocarle.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">Francisco Carle</a>. Es un joven estudio de desarrollo de software, que también genera soluciones audiovisuales y musicales con tecnología de última generación junto con técnicas artesanales tradicionales. MelodIA Lab es una Sociedad por Acciones con domicilio legal en La Serena, Chile y cuyo RUT es 78.343.801-1. Nuestros clientes son empresas, instituciones y personas particulares.",
-      faqQ2: "¿Qué es un filtro ATS y por qué mi currículum podría estar siendo descartado?",
-      faqA2: "Los <em>Applicant Tracking Systems</em> (ATS) son sistemas automatizados que empresas y reclutadores utilizan para escanear y filtrar currículums antes de que un evaluador humano los revise. Si tu CV carece de las palabras clave adecuadas, tiene estructuras confusas o elementos gráficos incompatibles, el algoritmo lo descarta de forma automática. Cintia analiza tu documento bajo estos mismos estándares para garantizar que superes ese primer filtro invisible.",
-      faqQ3: "¿El diagnóstico inicial es realmente 100% gratuito?",
-      faqA3: "<strong>Sí, totalmente.</strong> Puedes subir tu archivo y obtener en segundos tu calificación en estrellas, el gráfico de balance de competencias en 7 ejes y la explicación detallada de fortalezas y aspectos a corregir, sin ingresar tarjetas de crédito ni pagar nada.",
-      faqQ4: "¿Qué diferencia hay entre la Optimización con IA ($1 USD) y la Asesoría con Experto ($25 USD)?",
-      faqA4: "La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto plano. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.",
-      faqQ5: "¿Cómo funciona la Carta de Presentación adaptada a una oferta laboral ($2 USD)?",
-      faqA5: "Tras analizar tu currículum, puedes copiar y pegar la descripción o requisitos del puesto al que deseas postular (desde LinkedIn, Indeed o cualquier portal web). Cintia cruzará tus competencias y experiencia con los requerimientos específicos de la empresa para redactar una <strong>Carta de Presentación personalizada, persuasiva y en texto plano limpio</strong> lista para enviar por solo $2 USD o $2.000 CLP.",
-      faqQ6: "¿Qué tan seguros están mis datos personales y mi documento?",
-      faqA6: "En Cintia.pro nos tomamos la privacidad muy en serio. Tu archivo se procesa de forma temporal y encriptada únicamente para generar tu análisis y optimización. No compartimos, vendemos ni distribuimos tu información personal con terceros.",
-      faqQ7: "¿En qué formatos e idiomas puedo subir mi currículum?",
-      faqA7: "Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.",
-      faqQ8: "¿Qué métodos de pago aceptan para los servicios de pago?",
-      faqA8: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD).",
+      faqQ2: "¿Qué significa Cintia.pro?",
+      faqA2: "<strong>CINTIA</strong> es tu <em>Career Intelligence & Next-level Talent Integration Assistant</em>... y el <strong>.pro</strong> es porque transformamos tu perfil en la versión más <strong>Profesional</strong>, combinando IA de vanguardia con la mirada experta de profesionales senior en RRHH.",
+      faqQ3: "¿Qué es un filtro ATS y por qué mi currículum podría estar siendo descartado?",
+      faqA3: "Los <em>Applicant Tracking Systems</em> (ATS) son sistemas automatizados que empresas y reclutadores utilizan para escanear y filtrar currículums antes de que un evaluador humano los revise. Si tu CV carece de las palabras clave adecuadas, tiene estructuras confusas o elementos gráficos incompatibles, el algoritmo lo descarta de forma automática. Cintia analiza tu documento bajo estos mismos estándares para garantizar que superes ese primer filtro invisible.",
+      faqQ4: "¿El diagnóstico inicial es realmente 100% gratuito?",
+      faqA4: "<strong>Sí, totalmente.</strong> Puedes subir tu archivo y obtener en segundos tu calificación en estrellas, el gráfico de balance de competencias en 7 ejes y la explicación detallada de fortalezas y aspectos a corregir, sin ingresar tarjetas de crédito ni pagar nada.",
+      faqQ5: "¿Qué diferencia hay entre la Optimización con IA ($1 USD) y la Asesoría con Experto ($25 USD)?",
+      faqA5: "La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto plano. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.",
+      faqQ6: "¿Cómo funciona la Carta de Presentación adaptada a una oferta laboral ($2 USD)?",
+      faqA6: "Tras analizar tu currículum, puedes copiar y pegar la descripción o requisitos del puesto al que deseas postular (desde LinkedIn, Indeed o cualquier portal web). Cintia cruzará tus competencias y experiencia con los requerimientos específicos de la empresa para redactar una <strong>Carta de Presentación personalizada, persuasiva y en texto plano limpio</strong> lista para enviar por solo $2 USD o $2.000 CLP.",
+      faqQ7: "¿Qué tan seguros están mis datos personales y mi documento?",
+      faqA7: "En Cintia.pro nos tomamos la privacidad muy en serio. Tu archivo se procesa de forma temporal y encriptada únicamente para generar tu análisis y optimización. No compartimos, vendemos ni distribuimos tu información personal con terceros.",
+      faqQ8: "¿En qué formatos e idiomas puedo subir mi currículum?",
+      faqA8: "Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.",
+      faqQ9: "¿Qué métodos de pago aceptan para los servicios de pago?",
+      faqA9: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD).",
       expertBadgeText: "ASESORÍA HUMANA",
       coverLetterBadgeText: "NUEVA FUNCIÓN",
       coverLetterTitle: "Carta de Presentación a Medida de tu Oferta Laboral",
@@ -244,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
       navHome: "Home",
       navAdmin: "Admin Panel",
       bulletinBadgeText: "GREAT NEWS!",
-      heroTitle: "Let <span>Cintia</span> perfect your Resume",
-      heroDesc: "Sending out resumes and hearing only silence? Many applications are filtered out automatically by invisible recruitment software (ATS). Upload your CV for free: Cintia will reveal exactly how recruiters see your profile, provide supportive guidance, and help you stand out to land the interviews you deserve.",
+      heroTitle: "Your AI <span>Job Search Coach</span> that lands you more interviews",
+      heroDesc: "Sending out resumes and hearing only silence? Cintia audits your CV for free against ATS standards, rewrites your profile with AI, and crafts tailored Cover Letters customized to each job opening.",
       uploadTitle: "Drag your resume here",
       uploadHint: "Accepted formats: .pdf, .docx, .odt, .txt (Under 5 MB)",
       captchaLabel: "Anti-abuse measure: Verify you are human",
@@ -255,42 +257,42 @@ document.addEventListener('DOMContentLoaded', () => {
       termsConsentText: "I accept the <a href=\"/terminos.html?lang=en\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">terms and conditions</a> of Cintia.pro.",
       submitBtn: "Analyze Resume for Free",
       loadingStatus: "Cintia is analyzing your Resume...",
-      step0: "Cintia is detecting the language of the resume...",
-      step1: "Cintia is extracting text from document...",
-      step2: "Cintia is evaluating structure under ATS standards...",
-      step3: "Cintia is analyzing clarity of skills and certifications...",
-      step4: "Cintia is verifying page limits...",
-      step5: "Cintia is generating quality report...",
+      step0: "Cintia is detecting the language of your resume...",
+      step1: "Cintia is extracting text from the document...",
+      step2: "Cintia is evaluating structure against ATS standards...",
+      step3: "Cintia is analyzing skills and certifications clarity...",
+      step4: "Cintia is checking page length...",
+      step5: "Cintia is generating the quality report...",
       resultsTitle: "Cintia's Evaluation",
       scoreCardTitle: "Overall Resume Score",
       radarCardTitle: "Competency Balance (7 Axes)",
-      radarSubtitle: "Comprehensive view across 7 hiring benchmarks",
-      breakdownSectionTitle: "Detailed Criteria Breakdown",
-      kpiAtsLabel: "ATS Match",
+      radarSubtitle: "Comprehensive view of the 7 hiring benchmarks",
+      breakdownSectionTitle: "Detailed Criterion Breakdown",
+      kpiAtsLabel: "ATS Filter",
       kpiStrengthsLabel: "Strengths",
-      kpiFixesLabel: "Needs Work",
+      kpiFixesLabel: "To Improve",
       critiqueExplanationTitle: "Score Explanation",
-      previewPillText: "Cintia-Optimized CV Ready",
+      previewPillText: "Cintia-Optimized Resume Ready",
       previewSectionTitle: "High-Impact Professional Rewrite",
-      previewSectionSubtitle: "Cintia has restructured your resume with ATS keywords, quantifiable metrics, and interview-ready formatting.",
+      previewSectionSubtitle: "Cintia has restructured your resume injecting ATS keywords, quantified achievements, and recruiter-ready layout.",
       unlockCtaHeading: "Unlock Your Optimized Resume",
-      unlockCtaDescription: "Access the complete version rewritten by Cintia, featuring persuasive language, ATS keyword injection, and recruiter-ready layout.",
+      unlockCtaDescription: "Access the full version optimized by Cintia, with persuasive copywriting, ATS keywords, and ready to send to recruiters.",
       unlockCtaPeriod: "USD / one-time payment",
-      unlockActionBtnText: "Unlock & Download Resume",
+      unlockActionBtnText: "Unlock and Download Resume",
       unlockedStatusText: "Resume Successfully Unlocked!",
       unlockedCopyBtnText: "Copy Text",
       unlockedDownloadBtnText: "Download .txt",
-      pricingTitle: "Prefer personalized mentoring and optimization by a Human Expert?",
-      pricingSubtitle: "Work 1-on-1 with an HR & Recruitment specialist to elevate your professional profile and prepare for upcoming interviews.",
+      pricingTitle: "Prefer Guidance and Optimization from a Human Expert?",
+      pricingSubtitle: "Work 1-on-1 with an HR and Recruitment specialist to boost your profile and prepare for upcoming interviews.",
       aiPlanName: "AI Optimization",
       aiPlanPriceUnit: "USD / one-time payment",
-      aiPlanF1: "Cintia's instant profile rewriting",
+      aiPlanF1: "Immediate rewrite by Cintia",
       aiPlanF2: "ATS keyword injection",
-      aiPlanF3: "Reorganization of skills and profile",
-      aiPlanF4: "Immediate download in text/markdown",
+      aiPlanF3: "Skills and profile reorganization",
+      aiPlanF4: "Instant download in text/markdown",
       aiPlanBtn: "Optimize with AI",
-      expertPlanName: "1-on-1 Mentoring & Human Expert Resume Optimization",
-      expertPlanPriceUnit: "USD / complete session & delivery",
+      expertPlanName: "1-on-1 Advisory & Human Expert Optimization",
+      expertPlanPriceUnit: "USD / full session & delivery",
       expertEmailLabel: "Email Address",
       expertEmailPlaceholder: "name@email.com",
       expertPhoneLabel: "Cell Phone or WhatsApp Number",
@@ -310,9 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
       footerCopyright: "&copy; 2026 Cintia. All rights reserved. Developed and operated by <strong>MelodIA Lab SpA</strong> (La Serena, Chile). Powered by Google Gemini.",
       footerCredits: "<a href=\"/terminos.html?lang=en\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Terms & Conditions</a> Made with ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
-      heroBadgeText: "YOUR AI JOB SEARCH COACH",
-      heroTitle: "Your AI <span>Job Search Coach</span> that lands you more interviews",
-      heroDesc: "Sending out resumes and hearing only silence? Cintia audits your CV for free against ATS standards, rewrites your profile with AI, and crafts tailored Cover Letters customized to each job opening.",
       heroPill1: "Free ATS Audit",
       heroPill2: "AI Profile Upgrade",
       heroPill3: "Custom Cover Letters",
@@ -345,20 +344,22 @@ document.addEventListener('DOMContentLoaded', () => {
       faqSubtitle: "Everything you need to know before analyzing or optimizing your resume.",
       faqQ1: "Who developed Cintia.pro?",
       faqA1: "Cintia.pro was developed by the Chilean software studio <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">MelodIA Lab</a>, based in La Serena, Chile, and led by its founder <a href=\"https://www.franciscocarle.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">Francisco Carle</a>. It is a modern software studio that also creates audiovisual and musical solutions utilizing cutting-edge technologies paired with traditional craft techniques. MelodIA Lab is a corporation (SpA) legally registered in La Serena, Chile (Tax ID: 78.343.801-1). Our clients include companies, institutions, and individuals worldwide.",
-      faqQ2: "What is an ATS filter and why might my resume be filtered out?",
-      faqA2: "<em>Applicant Tracking Systems</em> (ATS) are automated screening tools that recruiters use to scan and filter resumes before human review. If your resume lacks required keywords or uses unreadable formatting, it gets rejected automatically. Cintia benchmarks your document against these exact standards so you pass the screen.",
-      faqQ3: "Is the initial resume evaluation truly 100% free?",
-      faqA3: "<strong>Yes, absolutely.</strong> You can upload your resume and instantly receive your star rating, 7-axis competency radar chart, and detailed strengths and improvement areas without entering credit card details or paying anything.",
-      faqQ4: "What is the difference between AI Optimization ($1 USD) and Expert Mentoring ($25 USD)?",
-      faqA4: "<strong>AI Optimization ($1 USD)</strong> delivers an instant rewrite powered by Cintia with ATS keyword injection, quantifiable achievements, and recruiter-ready layout downloadable in plain text. <strong>1-on-1 Expert Mentoring ($25 USD)</strong> is a comprehensive 1.5-hour session with an HR and recruitment senior specialist, interview prep, and delivery of your finalized resume in PDF and editable Word formats.",
-      faqQ5: "How does the Tailored Cover Letter service work ($2 USD)?",
-      faqA5: "After analyzing your resume, paste the job description or requirements of the vacancy you wish to apply for (from LinkedIn, Indeed, or career sites). Cintia matches your competencies with the company requirements to craft a <strong>customized, persuasive plain text Cover Letter</strong> ready to send for just $2 USD or $2,000 CLP.",
-      faqQ6: "How secure is my personal data and uploaded document?",
-      faqA6: "We treat your privacy with highest confidentiality. Your file is processed temporarily in an encrypted environment solely to generate your analysis. We never sell, share, or distribute your personal information to third parties.",
-      faqQ7: "What file formats and languages are supported?",
-      faqA7: "We accept <strong>.pdf, .docx, .odt, and .txt</strong> files up to 5 MB in size. Our evaluation engine fully supports resumes written in both <strong>Spanish</strong> and <strong>English</strong>.",
-      faqQ8: "Which payment methods are accepted for upgrades?",
-      faqA8: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD).",
+      faqQ2: "What does Cintia.pro mean?",
+      faqA2: "<strong>CINTIA</strong> stands for <em>Career Intelligence & Next-level Talent Integration Assistant</em>... and the <strong>.pro</strong> is because we transform your profile into its most <strong>Professional</strong> version, combining state-of-the-art AI with the expert insight of senior HR specialists.",
+      faqQ3: "What is an ATS filter and why might my resume be filtered out?",
+      faqA3: "<em>Applicant Tracking Systems</em> (ATS) are automated screening tools that recruiters use to scan and filter resumes before human review. If your resume lacks required keywords or uses unreadable formatting, it gets rejected automatically. Cintia benchmarks your document against these exact standards so you pass the screen.",
+      faqQ4: "Is the initial resume evaluation truly 100% free?",
+      faqA4: "<strong>Yes, absolutely.</strong> You can upload your resume and instantly receive your star rating, 7-axis competency radar chart, and detailed strengths and improvement areas without entering credit card details or paying anything.",
+      faqQ5: "What is the difference between AI Optimization ($1 USD) and Expert Mentoring ($25 USD)?",
+      faqA5: "<strong>AI Optimization ($1 USD)</strong> delivers an instant rewrite powered by Cintia with ATS keyword injection, quantifiable achievements, and recruiter-ready layout downloadable in plain text. <strong>1-on-1 Expert Mentoring ($25 USD)</strong> is a comprehensive 1.5-hour session with an HR and recruitment senior specialist, interview prep, and delivery of your finalized resume in PDF and editable Word formats.",
+      faqQ6: "How does the Tailored Cover Letter service work ($2 USD)?",
+      faqA6: "After analyzing your resume, paste the job description or requirements of the vacancy you wish to apply for (from LinkedIn, Indeed, or career sites). Cintia matches your competencies with the company requirements to craft a <strong>customized, persuasive plain text Cover Letter</strong> ready to send for just $2 USD or $2,000 CLP.",
+      faqQ7: "How secure is my personal data and uploaded document?",
+      faqA7: "We treat your privacy with highest confidentiality. Your file is processed temporarily in an encrypted environment solely to generate your analysis. We never sell, share, or distribute your personal information to third parties.",
+      faqQ8: "What file formats and languages are supported?",
+      faqA8: "We accept <strong>.pdf, .docx, .odt, and .txt</strong> files up to 5 MB in size. Our evaluation engine fully supports resumes written in both <strong>Spanish</strong> and <strong>English</strong>.",
+      faqQ9: "Which payment methods are accepted for upgrades?",
+      faqA9: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD).",
       expertBadgeText: "HUMAN EXPERT",
       coverLetterBadgeText: "NEW FEATURE",
       coverLetterTitle: "Custom Cover Letter for Job Opening",
@@ -399,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navAdminEl) navAdminEl.textContent = t.navAdmin;
     
     const heroBadgeEl = document.getElementById('heroBadgeText');
-    if (heroBadgeEl) heroBadgeEl.textContent = t.heroBadgeText;
+    if (heroBadgeEl && t.heroBadgeText) heroBadgeEl.textContent = t.heroBadgeText;
     const heroHeadingEl = document.getElementById('heroHeading');
     if (heroHeadingEl) heroHeadingEl.innerHTML = t.heroTitle;
     const heroDescEl = document.getElementById('heroDescription');
@@ -435,47 +436,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loadingStatusEl = document.getElementById('loadingStatus');
     if (loadingStatusEl) loadingStatusEl.textContent = t.loadingStatus;
-    const step0El = document.getElementById('step0');
-    if (step0El) step0El.textContent = t.step0;
-    const step1El = document.getElementById('step1');
-    if (step1El) step1El.textContent = t.step1;
-    const step2El = document.getElementById('step2');
-    if (step2El) step2El.textContent = t.step2;
-    const step3El = document.getElementById('step3');
-    if (step3El) step3El.textContent = t.step3;
-    const step4El = document.getElementById('step4');
-    if (step4El) step4El.textContent = t.step4;
-    const step5El = document.getElementById('step5');
-    if (step5El) step5El.textContent = t.step5;
     
-    const resultsTitleEl = document.querySelector('#resultsSection .results-header h2');
+    // Evaluation Results Screen Labels
+    const resultsTitleEl = document.getElementById('resultsTitle');
     if (resultsTitleEl) resultsTitleEl.textContent = t.resultsTitle;
-
     const scoreCardTitleEl = document.getElementById('scoreCardTitle');
     if (scoreCardTitleEl) scoreCardTitleEl.textContent = t.scoreCardTitle;
-
     const radarCardTitleEl = document.getElementById('radarCardTitle');
     if (radarCardTitleEl) radarCardTitleEl.textContent = t.radarCardTitle;
-
     const radarSubtitleEl = document.getElementById('radarSubtitle');
     if (radarSubtitleEl) radarSubtitleEl.textContent = t.radarSubtitle;
-
     const breakdownSectionTitleEl = document.getElementById('breakdownSectionTitle');
     if (breakdownSectionTitleEl) breakdownSectionTitleEl.textContent = t.breakdownSectionTitle;
-
     const kpiAtsLabelEl = document.getElementById('kpiAtsLabel');
     if (kpiAtsLabelEl) kpiAtsLabelEl.textContent = t.kpiAtsLabel;
-
     const kpiStrengthsLabelEl = document.getElementById('kpiStrengthsLabel');
     if (kpiStrengthsLabelEl) kpiStrengthsLabelEl.textContent = t.kpiStrengthsLabel;
-
     const kpiFixesLabelEl = document.getElementById('kpiFixesLabel');
     if (kpiFixesLabelEl) kpiFixesLabelEl.textContent = t.kpiFixesLabel;
-
-    const detExp = document.querySelector('.detailed-explanation h3');
-    if (detExp) detExp.textContent = t.critiqueExplanationTitle;
+    const critiqueExplanationTitleEl = document.getElementById('critiqueExplanationTitle');
+    if (critiqueExplanationTitleEl) critiqueExplanationTitleEl.textContent = t.critiqueExplanationTitle;
     
-    // Blurred Preview Dynamic Text
+    // Modern AI Preview Section (Blurred UI)
     const previewPillTextEl = document.getElementById('previewPillText');
     if (previewPillTextEl) previewPillTextEl.textContent = t.previewPillText;
     const previewSectionTitleEl = document.getElementById('previewSectionTitle');
@@ -605,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const faqSubtitleEl = document.getElementById('faqSubtitle');
     if (faqSubtitleEl) faqSubtitleEl.textContent = t.faqSubtitle;
 
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 9; i++) {
       const qEl = document.getElementById(`faqQ${i}`);
       const aEl = document.getElementById(`faqA${i}`);
       if (qEl && t[`faqQ${i}`]) qEl.textContent = t[`faqQ${i}`];
