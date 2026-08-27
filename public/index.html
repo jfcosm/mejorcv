@@ -46,8 +46,32 @@
 
   <!-- Main Hero -->
   <section class="hero">
-    <h1>Analiza y <span>perfecciona</span> tu Currículum Vitae</h1>
-    <p>Descubre qué tan compatible es tu CV con filtros ATS, obtén una calificación de estrellas instantánea y descarga una versión optimizada.</p>
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      <span id="heroBadgeText">TU COACH DE BÚSQUEDA LABORAL CON IA</span>
+    </div>
+    <h1 id="heroHeading">Tu Coach de <span>Búsqueda Laboral</span> con IA que multiplica tus entrevistas</h1>
+    <p id="heroDescription">¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.</p>
+    
+    <!-- Hero Feature Chips -->
+    <div class="hero-pills-container">
+      <div class="hero-pill-chip">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="heroPill1">Auditoría ATS Gratis</span>
+      </div>
+      <div class="hero-pill-chip">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span id="heroPill2">Optimización con IA</span>
+      </div>
+      <div class="hero-pill-chip highlight-purple">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        <span id="heroPill3">Carta de Presentación por Oferta</span>
+      </div>
+      <div class="hero-pill-chip highlight-orange">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span id="heroPill4">Mentoría Humana 1 a 1</span>
+      </div>
+    </div>
   </section>
 
   <!-- Upload Dashboard -->
@@ -201,78 +225,85 @@
           </div>
         </div>
 
-        <!-- Section Title for Detailed Breakdown -->
-        <div class="detailed-breakdown-header">
-          <h3 id="breakdownSectionTitle">Desglose Detallado por Criterio</h3>
-        </div>
-
-        <div class="critique-grid" id="critiqueGrid">
-          <!-- Las tarjetas de los 7 criterios de calidad se inyectan dinámicamente desde JS -->
+        <h3 class="breakdown-section-title" id="breakdownSectionTitle">Desglose Detallado por Criterio</h3>
+        <div class="critique-list" id="critiqueList">
+          <!-- Dynamically populated -->
         </div>
 
         <div class="detailed-explanation">
-          <h3 id="critiqueExplanationTitle">Explicación del Puntaje</h3>
+          <h3>Explicación del Diagnóstico</h3>
           <p id="detailedExplanationText"></p>
         </div>
 
-        <!-- Blurred AI CV Preview with CTA Overlay -->
-        <div class="ai-preview-section" id="aiPreviewSection">
-          <div class="preview-section-header">
+        <!-- 3-Service Suite: 1. AI Optimization (Mint) | 2. Cover Letter (Purple) | 3. Human Expert (Orange) -->
+
+        <!-- Service 1: Instant AI Optimization ($1 USD) -->
+        <section class="blurred-preview-section" id="aiPreviewSection">
+          <div class="service-section-header">
             <div class="preview-badge-pill">
-              <span class="pulse-dot"></span>
-              <span id="previewPillText">CV Optimizado por Cintia Listo</span>
+              <span class="preview-badge-dot"></span>
+              <span id="previewPillText">OPTIMIZACIÓN INSTANTÁNEA CON IA</span>
             </div>
-            <h3 id="previewSectionTitle">Reescritura Profesional de Alto Impacto</h3>
-            <p id="previewSectionSubtitle">Cintia ha reestructurado tu currículum inyectando palabras clave ATS, logros cuantificados y formato profesional listo para postular.</p>
+            <h2 class="service-section-title" id="previewSectionTitle">Currículum Optimizado para Reclutadores y Filtros ATS</h2>
+            <p class="service-section-subtitle" id="previewSectionSubtitle">Hemos reescrito y estructurado estratégicamente tu experiencia con verbos de acción y logros cuantificables.</p>
           </div>
 
-          <!-- Document Box with Blur Effect and Floating Unlock Modal Overlay -->
           <div class="blurred-doc-card" id="blurredDocCard">
-            <div class="blurred-doc-content markdown-body" id="blurredDocContent">
-              <!-- Rendered Markdown of the optimized CV -->
+            <div class="blurred-doc-content" id="blurredDocContent">
+              <!-- Blurred dummy / real text -->
+              <div class="blurred-text-preview" id="blurredTextPreview">
+                <h3>Perfil Profesional Optimizado</h3>
+                <p>Especialista altamente calificado con más de 6 años de experiencia demostrada en optimización de procesos operativos, gestión de equipos multidisciplinarios y entrega de resultados cuantificables bajo metodologías ágiles. Orientado a maximizar la eficiencia y resolver problemas complejos en entornos corporativos de alta exigencia.</p>
+                <h3>Experiencia Laboral y Logros Cuantificados</h3>
+                <p>• Lideró la implementación de nuevos flujos de trabajo reduciendo los tiempos de respuesta en un 35% durante el primer semestre.</p>
+                <p>• Coordinó proyectos estratégicos con presupuestos superiores a $50,000 USD, manteniendo una tasa de satisfacción del 98%.</p>
+                <p>• Diseñó e impartió programas de capacitación interna para más de 40 colaboradores directos.</p>
+                <h3>Habilidades Clave y Palabras Clave ATS</h3>
+                <p>Gestión de Proyectos, Análisis de Datos, Liderazgo de Equipos, Metodologías Ágiles (Scrum), Optimización de Rendimiento, Resolución Estratégica de Problemas.</p>
+              </div>
             </div>
 
-            <!-- Floating CTA Overlay Card -->
+            <!-- Unlock Overlay (visible before payment) -->
             <div class="unlock-overlay" id="unlockOverlay">
-              <div class="unlock-modal-box">
-                <div class="unlock-icon-circle">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <div class="unlock-cta-card">
+                <div class="unlock-icon-wrap">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </div>
-                <h4 id="unlockCtaHeading">Desbloquea tu Currículum Optimizado</h4>
-                <p id="unlockCtaDescription">Accede a la versión completa optimizada por Cintia, con redacción persuasiva, palabras clave ATS y lista para enviar a reclutadores.</p>
-                <div class="unlock-price-display">
-                  <span class="unlock-amount" id="unlockCtaPrice">$1</span>
-                  <span class="unlock-period" id="unlockCtaPeriod">USD / pago único</span>
+                <h3 id="unlockCtaHeading">Desbloquea tu Currículum Optimizado</h3>
+                <p id="unlockCtaDescription">Descarga tu CV reescrito por Cintia, formateado para superar cualquier software ATS y listo para enviar a tus postulaciones.</p>
+                <div class="unlock-pricing-row">
+                  <span class="unlock-price" id="unlockPriceDisplay">$1 USD</span>
+                  <span class="unlock-period" id="unlockCtaPeriod">/ Pago único</span>
                 </div>
-                <button type="button" class="btn unlock-action-btn" id="unlockActionBtn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;">
+                <button type="button" class="btn-unlock-action" id="unlockActionBtn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                   </svg>
-                  <span id="unlockActionBtnText">Desbloquear y Descargar CV ($1 USD)</span>
+                  <span id="unlockActionBtnText">Desbloquear por $1 USD</span>
                 </button>
               </div>
             </div>
 
-            <!-- Unlocked Actions Bar (Shown after successful unlock) -->
+            <!-- Unlocked Actions Bar (visible after payment) -->
             <div class="unlocked-actions-bar" id="unlockedActionsBar" style="display: none;">
               <div class="unlocked-status-pill">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span id="unlockedStatusText">¡Currículum Desbloqueado con Éxito!</span>
+                <span id="unlockedStatusText">¡Currículum Desbloqueado!</span>
               </div>
               <div class="unlocked-btn-group">
-                <button type="button" class="btn-secondary" id="unlockedCopyBtn">
+                <button type="button" class="btn-unlocked-action" id="copyOptimizedBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
-                  <span id="unlockedCopyBtnText">Copiar Texto</span>
+                  <span id="unlockedCopyBtnText">Copiar CV</span>
                 </button>
-                <button type="button" class="btn" id="unlockedDownloadBtn" style="margin-top:0;">
+                <button type="button" class="btn-unlocked-action primary" id="downloadOptimizedBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
@@ -283,10 +314,10 @@
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Cover Letter Section (Carta de Presentación Adaptada) -->
-        <div class="cover-letter-section" id="coverLetterSection">
+        <!-- Service 2: Tailored Cover Letter ($2 USD) -->
+        <section class="cover-letter-section" id="coverLetterSection">
           <div class="service-section-header">
             <div class="cover-letter-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
@@ -296,131 +327,189 @@
             <p class="service-section-subtitle" id="coverLetterSubtitle">Copia y pega aquí la descripción o requisitos del puesto al que deseas postular. Cintia analizará tu currículum junto con la oferta para redactar una carta persuasiva, profesional y alineada con los requisitos de la vacante.</p>
           </div>
 
-          <div class="cover-letter-card service-card">
-            <!-- Job Offer Textarea Input -->
-            <div class="cover-letter-input-container">
-              <label for="jobOfferInput" class="cover-letter-label" id="jobOfferLabel">Texto o requisitos de la oferta laboral:</label>
-              <textarea id="jobOfferInput" class="cover-letter-textarea" placeholder="Ejemplo: 'Buscamos Desarrollador Fullstack con experiencia en Node.js, React y bases de datos. Responsable de diseñar APIs escalables...'"></textarea>
+          <div class="cover-letter-card">
+            <div class="cover-letter-input-group">
+              <label for="jobOfferInput" class="cover-letter-label" id="jobOfferLabel">Texto o requisitos de la oferta de trabajo:</label>
+              <textarea id="jobOfferInput" class="cover-letter-textarea" rows="5" placeholder="Ejemplo: 'Buscamos un Ingeniero de Software con experiencia en Node.js y React para liderar el desarrollo de APIs escalables...'"></textarea>
               <div class="cover-letter-input-footer">
                 <span class="cover-letter-hint" id="jobOfferHint">Pega el texto completo de la oferta de trabajo (LinkedIn, Indeed, portal web, etc.)</span>
-                <span class="cover-letter-char-count" id="jobOfferCharCount">0 caracteres</span>
+                <span class="cover-letter-char-counter" id="jobOfferCharCount">0 caracteres</span>
               </div>
             </div>
 
-            <div id="coverLetterError" class="cover-letter-error-banner" style="display: none;"></div>
-
-            <!-- Pre-Payment / Generation Action Box -->
+            <!-- Pre-generation CTA / Price Box -->
             <div class="cover-letter-cta-box" id="coverLetterCtaBox">
-              <div class="cover-letter-price-info">
-                <span class="cover-letter-price" id="coverLetterPriceDisplay">$2 USD</span>
-                <span class="cover-letter-price-period" id="coverLetterPricePeriod">/ $2.000 CLP · Pago único</span>
+              <div class="cover-letter-price-tag">
+                <span class="cover-letter-price" id="coverLetterPriceDisplay">$2.00 USD</span>
+                <span class="cover-letter-period" id="coverLetterPricePeriod">/ $2.000 CLP · Pago único</span>
               </div>
-              <button type="button" class="btn cover-letter-btn" id="generateCoverLetterBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              <button type="button" class="btn-generate-cover-letter" id="generateCoverLetterBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
                 <span id="generateCoverLetterBtnText">Generar Carta de Presentación ($2 USD)</span>
               </button>
             </div>
 
-            <!-- Generated Cover Letter Output Box (Visible when generated/paid) -->
+            <!-- Error message if job offer is empty -->
+            <div class="cover-letter-error" id="coverLetterError" style="display: none;"></div>
+
+            <!-- Post-generation Output Box -->
             <div class="cover-letter-output-box" id="coverLetterOutputBox" style="display: none;">
               <div class="cover-letter-output-header">
                 <div class="cover-letter-success-pill">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                   <span id="coverLetterSuccessPillText">¡Carta de Presentación Generada con Éxito!</span>
                 </div>
                 <div class="cover-letter-output-actions">
-                  <button type="button" class="btn-secondary btn-sm" id="copyCoverLetterBtn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <button type="button" class="btn-cl-action" id="copyCoverLetterBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
                     <span id="copyCoverLetterBtnText">Copiar Carta</span>
                   </button>
-                  <button type="button" class="btn btn-sm" id="downloadCoverLetterBtn" style="margin-top: 0;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <button type="button" class="btn-cl-action primary" id="downloadCoverLetterBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
                     <span id="downloadCoverLetterBtnText">Descargar .txt</span>
                   </button>
                 </div>
               </div>
-              <div class="cover-letter-content-text" id="coverLetterContentText">
-                <!-- Injected dynamically -->
-              </div>
+              <div class="cover-letter-content-text" id="coverLetterContentText"></div>
             </div>
-
           </div>
-        </div>
+        </section>
 
-        <!-- Human Expert Consulting & Optimization Section -->
-        <div class="pricing-section expert-section" id="pricingSection">
+        <!-- Service 3: 1-on-1 Human Expert Mentoring ($25 USD) -->
+        <section class="pricing-section" id="pricingSection">
           <div class="service-section-header">
             <div class="expert-badge-pill">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               <span id="expertBadgeText">ASESORÍA HUMANA</span>
             </div>
-            <h2 class="service-section-title" id="pricingTitle">¿Prefieres la asesoría y optimización de un Experto Humano?</h2>
-            <p class="service-section-subtitle" id="pricingSubtitle">Trabaja 1 a 1 con un especialista en Recursos Humanos y Reclutamiento para potenciar tu perfil y preparar tus próximas entrevistas.</p>
+            <h2 class="service-section-title" id="pricingTitle">Asesoría Personalizada con un Especialista en Reclutamiento</h2>
+            <p class="service-section-subtitle" id="pricingSubtitle">¿Prefieres un acompañamiento integral y estratégico? Trabaja mano a mano con un consultor de carrera para preparar tus entrevistas y perfeccionar tu perfil.</p>
           </div>
 
-          <div class="plans-grid">
-            <!-- Tier 2: Expert manual optimization & mentoring -->
-            <div class="plan-card expert-featured-card service-card" id="expertPlanCard">
-              <h3 class="plan-name">Asesoría 1 a 1 y Optimización con Experto Humano</h3>
-              <div class="plan-price">$25 <span>USD / asesoría y entrega completa</span></div>
-
-              <!-- Dedicated Inline Error Notification -->
-              <div id="expertCardError" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin: 14px 0; text-align: left; line-height: 1.4; font-weight: 500;"></div>
-
-              <div class="plan-input-group">
-                <label for="expertEmail">Correo Electrónico <span style="color:#ef4444;">*</span></label>
-                <input type="email" id="expertEmail" class="plan-input" placeholder="nombre@correo.com" required>
+          <div class="pricing-grid single-card-grid">
+            <!-- Expert Plan Card -->
+            <div class="plan-card expert-featured-card" id="expertPlanCard">
+              <div class="plan-header">
+                <h3 class="plan-name">Asesoría 1 a 1 con Experto Humano</h3>
+                <div class="plan-price">
+                  <div class="price-val" id="expertPriceDisplay">$25.00 USD</div>
+                  <span class="price-unit">/ $25.000 CLP · Sesión de 1.5 horas</span>
+                </div>
               </div>
-              <div class="plan-input-group">
-                <label for="expertPhone">Número de Celular o WhatsApp <span style="color:#ef4444;">*</span></label>
-                <input type="tel" id="expertPhone" class="plan-input" placeholder="+56 9 1234 5678" required>
-              </div>
-              <small class="input-hint" id="expertContactHint" style="display: block; font-size: 11px; color: var(--text-light); margin: -8px 0 16px; text-align: left;">* Ambos datos de contacto son obligatorios para garantizar la coordinación de tu sesión.</small>
               <ul class="plan-features">
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Optimización de tu CV por parte de un experto humano en RRHH y reclutamiento.
-                </li>
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Sesión de asesoría experta: 1 hora y media de apoyo, entrega de la información y entrevista con el usuario titular del CV.
-                </li>
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Entrega del CV optimizado en formato PDF y Word editable.
-                </li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Sesión online 1 a 1 de 1.5 hrs con un especialista de RRHH</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Preparación y simulacro de entrevistas laborales clave</li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Entrega de tu CV finalizado en formatos PDF y Word editable</li>
               </ul>
-              <button type="button" class="btn" id="optimizeExpertBtn">Solicitar Asistencia de Experto ($25 USD)</button>
+              
+              <!-- Contact Inputs for Expert Plan -->
+              <div class="plan-contact-form">
+                <div class="plan-input-group">
+                  <label for="expertEmail">Tu Correo Electrónico</label>
+                  <input type="email" id="expertEmail" placeholder="tu@email.com" class="plan-input">
+                </div>
+                <div class="plan-input-group">
+                  <label for="expertPhone">Tu Teléfono / WhatsApp</label>
+                  <input type="tel" id="expertPhone" placeholder="+56 9 1234 5678" class="plan-input">
+                </div>
+                <p class="plan-contact-hint" id="expertContactHint">Nos contactaremos contigo en menos de 24 horas para coordinar el horario de tu sesión.</p>
+              </div>
+
+              <button class="plan-btn" id="optimizeExpertBtn">Contratar Asesoría con Experto</button>
             </div>
           </div>
-        </div>
+        </section>
 
       </section>
 
-      <!-- Optimized Output Panel -->
-      <section class="optimized-output-container" id="optimizedOutputContainer">
-        <div class="optimized-header">
-          <h2 class="optimized-title">Tu Currículum Optimizado con IA</h2>
-          <div class="optimized-actions">
-            <button class="btn-secondary" id="copyCvBtn">
+      <!-- Optimized Output Panel (Legacy container kept for DOM stability) -->
+      <section class="output-section" id="outputSection">
+        <div class="output-header">
+          <h2 class="optimized-title">Currículum Optimizado</h2>
+          <div class="output-actions">
+            <button class="btn btn-secondary" id="copyCvBtn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              Copiar Texto
+              </svg> Copiar
             </button>
-            <button class="btn-secondary" id="downloadCvBtn">
+            <button class="btn btn-secondary" id="downloadCvBtn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Descargar .txt
+              </svg> Descargar .txt
             </button>
           </div>
         </div>
         <div class="optimized-content-box" id="optimizedContentBox">
           <!-- Text generated dynamically -->
+        </div>
+      </section>
+
+      <!-- AI Career Coach Showcase Section -->
+      <section class="coach-showcase-section app-container" id="coachShowcaseSection">
+        <div class="service-section-header">
+          <div class="coach-badge-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+            <span id="coachShowcaseBadge">CAPACIDADES DE CINTIA.PRO</span>
+          </div>
+          <h2 class="section-title" id="coachShowcaseTitle">El Ecosistema Completo para tu Éxito Laboral</h2>
+          <p class="section-subtitle" id="coachShowcaseSubtitle">Cintia combina inteligencia artificial de vanguardia y experiencia humana en reclutamiento para acompañarte estratégicamente en cada fase de tu postulación.</p>
+        </div>
+
+        <div class="coach-cards-grid">
+          <!-- Card 1: Diagnóstico ATS -->
+          <div class="coach-feature-card mint-card">
+            <div class="coach-card-icon-wrap mint-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="coach-card-tag mint-tag" id="coachCardTag1">100% GRATIS</div>
+            <h3 class="coach-card-title" id="coachCardTitle1">Auditoría ATS & Diagnóstico en 7 Ejes</h3>
+            <p class="coach-card-desc" id="coachCardDesc1">Supera los filtros invisibles de reclutamiento. Conoce al instante tu puntaje global, compatibilidad algorítmica y el balance de competencias de tu CV.</p>
+          </div>
+
+          <!-- Card 2: Optimización con IA -->
+          <div class="coach-feature-card mint-card">
+            <div class="coach-card-icon-wrap mint-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="coach-card-tag mint-tag" id="coachCardTag2">$1 USD / $1.000 CLP</div>
+            <h3 class="coach-card-title" id="coachCardTitle2">Reescritura de Perfil de Alto Impacto</h3>
+            <p class="coach-card-desc" id="coachCardDesc2">Transforma tus responsabilidades en logros cuantificables con palabras clave estratégicas para destacar ante los ojos de los reclutadores.</p>
+          </div>
+
+          <!-- Card 3: Carta de Presentación -->
+          <div class="coach-feature-card purple-card">
+            <div class="coach-card-icon-wrap purple-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div class="coach-card-tag purple-tag" id="coachCardTag3">$2 USD / $2.000 CLP</div>
+            <h3 class="coach-card-title" id="coachCardTitle3">Cartas de Presentación por Vacante</h3>
+            <p class="coach-card-desc" id="coachCardDesc3">Pega la descripción de cualquier empleo de LinkedIn o portales de trabajo. Cintia redactará una carta formal y persuasiva alineada a los requisitos del puesto.</p>
+          </div>
+
+          <!-- Card 4: Experto Humano -->
+          <div class="coach-feature-card orange-card">
+            <div class="coach-card-icon-wrap orange-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div class="coach-card-tag orange-tag" id="coachCardTag4">$25 USD / $25.000 CLP</div>
+            <h3 class="coach-card-title" id="coachCardTitle4">Mentoría 1 a 1 y Pulido Experto</h3>
+            <p class="coach-card-desc" id="coachCardDesc4">Sesión dedicada de 1.5 horas con un especialista senior en RRHH para preparar tus entrevistas laborales y recibir tu CV final en PDF y Word editable.</p>
+          </div>
         </div>
       </section>
 
@@ -430,18 +519,23 @@
         <div class="steps-container">
           <div class="step-card">
             <div class="step-number">1</div>
-            <h3 class="step-title" id="step1Title">Sube tu Currículum</h3>
-            <p class="step-desc" id="step1Desc">Sube tu archivo de manera 100% segura. Cintia extraerá el contenido al instante.</p>
+            <h3 class="step-title" id="step1Title">Diagnóstico Gratuito</h3>
+            <p class="step-desc" id="step1Desc">Sube tu archivo (.pdf, .docx, .odt o .txt) de forma 100% segura para recibir tu nota y radar de competencias al instante.</p>
           </div>
           <div class="step-card">
             <div class="step-number">2</div>
-            <h3 class="step-title" id="step2Title">Obtén un Diagnóstico Honesto</h3>
-            <p class="step-desc" id="step2Desc">Recibe una evaluación con estrellas y comentarios detallados basados en los filtros ATS y estándares de reclutamiento.</p>
+            <h3 class="step-title" id="step2Title">Optimiza tu Perfil</h3>
+            <p class="step-desc" id="step2Desc">Mejora tu currículum al instante con nuestra IA o agenda una sesión de asesoría personalizada con un experto humano.</p>
           </div>
           <div class="step-card">
             <div class="step-number">3</div>
-            <h3 class="step-title" id="step3Title">Optimiza y Consigue Entrevistas</h3>
-            <p class="step-desc" id="step3Desc">Mejora tu CV con nuestra IA o solicita la ayuda directa de un experto humano. ¡Haz que tu talento no pase desapercibido!</p>
+            <h3 class="step-title" id="step3Title">Genera tu Carta a Medida</h3>
+            <p class="step-desc" id="step3Desc">Copia y pega la oferta laboral a la que postulas para redactar una carta de presentación perfectamente alineada.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">4</div>
+            <h3 class="step-title" id="step4Title">Postula y Destaca</h3>
+            <p class="step-desc" id="step4Desc">Descarga tus documentos profesionales listos para enviar y multiplica tus llamados a entrevistas laborales.</p>
           </div>
         </div>
       </section>
@@ -510,15 +604,15 @@
             </button>
             <div class="faq-answer">
               <div class="faq-answer-inner" id="faqA4">
-                La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto/markdown. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.
+                La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto plano. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.
               </div>
             </div>
           </div>
 
-          <!-- Item 5: Data privacy and security -->
+          <!-- Item 5: Cover Letter Service -->
           <div class="faq-item">
             <button class="faq-question" type="button" aria-expanded="false">
-              <span id="faqQ5">¿Qué tan seguros están mis datos personales y mi documento?</span>
+              <span id="faqQ5">¿Cómo funciona la Carta de Presentación adaptada a una oferta laboral ($2 USD)?</span>
               <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -526,15 +620,15 @@
             </button>
             <div class="faq-answer">
               <div class="faq-answer-inner" id="faqA5">
-                En Cintia.pro nos tomamos la privacidad muy en serio. Tu archivo se procesa de forma temporal y encriptada únicamente para generar tu análisis y optimización. No compartimos, vendemos ni distribuimos tu información personal con terceros.
+                Tras analizar tu currículum, puedes copiar y pegar la descripción o requisitos del puesto al que deseas postular (desde LinkedIn, Indeed o cualquier portal web). Cintia cruzará tus competencias y experiencia con los requerimientos específicos de la empresa para redactar una <strong>Carta de Presentación personalizada, persuasiva y en texto plano limpio</strong> lista para enviar por solo $2 USD o $2.000 CLP.
               </div>
             </div>
           </div>
 
-          <!-- Item 6: Formats and languages -->
+          <!-- Item 6: Data privacy and security -->
           <div class="faq-item">
             <button class="faq-question" type="button" aria-expanded="false">
-              <span id="faqQ6">¿En qué formatos e idiomas puedo subir mi currículum?</span>
+              <span id="faqQ6">¿Qué tan seguros están mis datos personales y mi documento?</span>
               <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -542,15 +636,15 @@
             </button>
             <div class="faq-answer">
               <div class="faq-answer-inner" id="faqA6">
-                Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.
+                En Cintia.pro nos tomamos la privacidad muy en serio. Tu archivo se procesa de forma temporal y encriptada únicamente para generar tu análisis y optimización. No compartimos, vendemos ni distribuimos tu información personal con terceros.
               </div>
             </div>
           </div>
 
-          <!-- Item 7: Payment methods -->
+          <!-- Item 7: Formats and languages -->
           <div class="faq-item">
             <button class="faq-question" type="button" aria-expanded="false">
-              <span id="faqQ7">¿Qué métodos de pago aceptan para los servicios de pago?</span>
+              <span id="faqQ7">¿En qué formatos e idiomas puedo subir mi currículum?</span>
               <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -558,6 +652,22 @@
             </button>
             <div class="faq-answer">
               <div class="faq-answer-inner" id="faqA7">
+                Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 8: Payment methods -->
+          <div class="faq-item">
+            <button class="faq-question" type="button" aria-expanded="false">
+              <span id="faqQ8">¿Qué métodos de pago aceptan para los servicios de pago?</span>
+              <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner" id="faqA8">
                 Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD).
               </div>
             </div>
