@@ -2010,20 +2010,30 @@ footer {
   font-weight: 500;
 }
 
-.unlock-action-btn {
+.unlock-action-btn,
+.btn-unlock-action {
+  background: var(--color-mint);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
   width: 100%;
-  padding: 13px 20px;
+  padding: 14px 20px;
   font-size: 15px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
   margin-top: 0;
   transition: all 0.25s ease;
+  font-family: var(--font-body);
 }
 
-.unlock-action-btn:hover {
+.unlock-action-btn:hover,
+.btn-unlock-action:hover {
+  background: var(--color-mint-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
 }
@@ -2154,23 +2164,22 @@ footer {
 .faq-answer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  opacity: 0;
-}
-
-.faq-item.active .faq-answer {
-  opacity: 1;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fdfdfd;
 }
 
 .faq-answer-inner {
-  padding: 0 24px 22px;
+  padding: 0 24px 24px 24px;
   font-size: 14.5px;
   line-height: 1.65;
   color: var(--text-medium);
+  border-top: 1px dashed rgba(0, 0, 0, 0.06);
+  padding-top: 16px;
 }
 
 .faq-answer-inner strong {
   color: var(--text-dark);
+  font-weight: 700;
 }
 
 .faq-answer-inner a {
@@ -2192,9 +2201,9 @@ footer {
   }
 }
 
-/* ==========================================================================
-   SERVICE 2: COVER LETTER FEATURE STYLES ($2 USD - PURPLE ACCENT)
-   ========================================================================== */
+/* ─────────────────────────────────────────────────────────────────────────
+   Cover Letter Generator Section (Purple Theme)
+   ───────────────────────────────────────────────────────────────────────── */
 .cover-letter-section {
   margin-top: 48px;
   margin-bottom: 48px;
@@ -2237,7 +2246,8 @@ footer {
   box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
 }
 
-.cover-letter-input-container {
+.cover-letter-input-container,
+.cover-letter-input-group {
   margin-bottom: 20px;
 }
 
@@ -2281,7 +2291,8 @@ footer {
   color: var(--text-light);
 }
 
-.cover-letter-error-banner {
+.cover-letter-error-banner,
+.cover-letter-error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.25);
   color: #dc2626;
@@ -2304,7 +2315,8 @@ footer {
   flex-wrap: wrap;
 }
 
-.cover-letter-price-info {
+.cover-letter-price-info,
+.cover-letter-price-tag {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -2317,32 +2329,37 @@ footer {
   color: #4f46e5;
 }
 
-.cover-letter-price-period {
+.cover-letter-price-period,
+.cover-letter-period {
   font-size: 13.5px;
   color: var(--text-medium);
   font-weight: 500;
 }
 
-.cover-letter-btn {
+.cover-letter-btn,
+.btn-generate-cover-letter {
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  border-color: #4338ca;
+  border: 1px solid #4338ca;
   color: #ffffff;
-  padding: 12px 22px;
+  padding: 13px 22px;
   font-size: 14.5px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   cursor: pointer;
   border-radius: var(--border-radius-sm);
   transition: all 0.2s ease;
   margin-top: 0;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  font-family: var(--font-body);
 }
 
-.cover-letter-btn:hover {
+.cover-letter-btn:hover,
+.btn-generate-cover-letter:hover {
   background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.42);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
   transform: translateY(-1px);
 }
 

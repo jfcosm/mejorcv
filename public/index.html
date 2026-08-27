@@ -265,20 +265,20 @@
 
             <!-- Unlock Overlay (visible before payment) -->
             <div class="unlock-overlay" id="unlockOverlay">
-              <div class="unlock-cta-card">
-                <div class="unlock-icon-wrap">
+              <div class="unlock-modal-box" id="unlockModalBox">
+                <div class="unlock-icon-circle">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </div>
-                <h3 id="unlockCtaHeading">Desbloquea tu Currículum Optimizado</h3>
+                <h4 id="unlockCtaHeading">Desbloquea tu Currículum Optimizado</h4>
                 <p id="unlockCtaDescription">Descarga tu CV reescrito por Cintia, formateado para superar cualquier software ATS y listo para enviar a tus postulaciones.</p>
-                <div class="unlock-pricing-row">
-                  <span class="unlock-price" id="unlockPriceDisplay">$1 USD</span>
+                <div class="unlock-price-display">
+                  <span class="unlock-amount" id="unlockPriceDisplay">$1 USD</span>
                   <span class="unlock-period" id="unlockCtaPeriod">/ Pago único</span>
                 </div>
-                <button type="button" class="btn-unlock-action" id="unlockActionBtn">
+                <button type="button" class="btn unlock-action-btn" id="unlockActionBtn">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                   </svg>
@@ -296,14 +296,14 @@
                 <span id="unlockedStatusText">¡Currículum Desbloqueado!</span>
               </div>
               <div class="unlocked-btn-group">
-                <button type="button" class="btn-unlocked-action" id="copyOptimizedBtn">
+                <button type="button" class="btn btn-secondary" id="copyOptimizedBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
                   <span id="unlockedCopyBtnText">Copiar CV</span>
                 </button>
-                <button type="button" class="btn-unlocked-action primary" id="downloadOptimizedBtn">
+                <button type="button" class="btn btn-primary" id="downloadOptimizedBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
@@ -328,7 +328,7 @@
           </div>
 
           <div class="cover-letter-card">
-            <div class="cover-letter-input-group">
+            <div class="cover-letter-input-container">
               <label for="jobOfferInput" class="cover-letter-label" id="jobOfferLabel">Texto o requisitos de la oferta de trabajo:</label>
               <textarea id="jobOfferInput" class="cover-letter-textarea" rows="5" placeholder="Ejemplo: 'Buscamos un Ingeniero de Software con experiencia en Node.js y React para liderar el desarrollo de APIs escalables...'"></textarea>
               <div class="cover-letter-input-footer">
@@ -339,11 +339,11 @@
 
             <!-- Pre-generation CTA / Price Box -->
             <div class="cover-letter-cta-box" id="coverLetterCtaBox">
-              <div class="cover-letter-price-tag">
+              <div class="cover-letter-price-info">
                 <span class="cover-letter-price" id="coverLetterPriceDisplay">$2.00 USD</span>
-                <span class="cover-letter-period" id="coverLetterPricePeriod">/ $2.000 CLP · Pago único</span>
+                <span class="cover-letter-price-period" id="coverLetterPricePeriod">/ $2.000 CLP · Pago único</span>
               </div>
-              <button type="button" class="btn-generate-cover-letter" id="generateCoverLetterBtn">
+              <button type="button" class="btn cover-letter-btn" id="generateCoverLetterBtn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
