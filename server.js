@@ -912,17 +912,42 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
 }
 
 // AI Cover Letter Generator Helper
+function cleanPlainTextCoverLetter(text) {
+  if (!text) return '';
+  let clean = text;
+  // 1. Remove code blocks
+  clean = clean.replace(/```[a-zA-Z0-9_-]*\n?/g, '').replace(/```/g, '');
+  // 2. Remove markdown header markers (# Header -> Header)
+  clean = clean.replace(/^#{1,6}\s*(.+)$/gm, '$1');
+  // 3. Remove bold / italics asterisks and underscores (**text**, *text*, __text__, _text_)
+  clean = clean.replace(/\*\*\*([^*]+)\*\*\*/g, '$1');
+  clean = clean.replace(/\*\*([^*]+)\*\*/g, '$1');
+  clean = clean.replace(/\*([^*\n]+)\*/g, '$1');
+  clean = clean.replace(/___([^_]+)___/g, '$1');
+  clean = clean.replace(/__([^_]+)__/g, '$1');
+  clean = clean.replace(/_([^_\n]+)_/g, '$1');
+  // 4. Remove markdown links [text](url) -> text
+  clean = clean.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  // 5. Clean horizontal rules
+  clean = clean.replace(/^(?:---|___|\*\*\*)\s*$/gm, '');
+  // 6. Clean bullets
+  clean = clean.replace(/^[\s]*[\*\-\+]\s+/gm, '• ');
+  // 7. Clean blockquotes
+  clean = clean.replace(/^>\s?/gm, '');
+  // 8. Normalize spacing
+  clean = clean.replace(/\n{3,}/g, '\n\n');
+  return clean.trim();
+}
+
 async function generateCoverLetter(filename, cvText, jobOfferText, lang, config) {
   const key = getGeminiApiKey(config);
   if (!key) {
     // Fallback template when no API key configured
     if (lang === 'en') {
-      return `# COVER LETTER - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+      return cleanPlainTextCoverLetter(`COVER LETTER - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
 
-**Date:** ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-**Position:** Candidate for Job Opening
-
----
+Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+Position: Candidate for Job Opening
 
 Dear Hiring Team,
 
@@ -931,23 +956,21 @@ I am writing to express my strong interest in the opportunity advertised. With a
 Throughout my career, I have specialized in executing high-impact initiatives, streamlining workflows, and driving continuous improvement. Reviewing your job description, I was particularly inspired by your commitment to innovation and high standards. My background directly equips me to tackle the key challenges of this role from day one.
 
 Key highlights I bring to your organization include:
-* **Demonstrated Impact:** A history of exceeding core performance benchmarks and optimizing processes with quantifiable efficiency gains.
-* **Relevant Skill Set:** Hands-on experience with the exact toolsets, methodologies, and cross-functional collaboration required for this vacancy.
-* **Proactive Problem Solving:** A proactive approach to overcoming complex operational challenges and delivering reliable results under tight deadlines.
+• Demonstrated Impact: A history of exceeding core performance benchmarks and optimizing processes with quantifiable efficiency gains.
+• Relevant Skill Set: Hands-on experience with the exact toolsets, methodologies, and cross-functional collaboration required for this vacancy.
+• Proactive Problem Solving: A proactive approach to overcoming complex operational challenges and delivering reliable results under tight deadlines.
 
 I would welcome the opportunity to discuss in greater detail how my background and qualifications will contribute to the continued success of your organization. Thank you for your time and consideration.
 
 Sincerely,
 
-**${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}**
-*Contact details available in resume profile*`;
+${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
+Contact details available in resume profile`);
     } else {
-      return `# CARTA DE PRESENTACIÓN - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+      return cleanPlainTextCoverLetter(`CARTA DE PRESENTACIÓN - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
 
-**Fecha:** ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
-**Referencia:** Postulación a Vacante Laboral
-
----
+Fecha: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+Referencia: Postulación a Vacante Laboral
 
 Estimado(a) Encargado(a) de Selección y Equipo de Contratación:
 
@@ -956,21 +979,21 @@ Por medio de la presente, deseo expresar mi firme interés en postular a la vaca
 A lo largo de mi experiencia laboral, me he destacado por resolver desafíos complejos, optimizar procesos de trabajo y alcanzar metas concretas con un enfoque orientado a resultados. La descripción de su oferta laboral resuena profundamente con mis fortalezas profesionales y metas de desarrollo.
 
 Entre los principales aportes que pongo a su disposición destacan:
-* **Experiencia y Resultados Comprobados:** Capacidad demostrada para liderar tareas críticas, superando estándares de calidad y optimizando recursos.
-* **Alineación de Competencias:** Dominio de las herramientas, habilidades y metodologías requeridas para el desempeño exitoso del puesto.
-* **Compromiso y Trabajo Colaborativo:** Habilidad para integrarme de manera ágil a equipos multidisciplinarios y promover soluciones eficientes y constructivas.
+• Experiencia y Resultados Comprobados: Capacidad demostrada para liderar tareas críticas, superando estándares de calidad y optimizando recursos.
+• Alineación de Competencias: Dominio de las herramientas, habilidades y metodologías requeridas para el desempeño exitoso del puesto.
+• Compromiso y Trabajo Colaborativo: Habilidad para integrarme de manera ágil a equipos multidisciplinarios y promover soluciones eficientes y constructivas.
 
 Agradezco de antemano el tiempo dedicado a revisar mis antecedentes y quedo a su entera disposición para profundizar en una entrevista laboral sobre cómo mi experiencia puede contribuir al éxito de sus proyectos.
 
 Atentamente,
 
-**${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}**
-*Datos de contacto disponibles en el currículum vitae*`;
+${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
+Datos de contacto disponibles en el currículum vitae`);
     }
   }
 
   const basePrompt = config.coverLetterPrompt || (
-    "Eres Cintia, la redactora profesional de cartas de presentación y estratega de carrera de MelodIA Lab. Tu objetivo es redactar una Carta de Presentación (Cover Letter) de alto impacto, personalizada y persuasiva, conectando el currículum del postulante con los requisitos de la oferta laboral específica proporcionada. La carta debe ser formal, atractiva para reclutadores humanos y optimizada con palabras clave de la vacante. Devuelve la carta formateada en Markdown limpio."
+    "Eres Cintia, la redactora profesional de cartas de presentación y estratega de carrera de MelodIA Lab. Tu objetivo es redactar una Carta de Presentación (Cover Letter) de alto impacto, personalizada y persuasiva, conectando el currículum del postulante con los requisitos de la oferta laboral específica proporcionada. La carta debe ser formal, atractiva para reclutadores humanos y optimizada con palabras clave de la vacante. REGLA ESTRICTA DE FORMATO: Redacta la carta exclusivamente en TEXTO PLANO PURO. NO uses asteriscos (**negritas**), dobles comillas tipográficas, guiones bajos (_cursivas_) ni formato Markdown (# encabezados), ya que el documento se entrega directamente como archivo de texto plano (.txt)."
   );
 
   const currentDateFormatted = lang === 'en'
@@ -978,8 +1001,8 @@ Atentamente,
     : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const languagePrompt = lang === 'en'
-    ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The target job opening is in English. Write the entire Cover Letter strictly in natural, professional, persuasive ENGLISH.\n2. TODAY'S DATE: ${currentDateFormatted}.\n3. OUTPUT FORMAT: Clean Markdown only. Do not include markdown code block ticks (\`\`\`markdown). Include professional header, formal salutation, 3-4 compelling paragraphs tailored to the job description, call to action, and professional sign-off.`
-    : `\n\nINSTRUCCIONES CRÍTICAS:\n1. IDIOMA: La postulación es en español. Redacta la Carta de Presentación completa estrictamente en ESPAÑOL formal, persuasivo y natural.\n2. FECHA ACTUAL: ${currentDateFormatted}.\n3. FORMATO: Markdown limpio únicamente. No incluyas etiquetas de bloque (\`\`\`markdown). Incluye encabezado formal, saludo profesional, 3-4 párrafos estructurados conectando los logros del CV con los requisitos de la oferta, cierre con llamada a la acción y despedida formal.`;
+    ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The target job opening is in English. Write the entire Cover Letter strictly in natural, professional, persuasive ENGLISH.\n2. TODAY'S DATE: ${currentDateFormatted}.\n3. OUTPUT FORMAT: STRICT PURE PLAIN TEXT ONLY. DO NOT USE ANY MARKDOWN ASTERISKS (**bold**), UNDERSCORES (_italic_), OR HASHTAGS (# Headers). Use clean paragraph line breaks. Include candidate header, formal salutation, 3-4 compelling paragraphs tailored to the job description, call to action, and professional sign-off.`
+    : `\n\nINSTRUCCIONES CRÍTICAS:\n1. IDIOMA: La postulación es en español. Redacta la Carta de Presentación completa estrictamente en ESPAÑOL formal, persuasivo y natural.\n2. FECHA ACTUAL: ${currentDateFormatted}.\n3. FORMATO: TEXTO PLANO PURO ESTRICTO. NO USES NINGÚN ASTERISCO (**negritas**), GUIONES BAJOS (_cursiva_) NI HASHTAGS (# encabezados). Usa saltos de línea limpios entre párrafos. Incluye encabezado formal con nombre y contacto, fecha, destinatario, saludo profesional, 3-4 párrafos estructurados conectando los logros del CV con los requisitos de la oferta, cierre con llamada a la acción y despedida formal.`;
 
   const userContent = lang === 'en'
     ? `[TARGET JOB OFFER DESCRIPTION / REQUIREMENTS]:\n${jobOfferText}\n\n[CANDIDATE RESUME CONTENT]:\n${cvText}`
@@ -992,13 +1015,8 @@ Atentamente,
     false
   );
 
-  let cleanedResult = (rawResult || "").trim();
-  if (cleanedResult.startsWith('```markdown')) {
-    cleanedResult = cleanedResult.replace(/^```markdown\s*/i, '').replace(/\s*```$/, '');
-  } else if (cleanedResult.startsWith('```')) {
-    cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
-  }
-  return cleanedResult.trim();
+  let cleanedResult = cleanPlainTextCoverLetter(rawResult || "");
+  return cleanedResult;
 }
 
 // Generate Cover Letter endpoint

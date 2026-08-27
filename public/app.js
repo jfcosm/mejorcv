@@ -1936,7 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
           unlockOptimizedCv(result.optimizedText || optimizedContentText);
         } else if (currentTier === 'cover_letter') {
           if (coverLetterContentText && result.coverLetterText) {
-            coverLetterContentText.textContent = result.coverLetterText;
+            coverLetterContentText.textContent = cleanMarkdownToPlainText(result.coverLetterText);
           } else {
             await generateAndDisplayCoverLetter();
           }
@@ -2221,7 +2221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await resp.json();
       if (data.success && data.coverLetterText) {
         if (coverLetterContentText) {
-          coverLetterContentText.textContent = data.coverLetterText;
+          coverLetterContentText.textContent = cleanMarkdownToPlainText(data.coverLetterText);
         }
         if (coverLetterOutputBox) {
           coverLetterOutputBox.style.display = 'block';
