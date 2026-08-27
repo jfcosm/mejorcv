@@ -1303,7 +1303,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 // Payment simulation route
 app.post('/api/payment/simulate', async (req, res) => {
   try {
-    const { analysisId, tier, paymentMethod, contact } = req.body;
+    const { analysisId, tier, paymentMethod, contact, jobOfferText } = req.body;
     if (!analysisId || !tier) {
       return res.status(400).json({ error: "Datos de pago incompletos." });
     }
