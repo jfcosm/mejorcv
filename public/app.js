@@ -198,7 +198,20 @@ document.addEventListener('DOMContentLoaded', () => {
       faqQ6: "¿En qué formatos e idiomas puedo subir mi currículum?",
       faqA6: "Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.",
       faqQ7: "¿Qué métodos de pago aceptan para los servicios de pago?",
-      faqA7: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD)."
+      faqA7: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD).",
+      coverLetterBadgeText: "NUEVA FUNCIÓN",
+      coverLetterTitle: "Carta de Presentación a Medida de tu Oferta Laboral",
+      coverLetterSubtitle: "Copia y pega aquí la descripción o requisitos del puesto al que deseas postular. Cintia analizará tu currículum junto con la oferta para redactar una carta persuasiva, profesional y alineada con los requisitos de la vacante.",
+      jobOfferLabel: "Texto o requisitos de la oferta laboral:",
+      jobOfferPlaceholder: "Ejemplo: 'Buscamos Desarrollador Fullstack con experiencia en Node.js, React y bases de datos. Responsable de diseñar APIs escalables...'",
+      jobOfferHint: "Pega el texto completo de la oferta de trabajo (LinkedIn, Indeed, portal web, etc.)",
+      coverLetterPricePeriod: "/ $2.000 CLP · Pago único",
+      generateCoverLetterBtnText: "Generar Carta de Presentación ($2 USD)",
+      coverLetterSuccessPillText: "¡Carta de Presentación Generada con Éxito!",
+      copyCoverLetterBtnText: "Copiar Carta",
+      downloadCoverLetterBtnText: "Descargar .txt",
+      coverLetterEmptyWarning: "Por favor, pega el texto de la oferta laboral antes de generar tu carta (mínimo 20 caracteres).",
+      coverLetterLoadingStatus: "Cintia está redactando tu Carta de Presentación personalizada..."
     },
     en: {
       navHome: "Home",
@@ -292,7 +305,20 @@ document.addEventListener('DOMContentLoaded', () => {
       faqQ6: "What file formats and languages are supported?",
       faqA6: "We accept <strong>.pdf, .docx, .odt, and .txt</strong> files up to 5 MB in size. Our evaluation engine fully supports resumes written in both <strong>Spanish</strong> and <strong>English</strong>.",
       faqQ7: "Which payment methods are accepted for upgrades?",
-      faqA7: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD)."
+      faqA7: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD).",
+      coverLetterBadgeText: "NEW FEATURE",
+      coverLetterTitle: "Custom Cover Letter for Job Opening",
+      coverLetterSubtitle: "Paste the description or requirements of the job opening you are applying for. Cintia will analyze your resume and the job posting to craft a persuasive, recruiter-ready cover letter tailored to the role.",
+      jobOfferLabel: "Job opening description or requirements:",
+      jobOfferPlaceholder: "Example: 'We are hiring a Senior Software Engineer with Node.js and React experience to build scalable APIs and lead frontend architecture...'",
+      jobOfferHint: "Paste the full text of the job description (LinkedIn, Indeed, company careers page, etc.)",
+      coverLetterPricePeriod: "/ $2.00 USD · One-time payment",
+      generateCoverLetterBtnText: "Generate Cover Letter ($2 USD)",
+      coverLetterSuccessPillText: "Cover Letter Successfully Generated!",
+      copyCoverLetterBtnText: "Copy Letter",
+      downloadCoverLetterBtnText: "Download .txt",
+      coverLetterEmptyWarning: "Please paste the job offer description before generating your cover letter (minimum 20 characters).",
+      coverLetterLoadingStatus: "Cintia is crafting your tailored cover letter..."
     }
   };
 
@@ -484,6 +510,30 @@ document.addEventListener('DOMContentLoaded', () => {
       if (aEl && t[`faqA${i}`]) aEl.innerHTML = t[`faqA${i}`];
     }
 
+    // Cover Letter Section Translations
+    const clBadge = document.getElementById('coverLetterBadgeText');
+    if (clBadge) clBadge.textContent = t.coverLetterBadgeText;
+    const clTitle = document.getElementById('coverLetterTitle');
+    if (clTitle) clTitle.textContent = t.coverLetterTitle;
+    const clSub = document.getElementById('coverLetterSubtitle');
+    if (clSub) clSub.textContent = t.coverLetterSubtitle;
+    const clLabel = document.getElementById('jobOfferLabel');
+    if (clLabel) clLabel.textContent = t.jobOfferLabel;
+    const clInput = document.getElementById('jobOfferInput');
+    if (clInput) clInput.placeholder = t.jobOfferPlaceholder;
+    const clHint = document.getElementById('jobOfferHint');
+    if (clHint) clHint.textContent = t.jobOfferHint;
+    const clPeriod = document.getElementById('coverLetterPricePeriod');
+    if (clPeriod) clPeriod.textContent = t.coverLetterPricePeriod;
+    const clBtnText = document.getElementById('generateCoverLetterBtnText');
+    if (clBtnText) clBtnText.textContent = t.generateCoverLetterBtnText;
+    const clSuccessPill = document.getElementById('coverLetterSuccessPillText');
+    if (clSuccessPill) clSuccessPill.textContent = t.coverLetterSuccessPillText;
+    const clCopyBtn = document.getElementById('copyCoverLetterBtnText');
+    if (clCopyBtn) clCopyBtn.textContent = t.copyCoverLetterBtnText;
+    const clDownloadBtn = document.getElementById('downloadCoverLetterBtnText');
+    if (clDownloadBtn) clDownloadBtn.textContent = t.downloadCoverLetterBtnText;
+
     // Footer
     document.getElementById('footerCopyright').innerHTML = t.footerCopyright;
     document.getElementById('footerCredits').innerHTML = t.footerCredits;
@@ -599,7 +649,30 @@ document.addEventListener('DOMContentLoaded', () => {
       pricingSection.style.display = appConfig.optExpertEnabled ? 'block' : 'none';
     }
 
-    // 3. Update & start live rotating bulletin news ticker
+    // 3. Apply Cover Letter pricing & visibility
+    const coverLetterSection = document.getElementById('coverLetterSection');
+    const coverLetterPriceDisplay = document.getElementById('coverLetterPriceDisplay');
+    const coverLetterPricePeriod = document.getElementById('coverLetterPricePeriod');
+    const generateCoverLetterBtnText = document.getElementById('generateCoverLetterBtnText');
+
+    if (coverLetterSection) {
+      coverLetterSection.style.display = appConfig.optCoverLetterEnabled !== false ? 'block' : 'none';
+    }
+    if (coverLetterPriceDisplay) {
+      coverLetterPriceDisplay.textContent = `$${appConfig.priceCoverLetter || 2} USD`;
+    }
+    if (coverLetterPricePeriod) {
+      coverLetterPricePeriod.textContent = currentLanguage === 'en'
+        ? `/ $${(appConfig.priceCoverLetter || 2).toFixed(2)} USD · One-time payment`
+        : `/ $${(appConfig.priceCoverLetterClp || 2000).toLocaleString('es-CL')} CLP · Pago único`;
+    }
+    if (generateCoverLetterBtnText) {
+      generateCoverLetterBtnText.textContent = currentLanguage === 'en'
+        ? `Generate Cover Letter ($${appConfig.priceCoverLetter || 2} USD)`
+        : `Generar Carta de Presentación ($${appConfig.priceCoverLetter || 2} USD)`;
+    }
+
+    // 4. Update & start live rotating bulletin news ticker
     startBulletinRotation();
   }
 
@@ -1707,6 +1780,15 @@ document.addEventListener('DOMContentLoaded', () => {
             checkoutModal.close();
             unlockOptimizedCv(result.optimizedText || optimizedContentText);
 
+          } else if (currentTier === 'cover_letter') {
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Cover Letter Unlocked!' : '✅ ¡Carta de Presentación Desbloqueada!';
+            successPaymentMessage.textContent = currentLanguage === 'en'
+              ? 'Cintia is generating your tailored cover letter...'
+              : 'Cintia está redactando tu carta de presentación personalizada...';
+            
+            await generateAndDisplayCoverLetter();
+            checkoutModal.close();
+
           } else if (currentTier === 'expert') {
             successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Expert Session Confirmed!' : '✅ ¡Sesión con Experto Confirmada!';
             successPaymentMessage.textContent = currentLanguage === 'en'
@@ -1981,6 +2063,113 @@ document.addEventListener('DOMContentLoaded', () => {
       const file = new Blob([plainText], { type: 'text/plain;charset=utf-8' });
       element.href = URL.createObjectURL(file);
       element.download = `CV_Optimizado_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
+  }
+
+  // ─── Cover Letter Interaction Handlers ───
+  const jobOfferInput = document.getElementById('jobOfferInput');
+  const jobOfferCharCount = document.getElementById('jobOfferCharCount');
+  const coverLetterError = document.getElementById('coverLetterError');
+  const generateCoverLetterBtn = document.getElementById('generateCoverLetterBtn');
+  const coverLetterOutputBox = document.getElementById('coverLetterOutputBox');
+  const coverLetterContentText = document.getElementById('coverLetterContentText');
+  const copyCoverLetterBtn = document.getElementById('copyCoverLetterBtn');
+  const downloadCoverLetterBtn = document.getElementById('downloadCoverLetterBtn');
+
+  if (jobOfferInput && jobOfferCharCount) {
+    jobOfferInput.addEventListener('input', () => {
+      const len = jobOfferInput.value.length;
+      jobOfferCharCount.textContent = `${len} ${currentLanguage === 'en' ? 'characters' : 'caracteres'}`;
+      if (coverLetterError && len >= 20) {
+        coverLetterError.style.display = 'none';
+      }
+    });
+  }
+
+  if (generateCoverLetterBtn) {
+    generateCoverLetterBtn.addEventListener('click', async () => {
+      const text = jobOfferInput ? jobOfferInput.value.trim() : '';
+      const t = translations[currentLanguage] || translations.es;
+
+      if (!text || text.length < 20) {
+        if (coverLetterError) {
+          coverLetterError.textContent = t.coverLetterEmptyWarning;
+          coverLetterError.style.display = 'block';
+        }
+        if (jobOfferInput) jobOfferInput.focus();
+        return;
+      }
+
+      if (coverLetterError) coverLetterError.style.display = 'none';
+
+      // Open Checkout for cover_letter tier
+      currentTier = 'cover_letter';
+      pendingExpertContact = null;
+      openCheckout(
+        currentLanguage === 'en' ? 'Custom Tailored Cover Letter' : 'Carta de Presentación Personalizada',
+        (appConfig.priceCoverLetter || 2).toFixed(2)
+      );
+    });
+  }
+
+  async function generateAndDisplayCoverLetter() {
+    const jobOfferText = jobOfferInput ? jobOfferInput.value.trim() : '';
+    try {
+      const resp = await fetch('/api/cover-letter/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: currentAnalysisId,
+          jobOfferText: jobOfferText,
+          lang: currentLanguage
+        })
+      });
+      const data = await resp.json();
+      if (data.success && data.coverLetterText) {
+        if (coverLetterContentText) {
+          coverLetterContentText.textContent = data.coverLetterText;
+        }
+        if (coverLetterOutputBox) {
+          coverLetterOutputBox.style.display = 'block';
+          coverLetterOutputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        const ctaBox = document.getElementById('coverLetterCtaBox');
+        if (ctaBox) ctaBox.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Error generating cover letter:', err);
+    }
+  }
+
+  if (copyCoverLetterBtn) {
+    copyCoverLetterBtn.addEventListener('click', () => {
+      const text = coverLetterContentText ? coverLetterContentText.textContent : '';
+      const plainText = cleanMarkdownToPlainText(text);
+      navigator.clipboard.writeText(plainText)
+        .then(() => {
+          const btnTextSpan = document.getElementById('copyCoverLetterBtnText');
+          if (btnTextSpan) {
+            btnTextSpan.textContent = currentLanguage === 'en' ? 'Copied!' : '¡Copiado!';
+            setTimeout(() => {
+              btnTextSpan.textContent = translations[currentLanguage].copyCoverLetterBtnText;
+            }, 2000);
+          }
+        })
+        .catch(() => alert('Could not copy text.'));
+    });
+  }
+
+  if (downloadCoverLetterBtn) {
+    downloadCoverLetterBtn.addEventListener('click', () => {
+      const text = coverLetterContentText ? coverLetterContentText.textContent : '';
+      const plainText = cleanMarkdownToPlainText(text);
+      const element = document.createElement('a');
+      const file = new Blob([plainText], { type: 'text/plain;charset=utf-8' });
+      element.href = URL.createObjectURL(file);
+      element.download = `Carta_Presentacion_${activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "Cintia"}.txt`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);

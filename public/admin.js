@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statVisits = document.getElementById('statVisits');
   const statAnalyses = document.getElementById('statAnalyses');
   const statPaidAi = document.getElementById('statPaidAi');
+  const statPaidCoverLetter = document.getElementById('statPaidCoverLetter');
   const statExpertPending = document.getElementById('statExpertPending');
   const statRevenue = document.getElementById('statRevenue');
   const statGeminiCalls = document.getElementById('statGeminiCalls');
@@ -77,16 +78,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsForm = document.getElementById('settingsForm');
   const setGeminiKey = document.getElementById('setGeminiKey');
   const setPriceAi = document.getElementById('setPriceAi');
+  const setPriceCoverLetter = document.getElementById('setPriceCoverLetter');
   const setPriceExpert = document.getElementById('setPriceExpert');
   const setPriceAiClp = document.getElementById('setPriceAiClp');
+  const setPriceCoverLetterClp = document.getElementById('setPriceCoverLetterClp');
   const setPriceExpertClp = document.getElementById('setPriceExpertClp');
   const setRateLimit = document.getElementById('setRateLimit');
   const setAdminPassword = null;
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
   const setOptAiEnabled = document.getElementById('setOptAiEnabled');
+  const setOptCoverLetterEnabled = document.getElementById('setOptCoverLetterEnabled');
   const setOptExpertEnabled = document.getElementById('setOptExpertEnabled');
   const setEvalPrompt = document.getElementById('setEvalPrompt');
   const setOptPrompt = document.getElementById('setOptPrompt');
+  const setCoverLetterPrompt = document.getElementById('setCoverLetterPrompt');
   const settingsMessage = document.getElementById('settingsMessage');
   
   // Modal Elements
@@ -95,10 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const cvModalDocMeta = document.getElementById('cvModalDocMeta');
   const tabBtnOriginal = document.getElementById('tabBtnOriginal');
   const tabBtnOptimized = document.getElementById('tabBtnOptimized');
+  const tabBtnCoverLetter = document.getElementById('tabBtnCoverLetter');
   const cvTextContentBox = document.getElementById('cvTextContentBox');
   const copyModalTextBtn = document.getElementById('copyModalTextBtn');
   const downloadModalOriginalBtn = document.getElementById('downloadModalOriginalBtn');
   const downloadModalOptimizedBtn = document.getElementById('downloadModalOptimizedBtn');
+  const downloadModalCoverLetterBtn = document.getElementById('downloadModalCoverLetterBtn');
   const closeTextModalBtn = document.getElementById('closeTextModalBtn');
 
   let currentInspectionDoc = null;
@@ -323,10 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Set statistics with safe fallbacks
       const stats = data.stats || {};
       statVisits.textContent = stats.totalVisits ?? 0;
-      statAnalyses.textContent = stats.totalAnalyses ?? 0;
-      statPaidAi.textContent = stats.paidAi ?? 0;
-      statExpertPending.textContent = stats.paidExpertPending ?? 0;
-      statRevenue.textContent = `$${(Number(stats.totalRevenue) || 0).toFixed(2)} USD`;
+      statAnalyses.textContent = data.stats.totalAnalyses;
+      statPaidAi.textContent = data.stats.paidAi;
+      if (statPaidCoverLetter) statPaidCoverLetter.textContent = data.stats.paidCoverLetter || 0;
+      statExpertPending.textContent = data.stats.paidExpertPending;
+      statRevenue.textContent = `$${data.stats.totalRevenue.toFixed(2)} USD`;
 
       // Set Gemini usage statistics
       if (stats.geminiStats) {
@@ -395,11 +403,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2. Payment Status Filter
       if (historyPaymentFilterVal !== 'all') {
         const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+        const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
         const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
         const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
-        const isFree = !isAiPaid && !isExpertPending && !isExpertDone && row.paymentStatus === 'free';
+        const isFree = !isAiPaid && !isCoverLetterPaid && !isExpertPending && !isExpertDone && row.paymentStatus === 'free';
 
         if (historyPaymentFilterVal === 'paid_ai' && !isAiPaid) return false;
+        if (historyPaymentFilterVal === 'paid_cover_letter' && !isCoverLetterPaid) return false;
         if (historyPaymentFilterVal === 'paid_expert_pending' && !isExpertPending) return false;
         if (historyPaymentFilterVal === 'paid_expert_completed' && !isExpertDone) return false;
         if (historyPaymentFilterVal === 'free' && !isFree) return false;
@@ -526,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       visibleLeads.forEach(row => {
         const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+        const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
         const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
         const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
@@ -539,6 +550,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (isAiPaid) {
           statusBadges.push('<span class="badge ai" style="background-color: var(--color-mint-light); color: var(--color-mint-hover); border: 1px solid rgba(16, 185, 129, 0.2); font-weight:600;">Optimizado IA</span>');
+        }
+        if (isCoverLetterPaid) {
+          statusBadges.push('<span class="badge cover-letter" style="background-color:#ede9fe; color:#6d28d9; border: 1px solid rgba(109, 40, 217, 0.2); font-weight:600;">Carta Presentación</span>');
         }
         if (isExpertPending) {
           statusBadges.push('<span class="badge pending" style="background-color: #fef3c7; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">Experto: Pendiente</span>');
@@ -665,11 +679,15 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : 'Evaluación gratuita realizada'}</div>
             `}
 
-            <!-- 3 Status Dots Indicators -->
+            <!-- Status Dots Indicators -->
             <div class="status-indicators-bar">
               <div class="status-item" title="${isAiPaid ? 'Optimización IA: Completada' : 'Optimización IA: No solicitada'}">
                 <span class="status-dot dot-ai ${isAiPaid ? 'solid' : 'outline'}"></span>
                 <span style="color:${isAiPaid ? 'var(--text-dark)' : 'var(--text-light)'}">IA</span>
+              </div>
+              <div class="status-item" title="${isCoverLetterPaid ? 'Carta de Presentación: Pagada y generada' : 'Carta de Presentación: No solicitada'}">
+                <span class="status-dot ${isCoverLetterPaid ? 'solid' : 'outline'}" style="background:${isCoverLetterPaid ? '#8b5cf6' : 'transparent'}; border-color:#8b5cf6;"></span>
+                <span style="color:${isCoverLetterPaid ? 'var(--text-dark)' : 'var(--text-light)'}">Carta</span>
               </div>
               <div class="status-item" title="${isExpertPending ? 'Asesoría Experta: Pendiente de entrega' : 'Asesoría Experta: No pendiente'}">
                 <span class="status-dot dot-expert-pending ${isExpertPending ? 'solid' : 'outline'}"></span>
@@ -927,6 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
     switch (status) {
       case 'free': return '<span class="badge free">Gratis (Eval)</span>';
       case 'completed_ai': return '<span class="badge ai">IA Pagado ($1)</span>';
+      case 'completed_cover_letter': return '<span class="badge cover-letter">Carta Pagada ($2)</span>';
       case 'pending_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
       case 'paid_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
       case 'completed_expert': return '<span class="badge completed">Experto Entregado</span>';
@@ -988,8 +1007,16 @@ document.addEventListener('DOMContentLoaded', () => {
       tabBtnOptimized.style.color = 'var(--text)';
       tabBtnOptimized.style.borderColor = 'var(--border-grey)';
 
+      if (tabBtnCoverLetter) {
+        tabBtnCoverLetter.style.background = '#ffffff';
+        tabBtnCoverLetter.style.color = 'var(--text)';
+        tabBtnCoverLetter.style.borderColor = 'var(--border-grey)';
+      }
+
+      if (downloadModalCoverLetterBtn) downloadModalCoverLetterBtn.style.display = 'none';
+
       cvTextContentBox.textContent = currentInspectionDoc.originalText || '(Texto original no disponible)';
-    } else {
+    } else if (tab === 'optimized') {
       tabBtnOptimized.style.background = 'var(--color-mint-light)';
       tabBtnOptimized.style.color = 'var(--color-mint-hover)';
       tabBtnOptimized.style.borderColor = 'rgba(16,185,129,0.3)';
@@ -998,19 +1025,55 @@ document.addEventListener('DOMContentLoaded', () => {
       tabBtnOriginal.style.color = 'var(--text)';
       tabBtnOriginal.style.borderColor = 'var(--border-grey)';
 
+      if (tabBtnCoverLetter) {
+        tabBtnCoverLetter.style.background = '#ffffff';
+        tabBtnCoverLetter.style.color = 'var(--text)';
+        tabBtnCoverLetter.style.borderColor = 'var(--border-grey)';
+      }
+
+      if (downloadModalCoverLetterBtn) downloadModalCoverLetterBtn.style.display = 'none';
+
       cvTextContentBox.textContent = currentInspectionDoc.optimizedText || '(Optimización de IA no disponible)';
+    } else if (tab === 'cover_letter') {
+      if (tabBtnCoverLetter) {
+        tabBtnCoverLetter.style.background = '#ede9fe';
+        tabBtnCoverLetter.style.color = '#6d28d9';
+        tabBtnCoverLetter.style.borderColor = 'rgba(109, 40, 217, 0.3)';
+      }
+
+      tabBtnOriginal.style.background = '#ffffff';
+      tabBtnOriginal.style.color = 'var(--text)';
+      tabBtnOriginal.style.borderColor = 'var(--border-grey)';
+
+      tabBtnOptimized.style.background = '#ffffff';
+      tabBtnOptimized.style.color = 'var(--text)';
+      tabBtnOptimized.style.borderColor = 'var(--border-grey)';
+
+      const jobOffer = currentInspectionDoc.jobOfferText || '(Sin descripción de oferta laboral ingresada)';
+      const coverLetter = currentInspectionDoc.coverLetterText || '(Carta de presentación aún no generada)';
+      
+      cvTextContentBox.textContent = `============================================================\nDESCRIPCIÓN DE LA OFERTA LABORAL (INGRESADA POR EL USUARIO)\n============================================================\n${jobOffer}\n\n============================================================\nCARTA DE PRESENTACIÓN GENERADA POR CINTIA\n============================================================\n${coverLetter}`;
+
+      if (downloadModalCoverLetterBtn) {
+        downloadModalCoverLetterBtn.style.display = 'inline-flex';
+        downloadModalCoverLetterBtn.onclick = (e) => {
+          e.preventDefault();
+          downloadCvFile(`/api/admin/download-cover-letter/${currentInspectionDoc.id}`, `carta_presentacion_${currentInspectionDoc.filename}.txt`);
+        };
+      }
     }
   }
 
   if (tabBtnOriginal) tabBtnOriginal.addEventListener('click', () => setInspectionTab('original'));
   if (tabBtnOptimized) tabBtnOptimized.addEventListener('click', () => setInspectionTab('optimized'));
+  if (tabBtnCoverLetter) tabBtnCoverLetter.addEventListener('click', () => setInspectionTab('cover_letter'));
 
   if (copyModalTextBtn) {
     copyModalTextBtn.addEventListener('click', () => {
       if (!currentInspectionDoc) return;
-      const textToCopy = currentInspectionTab === 'original' 
-        ? currentInspectionDoc.originalText 
-        : currentInspectionDoc.optimizedText;
+      let textToCopy = currentInspectionDoc.originalText;
+      if (currentInspectionTab === 'optimized') textToCopy = currentInspectionDoc.optimizedText;
+      if (currentInspectionTab === 'cover_letter') textToCopy = currentInspectionDoc.coverLetterText || currentInspectionDoc.jobOfferText;
       
       navigator.clipboard.writeText(textToCopy).then(() => {
         const orig = copyModalTextBtn.textContent;
@@ -1096,15 +1159,19 @@ document.addEventListener('DOMContentLoaded', () => {
       setGeminiKey.value = '';
 
       setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 1.0;
+      if (setPriceCoverLetter) setPriceCoverLetter.value = settings.priceCoverLetter !== undefined ? settings.priceCoverLetter : 2.0;
       setPriceExpert.value = settings.priceExpert !== undefined ? settings.priceExpert : 25.0;
       if (setPriceAiClp) setPriceAiClp.value = settings.priceAiClp !== undefined ? settings.priceAiClp : 1000;
+      if (setPriceCoverLetterClp) setPriceCoverLetterClp.value = settings.priceCoverLetterClp !== undefined ? settings.priceCoverLetterClp : 2000;
       if (setPriceExpertClp) setPriceExpertClp.value = settings.priceExpertClp !== undefined ? settings.priceExpertClp : 25000;
       setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
+      if (setOptCoverLetterEnabled) setOptCoverLetterEnabled.checked = settings.optCoverLetterEnabled !== false;
       setOptExpertEnabled.checked = settings.optExpertEnabled !== false;
       setCaptchaEnabled.checked = settings.captchaEnabled !== false;
       setEvalPrompt.value = settings.evaluationPrompt || '';
       setOptPrompt.value = settings.optimizationPrompt || '';
+      if (setCoverLetterPrompt) setCoverLetterPrompt.value = settings.coverLetterPrompt || '';
 
       const dbStorageText = document.getElementById('dbStorageText');
       if (dbStorageText) {
@@ -1128,15 +1195,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const payload = {
       priceAi: parseFloat(setPriceAi.value),
+      priceCoverLetter: setPriceCoverLetter ? parseFloat(setPriceCoverLetter.value) : 2.0,
       priceExpert: parseFloat(setPriceExpert.value),
       priceAiClp: setPriceAiClp ? parseInt(setPriceAiClp.value, 10) : 1000,
+      priceCoverLetterClp: setPriceCoverLetterClp ? parseInt(setPriceCoverLetterClp.value, 10) : 2000,
       priceExpertClp: setPriceExpertClp ? parseInt(setPriceExpertClp.value, 10) : 25000,
       rateLimitPerHour: parseInt(setRateLimit.value, 10),
       optAiEnabled: setOptAiEnabled.checked,
+      optCoverLetterEnabled: setOptCoverLetterEnabled ? setOptCoverLetterEnabled.checked : true,
       optExpertEnabled: setOptExpertEnabled.checked,
       captchaEnabled: setCaptchaEnabled.checked,
       evaluationPrompt: setEvalPrompt.value,
-      optimizationPrompt: setOptPrompt.value
+      optimizationPrompt: setOptPrompt.value,
+      coverLetterPrompt: setCoverLetterPrompt ? setCoverLetterPrompt.value : ''
     };
 
     // Only send changes for password & key if inputted

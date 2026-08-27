@@ -1940,3 +1940,228 @@ footer {
   }
 }
 
+/* ─── Cover Letter Feature Styles ─── */
+.cover-letter-section {
+  margin-top: 48px;
+}
+
+.cover-letter-card {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+  border-radius: var(--border-radius-md);
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.cover-letter-header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.cover-letter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cover-letter-title {
+  font-size: 22px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.cover-letter-subtitle {
+  font-size: 14.5px;
+  color: var(--text-medium);
+  line-height: 1.6;
+  max-width: 760px;
+}
+
+.cover-letter-input-container {
+  margin-bottom: 20px;
+}
+
+.cover-letter-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.cover-letter-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-grey);
+  border-radius: var(--border-radius-sm);
+  background: #ffffff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  resize: vertical;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.cover-letter-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.cover-letter-input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.cover-letter-error-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.cover-letter-cta-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--border-radius-sm);
+  padding: 18px 22px;
+  flex-wrap: wrap;
+}
+
+.cover-letter-price-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cover-letter-price {
+  font-size: 24px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #4f46e5;
+}
+
+.cover-letter-price-period {
+  font-size: 13.5px;
+  color: var(--text-medium);
+  font-weight: 500;
+}
+
+.cover-letter-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  border-color: #4338ca;
+  color: #ffffff;
+  padding: 12px 22px;
+  font-size: 14.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  margin-top: 0;
+}
+
+.cover-letter-btn:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  transform: translateY(-1px);
+}
+
+.cover-letter-output-box {
+  margin-top: 24px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--border-radius-sm);
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.cover-letter-output-header {
+  background: #f0fdf4;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cover-letter-success-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: var(--font-display);
+}
+
+.cover-letter-output-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cover-letter-content-text {
+  padding: 24px;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-dark);
+  white-space: pre-wrap;
+  background: #fafafa;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* Badge cover letter for admin table */
+.badge.cover-letter {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+@media (max-width: 768px) {
+  .cover-letter-card {
+    padding: 20px;
+  }
+  .cover-letter-cta-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cover-letter-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

@@ -210,6 +210,7 @@ async function deleteAnalysisDoc(analysisId) {
 async function getAdminData(config) {
   const priceAi = parseFloat(config?.priceAi) || 1.0;
   const priceExpert = parseFloat(config?.priceExpert) || 25.0;
+  const priceCoverLetter = parseFloat(config?.priceCoverLetter) || 2.0;
   const geminiStats = await getGeminiStats(config);
 
   const dbFs = initFirebase();
@@ -234,13 +235,15 @@ async function getAdminData(config) {
 
       const totalAnalyses = analysesList.length;
       const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
+      const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
       const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
       const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
       const paidExpert = paidExpertPending + paidExpertCompleted;
-      const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
+      const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidExpert * priceExpert);
 
       const documentLog = analysesList.map(a => {
         const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
+        const hasCoverLetterPaid = Boolean(a.hasCoverLetterPaid === true || a.paymentStatus === 'completed_cover_letter');
         const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
         const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
@@ -254,9 +257,12 @@ async function getAdminData(config) {
           rating: a.rating || 3,
           paymentStatus: a.paymentStatus || 'free',
           hasAiPaid,
+          hasCoverLetterPaid,
           hasExpertPaid,
           expertStatus,
           expertContact: a.expertContact || null,
+          jobOfferText: a.jobOfferText || '',
+          coverLetterText: a.coverLetterText || '',
           archived: Boolean(a.archived),
           archivedAt: a.archivedAt || null
         };
@@ -267,6 +273,7 @@ async function getAdminData(config) {
           totalVisits: Number(totalVisits) || 0,
           totalAnalyses: Number(totalAnalyses) || 0,
           paidAi: Number(paidAi) || 0,
+          paidCoverLetter: Number(paidCoverLetter) || 0,
           paidExpertPending: Number(paidExpertPending) || 0,
           paidExpertCompleted: Number(paidExpertCompleted) || 0,
           totalRevenue: Number(totalRevenue) || 0,
@@ -285,13 +292,15 @@ async function getAdminData(config) {
   const analysesList = db.analyses || [];
   const totalAnalyses = analysesList.length;
   const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
+  const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
   const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
   const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
   const paidExpert = paidExpertPending + paidExpertCompleted;
-  const totalRevenue = (paidAi * priceAi) + (paidExpert * priceExpert);
+  const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidExpert * priceExpert);
 
   const documentLog = analysesList.map(a => {
     const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
+    const hasCoverLetterPaid = Boolean(a.hasCoverLetterPaid === true || a.paymentStatus === 'completed_cover_letter');
     const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
     const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
@@ -305,9 +314,12 @@ async function getAdminData(config) {
       rating: a.rating || 3,
       paymentStatus: a.paymentStatus || 'free',
       hasAiPaid,
+      hasCoverLetterPaid,
       hasExpertPaid,
       expertStatus,
       expertContact: a.expertContact || null,
+      jobOfferText: a.jobOfferText || '',
+      coverLetterText: a.coverLetterText || '',
       archived: Boolean(a.archived),
       archivedAt: a.archivedAt || null
     };
@@ -318,6 +330,7 @@ async function getAdminData(config) {
       totalVisits: Number(totalVisits) || 0,
       totalAnalyses: Number(totalAnalyses) || 0,
       paidAi: Number(paidAi) || 0,
+      paidCoverLetter: Number(paidCoverLetter) || 0,
       paidExpertPending: Number(paidExpertPending) || 0,
       paidExpertCompleted: Number(paidExpertCompleted) || 0,
       totalRevenue: Number(totalRevenue) || 0,
@@ -898,6 +911,159 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   return cleanedResult.trim();
 }
 
+// AI Cover Letter Generator Helper
+async function generateCoverLetter(filename, cvText, jobOfferText, lang, config) {
+  const key = getGeminiApiKey(config);
+  if (!key) {
+    // Fallback template when no API key configured
+    if (lang === 'en') {
+      return `# COVER LETTER - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+
+**Date:** ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+**Position:** Candidate for Job Opening
+
+---
+
+Dear Hiring Team,
+
+I am writing to express my strong interest in the opportunity advertised. With a solid professional background, proven technical competencies, and a track record of delivering measurable outcomes, I am confident that my experience aligns seamlessly with the requirements of your team.
+
+Throughout my career, I have specialized in executing high-impact initiatives, streamlining workflows, and driving continuous improvement. Reviewing your job description, I was particularly inspired by your commitment to innovation and high standards. My background directly equips me to tackle the key challenges of this role from day one.
+
+Key highlights I bring to your organization include:
+* **Demonstrated Impact:** A history of exceeding core performance benchmarks and optimizing processes with quantifiable efficiency gains.
+* **Relevant Skill Set:** Hands-on experience with the exact toolsets, methodologies, and cross-functional collaboration required for this vacancy.
+* **Proactive Problem Solving:** A proactive approach to overcoming complex operational challenges and delivering reliable results under tight deadlines.
+
+I would welcome the opportunity to discuss in greater detail how my background and qualifications will contribute to the continued success of your organization. Thank you for your time and consideration.
+
+Sincerely,
+
+**${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}**
+*Contact details available in resume profile*`;
+    } else {
+      return `# CARTA DE PRESENTACIÓN - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+
+**Fecha:** ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+**Referencia:** Postulación a Vacante Laboral
+
+---
+
+Estimado(a) Encargado(a) de Selección y Equipo de Contratación:
+
+Por medio de la presente, deseo expresar mi firme interés en postular a la vacante laboral disponible en su organización. Al analizar en detalle los requisitos y desafíos del cargo, confío en que mi trayectoria profesional, competencias técnicas y compromiso con la excelencia aportarán un valor significativo e inmediato a su equipo.
+
+A lo largo de mi experiencia laboral, me he destacado por resolver desafíos complejos, optimizar procesos de trabajo y alcanzar metas concretas con un enfoque orientado a resultados. La descripción de su oferta laboral resuena profundamente con mis fortalezas profesionales y metas de desarrollo.
+
+Entre los principales aportes que pongo a su disposición destacan:
+* **Experiencia y Resultados Comprobados:** Capacidad demostrada para liderar tareas críticas, superando estándares de calidad y optimizando recursos.
+* **Alineación de Competencias:** Dominio de las herramientas, habilidades y metodologías requeridas para el desempeño exitoso del puesto.
+* **Compromiso y Trabajo Colaborativo:** Habilidad para integrarme de manera ágil a equipos multidisciplinarios y promover soluciones eficientes y constructivas.
+
+Agradezco de antemano el tiempo dedicado a revisar mis antecedentes y quedo a su entera disposición para profundizar en una entrevista laboral sobre cómo mi experiencia puede contribuir al éxito de sus proyectos.
+
+Atentamente,
+
+**${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}**
+*Datos de contacto disponibles en el currículum vitae*`;
+    }
+  }
+
+  const basePrompt = config.coverLetterPrompt || (
+    "Eres Cintia, la redactora profesional de cartas de presentación y estratega de carrera de MelodIA Lab. Tu objetivo es redactar una Carta de Presentación (Cover Letter) de alto impacto, personalizada y persuasiva, conectando el currículum del postulante con los requisitos de la oferta laboral específica proporcionada. La carta debe ser formal, atractiva para reclutadores humanos y optimizada con palabras clave de la vacante. Devuelve la carta formateada en Markdown limpio."
+  );
+
+  const currentDateFormatted = lang === 'en'
+    ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const languagePrompt = lang === 'en'
+    ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The target job opening is in English. Write the entire Cover Letter strictly in natural, professional, persuasive ENGLISH.\n2. TODAY'S DATE: ${currentDateFormatted}.\n3. OUTPUT FORMAT: Clean Markdown only. Do not include markdown code block ticks (\`\`\`markdown). Include professional header, formal salutation, 3-4 compelling paragraphs tailored to the job description, call to action, and professional sign-off.`
+    : `\n\nINSTRUCCIONES CRÍTICAS:\n1. IDIOMA: La postulación es en español. Redacta la Carta de Presentación completa estrictamente en ESPAÑOL formal, persuasivo y natural.\n2. FECHA ACTUAL: ${currentDateFormatted}.\n3. FORMATO: Markdown limpio únicamente. No incluyas etiquetas de bloque (\`\`\`markdown). Incluye encabezado formal, saludo profesional, 3-4 párrafos estructurados conectando los logros del CV con los requisitos de la oferta, cierre con llamada a la acción y despedida formal.`;
+
+  const userContent = lang === 'en'
+    ? `[TARGET JOB OFFER DESCRIPTION / REQUIREMENTS]:\n${jobOfferText}\n\n[CANDIDATE RESUME CONTENT]:\n${cvText}`
+    : `[DESCRIPCIÓN Y REQUISITOS DE LA OFERTA LABORAL]:\n${jobOfferText}\n\n[CONTENIDO DEL CURRÍCULUM DEL POSTULANTE]:\n${cvText}`;
+
+  const rawResult = await callGemini(
+    key,
+    basePrompt + languagePrompt,
+    userContent,
+    false
+  );
+
+  let cleanedResult = (rawResult || "").trim();
+  if (cleanedResult.startsWith('```markdown')) {
+    cleanedResult = cleanedResult.replace(/^```markdown\s*/i, '').replace(/\s*```$/, '');
+  } else if (cleanedResult.startsWith('```')) {
+    cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+  return cleanedResult.trim();
+}
+
+// Generate Cover Letter endpoint
+app.post('/api/cover-letter/generate', async (req, res) => {
+  try {
+    const { analysisId, jobOfferText, lang } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: "ID de análisis faltante." });
+    }
+    if (!jobOfferText || !jobOfferText.trim()) {
+      return res.status(400).json({ error: "Debes ingresar la descripción o requisitos de la oferta laboral." });
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: "Análisis no encontrado." });
+    }
+
+    const config = await getConfigDoc();
+    const effectiveLang = lang || analysis.lang || 'es';
+
+    // Save jobOfferText into analysis record
+    await updateAnalysisDoc(analysisId, {
+      jobOfferText: jobOfferText.trim()
+    });
+
+    const isPaid = Boolean(analysis.hasCoverLetterPaid || analysis.paymentStatus === 'completed_cover_letter');
+
+    if (!isPaid) {
+      return res.json({
+        success: false,
+        requiresPayment: true,
+        priceCoverLetter: config.priceCoverLetter || 2.0,
+        priceCoverLetterClp: config.priceCoverLetterClp || 2000
+      });
+    }
+
+    // If paid, generate and save
+    let coverLetterText = analysis.coverLetterText;
+    if (!coverLetterText || req.body.forceRegenerate) {
+      coverLetterText = await generateCoverLetter(
+        analysis.filename,
+        analysis.originalText,
+        jobOfferText.trim(),
+        effectiveLang,
+        config
+      );
+      await updateAnalysisDoc(analysisId, {
+        coverLetterText: coverLetterText,
+        jobOfferText: jobOfferText.trim()
+      });
+      recordGeminiCall('optimizations');
+    }
+
+    res.json({
+      success: true,
+      coverLetterText: coverLetterText
+    });
+
+  } catch (err) {
+    console.error("Error in /api/cover-letter/generate:", err);
+    res.status(500).json({ error: err.message || "Error al generar la carta de presentación." });
+  }
+});
+
 // Analyze document
 app.post('/api/analyze', upload.single('cv'), async (req, res) => {
   try {
@@ -1184,6 +1350,17 @@ app.post('/api/payment/simulate', async (req, res) => {
         tier: 'expert',
         message: "Pago registrado con éxito. Un experto te contactará en un plazo máximo de 24-48 horas."
       });
+    } else if (tier === 'cover_letter') {
+      if (jobOfferText) {
+        await updateAnalysisDoc(analysisId, { jobOfferText: jobOfferText.trim() });
+      }
+      const result = await processSuccessfulPayment({
+        analysisId,
+        tier: 'cover_letter',
+        paymentMethod: paymentMethod || 'simulate',
+        transactionId: `sim_cl_${Date.now()}`
+      });
+      res.json(result);
     } else {
       res.status(400).json({ error: "Tier de pago inválido." });
     }
@@ -1237,10 +1414,13 @@ app.get('/api/config', async (req, res) => {
   res.json({
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
+    optCoverLetterEnabled: config.hasOwnProperty('optCoverLetterEnabled') ? !!config.optCoverLetterEnabled : true,
     priceAi: config.priceAi || 1.0,
     priceExpert: config.priceExpert || 25.0,
+    priceCoverLetter: config.priceCoverLetter || 2.0,
     priceAiClp: config.priceAiClp || 1000,
     priceExpertClp: config.priceExpertClp || 25000,
+    priceCoverLetterClp: config.priceCoverLetterClp || 2000,
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
     mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
@@ -1357,6 +1537,41 @@ async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mer
       tier: 'expert',
       message: '¡Pago completado! Un experto de Cintia te contactará en máximo 24 horas para coordinar tu sesión de asesoría.'
     };
+  } else if (tier === 'cover_letter') {
+    let coverLetterText = analysis.coverLetterText;
+    if (!coverLetterText && analysis.jobOfferText) {
+      const config = await getConfigDoc();
+      coverLetterText = await generateCoverLetter(
+        analysis.filename,
+        analysis.originalText,
+        analysis.jobOfferText,
+        analysis.lang || 'es',
+        config
+      );
+    }
+    const updatePayload = {
+      hasCoverLetterPaid: true,
+      coverLetterPaidAt: new Date().toISOString(),
+      coverLetterOrderId: orderId || transactionId,
+      coverLetterTransactionId: transactionId,
+      paymentMethod,
+      paidAt: new Date().toISOString(),
+      coverLetterText: coverLetterText || ''
+    };
+    if (analysis.hasExpertPaid || analysis.paymentStatus === 'pending_expert' || analysis.expertContact) {
+      updatePayload.hasExpertPaid = true;
+      updatePayload.expertStatus = analysis.expertStatus || 'pending';
+      updatePayload.paymentStatus = updatePayload.expertStatus === 'completed' ? 'completed_expert' : 'pending_expert';
+    } else if (analysis.hasAiPaid || analysis.paymentStatus === 'completed_ai') {
+      updatePayload.hasAiPaid = true;
+      updatePayload.paymentStatus = 'completed_ai';
+    } else {
+      updatePayload.paymentStatus = 'completed_cover_letter';
+    }
+
+    await updateAnalysisDoc(analysisId, updatePayload);
+    recordGeminiCall('optimizations');
+    return { success: true, tier: 'cover_letter', coverLetterText };
   } else {
     throw new Error('Tier de pago inválido.');
   }
@@ -1409,13 +1624,16 @@ app.post('/api/paypal/create-order', async (req, res) => {
     }
 
     const config = await getConfigDoc();
-    const amount = tier === 'ai'
-      ? (config.priceAi || 1.0).toFixed(2)
-      : (config.priceExpert || 25.0).toFixed(2);
+    let amount = (config.priceAi || 1.0).toFixed(2);
+    let description = 'Cintia - Optimización de CV con IA';
 
-    const description = tier === 'ai'
-      ? 'Cintia - Optimización de CV con IA'
-      : 'Cintia - Asesoría y Optimización por Experto Humano';
+    if (tier === 'expert') {
+      amount = (config.priceExpert || 25.0).toFixed(2);
+      description = 'Cintia - Asesoría y Optimización por Experto Humano';
+    } else if (tier === 'cover_letter') {
+      amount = (config.priceCoverLetter || 2.0).toFixed(2);
+      description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
+    }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
 
@@ -1542,13 +1760,16 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
     }
 
     const config = await getConfigDoc();
-    const amountClp = tier === 'ai'
-      ? Number(config.priceAiClp || 1000)
-      : Number(config.priceExpertClp || 25000);
+    let amountClp = Number(config.priceAiClp || 1000);
+    let description = 'Cintia - Optimización de CV con IA';
 
-    const description = tier === 'ai'
-      ? 'Cintia - Optimización de CV con IA'
-      : 'Cintia - Asesoría y Optimización por Experto Humano';
+    if (tier === 'expert') {
+      amountClp = Number(config.priceExpertClp || 25000);
+      description = 'Cintia - Asesoría y Optimización por Experto Humano';
+    } else if (tier === 'cover_letter') {
+      amountClp = Number(config.priceCoverLetterClp || 2000);
+      description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
+    }
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
     const client = getMercadoPagoClient();
@@ -1875,14 +2096,18 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     }
     if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
+    if (newSettings.hasOwnProperty('priceCoverLetter')) config.priceCoverLetter = parseFloat(newSettings.priceCoverLetter) || 2.0;
     if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 1000;
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
+    if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
     if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
+    if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = !!newSettings.optCoverLetterEnabled;
     if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = !!newSettings.captchaEnabled;
     if (newSettings.hasOwnProperty('rateLimitPerHour')) config.rateLimitPerHour = parseInt(newSettings.rateLimitPerHour, 10) || 5;
     if (newSettings.evaluationPrompt) config.evaluationPrompt = newSettings.evaluationPrompt;
     if (newSettings.optimizationPrompt) config.optimizationPrompt = newSettings.optimizationPrompt;
+    if (newSettings.coverLetterPrompt) config.coverLetterPrompt = newSettings.coverLetterPrompt;
     
     writeConfig(config);
     res.json({ success: true, message: "Parámetros guardados correctamente." });
@@ -1891,7 +2116,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   }
 });
 
-// Admin endpoint: get full analysis record (original text, AI optimized text, contact, etc.)
+// Admin endpoint: get full analysis record (original text, AI optimized text, cover letter, contact, etc.)
 app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).json({ error: "Análisis no encontrado." });
@@ -1905,11 +2130,26 @@ app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => 
     rating: analysis.rating,
     paymentStatus: analysis.paymentStatus,
     paymentMethod: analysis.paymentMethod,
+    hasAiPaid: Boolean(analysis.hasAiPaid),
+    hasCoverLetterPaid: Boolean(analysis.hasCoverLetterPaid),
+    hasExpertPaid: Boolean(analysis.hasExpertPaid),
     expertContact: analysis.expertContact,
+    jobOfferText: analysis.jobOfferText || "",
+    coverLetterText: analysis.coverLetterText || "",
     originalText: analysis.originalText || "",
     optimizedText: analysis.optimizedText || "",
     evaluation: analysis.evaluation
   });
+});
+
+// Admin endpoint: download cover letter text
+app.get('/api/admin/download-cover-letter/:id', requireAdminAuth, async (req, res) => {
+  const analysis = await getAnalysisDoc(req.params.id);
+  if (!analysis) return res.status(404).send("No encontrado");
+  
+  res.setHeader('Content-disposition', `attachment; filename=carta_presentacion_${analysis.filename}.txt`);
+  res.setHeader('Content-type', 'text/plain; charset=utf-8');
+  res.send(analysis.coverLetterText || "");
 });
 
 // Admin endpoint: download original CV text

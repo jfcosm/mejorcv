@@ -285,6 +285,68 @@
           </div>
         </div>
 
+        <!-- Cover Letter Section (Carta de Presentación Adaptada) -->
+        <div class="cover-letter-section" id="coverLetterSection">
+          <div class="cover-letter-card">
+            <div class="cover-letter-header">
+              <div class="cover-letter-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <span id="coverLetterBadgeText">NUEVA FUNCIÓN</span>
+              </div>
+              <h2 class="cover-letter-title" id="coverLetterTitle">Carta de Presentación a Medida de tu Oferta Laboral</h2>
+              <p class="cover-letter-subtitle" id="coverLetterSubtitle">Copia y pega aquí la descripción o requisitos del puesto al que deseas postular. Cintia analizará tu currículum junto con la oferta para redactar una carta persuasiva, profesional y alineada con los requisitos de la vacante.</p>
+            </div>
+
+            <!-- Job Offer Textarea Input -->
+            <div class="cover-letter-input-container">
+              <label for="jobOfferInput" class="cover-letter-label" id="jobOfferLabel">Texto o requisitos de la oferta laboral:</label>
+              <textarea id="jobOfferInput" class="cover-letter-textarea" placeholder="Ejemplo: 'Buscamos Desarrollador Fullstack con experiencia en Node.js, React y bases de datos. Responsable de diseñar APIs escalables...'"></textarea>
+              <div class="cover-letter-input-footer">
+                <span class="cover-letter-hint" id="jobOfferHint">Pega el texto completo de la oferta de trabajo (LinkedIn, Indeed, portal web, etc.)</span>
+                <span class="cover-letter-char-count" id="jobOfferCharCount">0 caracteres</span>
+              </div>
+            </div>
+
+            <div id="coverLetterError" class="cover-letter-error-banner" style="display: none;"></div>
+
+            <!-- Pre-Payment / Generation Action Box -->
+            <div class="cover-letter-cta-box" id="coverLetterCtaBox">
+              <div class="cover-letter-price-info">
+                <span class="cover-letter-price" id="coverLetterPriceDisplay">$2 USD</span>
+                <span class="cover-letter-price-period" id="coverLetterPricePeriod">/ $2.000 CLP · Pago único</span>
+              </div>
+              <button type="button" class="btn cover-letter-btn" id="generateCoverLetterBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <span id="generateCoverLetterBtnText">Generar Carta de Presentación ($2 USD)</span>
+              </button>
+            </div>
+
+            <!-- Generated Cover Letter Output Box (Visible when generated/paid) -->
+            <div class="cover-letter-output-box" id="coverLetterOutputBox" style="display: none;">
+              <div class="cover-letter-output-header">
+                <div class="cover-letter-success-pill">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span id="coverLetterSuccessPillText">¡Carta de Presentación Generada con Éxito!</span>
+                </div>
+                <div class="cover-letter-output-actions">
+                  <button type="button" class="btn-secondary btn-sm" id="copyCoverLetterBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span id="copyCoverLetterBtnText">Copiar Carta</span>
+                  </button>
+                  <button type="button" class="btn btn-sm" id="downloadCoverLetterBtn" style="margin-top: 0;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span id="downloadCoverLetterBtnText">Descargar .txt</span>
+                  </button>
+                </div>
+              </div>
+              <div class="cover-letter-content-text" id="coverLetterContentText">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <!-- Human Expert Consulting & Optimization Section -->
         <div class="pricing-section" id="pricingSection">
           <h2 class="pricing-title">¿Prefieres la asesoría y optimización de un Experto Humano?</h2>
