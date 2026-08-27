@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
       faqA6: "Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.",
       faqQ7: "¿Qué métodos de pago aceptan para los servicios de pago?",
       faqA7: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD).",
+      expertBadgeText: "ASESORÍA HUMANA",
       coverLetterBadgeText: "NUEVA FUNCIÓN",
       coverLetterTitle: "Carta de Presentación a Medida de tu Oferta Laboral",
       coverLetterSubtitle: "Copia y pega aquí la descripción o requisitos del puesto al que deseas postular. Cintia analizará tu currículum junto con la oferta para redactar una carta persuasiva, profesional y alineada con los requisitos de la vacante.",
@@ -306,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
       faqA6: "We accept <strong>.pdf, .docx, .odt, and .txt</strong> files up to 5 MB in size. Our evaluation engine fully supports resumes written in both <strong>Spanish</strong> and <strong>English</strong>.",
       faqQ7: "Which payment methods are accepted for upgrades?",
       faqA7: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD).",
+      expertBadgeText: "HUMAN EXPERT",
       coverLetterBadgeText: "NEW FEATURE",
       coverLetterTitle: "Custom Cover Letter for Job Opening",
       coverLetterSubtitle: "Paste the description or requirements of the job opening you are applying for. Cintia will analyze your resume and the job posting to craft a persuasive, recruiter-ready cover letter tailored to the role.",
@@ -533,6 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clCopyBtn) clCopyBtn.textContent = t.copyCoverLetterBtnText;
     const clDownloadBtn = document.getElementById('downloadCoverLetterBtnText');
     if (clDownloadBtn) clDownloadBtn.textContent = t.downloadCoverLetterBtnText;
+
+    // Expert Badge
+    const expBadge = document.getElementById('expertBadgeText');
+    if (expBadge) expBadge.textContent = t.expertBadgeText;
 
     // Footer
     document.getElementById('footerCopyright').innerHTML = t.footerCopyright;

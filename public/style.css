@@ -1063,39 +1063,73 @@ header .nav {
   }
 }
 
-/* Optimization Pricing Plans */
+/* Optimization Pricing Plans (Human Expert Section - Orange Accent) */
 .pricing-section {
   border-top: 1px solid var(--border-grey);
-  padding-top: 40px;
+  padding-top: 48px;
+  margin-top: 48px;
 }
 
-.pricing-title {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 8px;
-}
-
-.pricing-subtitle {
-  text-align: center;
-  color: var(--text-medium);
-  font-size: 15px;
-  margin-bottom: 32px;
+.expert-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-family: var(--font-display);
 }
 
 .plans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  display: block;
   max-width: 680px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .plan-card.expert-featured-card {
-  border: 1.5px solid rgba(16, 185, 129, 0.35);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  background: linear-gradient(180deg, #ffffff 0%, #fafffc 100%);
+  border: 1.5px solid rgba(234, 88, 12, 0.3);
+  box-shadow: 0 4px 20px rgba(234, 88, 12, 0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #fffbf7 100%);
   border-radius: var(--border-radius-md);
   padding: 36px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.plan-card.expert-featured-card:hover {
+  border-color: rgba(234, 88, 12, 0.55);
+  box-shadow: 0 10px 30px rgba(234, 88, 12, 0.1);
+}
+
+.plan-card.expert-featured-card .plan-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+}
+
+.plan-card.expert-featured-card .plan-price {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  color: #ea580c;
+  margin-bottom: 20px;
+}
+
+.plan-card.expert-featured-card .plan-price span {
+  font-size: 15px;
+  color: var(--text-medium);
+  font-weight: 400;
 }
 
 .plan-card.expert-featured-card .plan-features li {
@@ -1107,6 +1141,7 @@ header .nav {
 }
 
 .plan-card.expert-featured-card .plan-features svg {
+  color: #ea580c;
   margin-top: 3px;
 }
 
@@ -1119,46 +1154,6 @@ header .nav {
   flex-direction: column;
   transition: var(--transition-smooth);
   position: relative;
-}
-
-.plan-card.popular {
-  border-color: var(--color-mint);
-  box-shadow: var(--shadow-md);
-}
-
-.plan-card.popular::before {
-  content: 'Recomendado';
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--color-mint);
-  color: white;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-display);
-}
-
-.plan-name {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.plan-price {
-  font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.plan-price span {
-  font-size: 16px;
-  color: var(--text-medium);
-  font-weight: 400;
 }
 
 .plan-features {
@@ -1177,7 +1172,7 @@ header .nav {
 }
 
 .plan-features svg {
-  color: var(--color-mint);
+  color: #ea580c;
   flex-shrink: 0;
 }
 
@@ -1190,7 +1185,7 @@ header .nav {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: var(--text-medium);
+  color: var(--text-dark);
 }
 
 .plan-input {
@@ -1205,7 +1200,29 @@ header .nav {
 }
 
 .plan-input:focus {
-  border-color: var(--color-mint);
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+#optimizeExpertBtn {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  border-color: #c2410c;
+  color: #ffffff;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+
+#optimizeExpertBtn:hover {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+  transform: translateY(-2px);
 }
 
 /* Optimized CV Output Panel */
@@ -1579,16 +1596,40 @@ footer {
 }
 
 /* ==========================================================================
-   AI OPTIMIZED CV BLURRED PREVIEW & FLOATING UNLOCK CTA
+   COMMON SERVICE SECTIONS & CARD STYLING (CONSISTENT 680px WIDTH)
    ========================================================================== */
-.ai-preview-section {
-  margin-top: 36px;
-  margin-bottom: 44px;
-}
-
+.service-section-header,
 .preview-section-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+}
+
+.service-section-title,
+.preview-section-header h3,
+.pricing-title {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.service-section-subtitle,
+.preview-section-header p,
+.pricing-subtitle {
+  color: var(--text-medium);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   SERVICE 1: AI OPTIMIZATION ($1 USD - MINT GREEN ACCENT)
+   ========================================================================== */
+.ai-preview-section {
+  margin-top: 48px;
+  margin-bottom: 48px;
 }
 
 .preview-badge-pill {
@@ -1622,35 +1663,25 @@ footer {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-.preview-section-header h3 {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text-dark);
-  margin-bottom: 6px;
-}
-
-.preview-section-header p {
-  color: var(--text-medium);
-  font-size: 14.5px;
-  max-width: 620px;
-  margin: 0 auto;
-}
-
 /* Document Container with Blur & Overlay */
 .blurred-doc-card {
   position: relative;
-  border: 1px solid var(--border-grey);
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
   border-radius: var(--border-radius-md);
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, #ffffff 0%, #fafffc 100%);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.06);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 380px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .blurred-doc-card:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
 }
 
 .blurred-doc-content {
@@ -1940,54 +1971,49 @@ footer {
   }
 }
 
-/* ─── Cover Letter Feature Styles ─── */
+/* ==========================================================================
+   SERVICE 2: COVER LETTER FEATURE STYLES ($2 USD - PURPLE ACCENT)
+   ========================================================================== */
 .cover-letter-section {
   margin-top: 48px;
-}
-
-.cover-letter-card {
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
-  border-radius: var(--border-radius-md);
-  padding: 32px;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
-  position: relative;
-  overflow: hidden;
-}
-
-.cover-letter-header {
-  text-align: left;
-  margin-bottom: 24px;
+  margin-bottom: 48px;
 }
 
 .cover-letter-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(99, 102, 241, 0.12);
-  color: #4f46e5;
-  font-size: 11.5px;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid rgba(109, 40, 217, 0.25);
+  font-size: 12px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 6px 14px;
+  border-radius: 9999px;
   margin-bottom: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.cover-letter-title {
-  font-size: 22px;
+  letter-spacing: 0.03em;
   font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 8px;
 }
 
-.cover-letter-subtitle {
-  font-size: 14.5px;
-  color: var(--text-medium);
-  line-height: 1.6;
-  max-width: 760px;
+.cover-letter-card {
+  border: 1.5px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border-radius: var(--border-radius-md);
+  padding: 36px 32px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
+  position: relative;
+  overflow: hidden;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cover-letter-card:hover {
+  border-color: rgba(99, 102, 241, 0.55);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
 }
 
 .cover-letter-input-container {
@@ -2015,6 +2041,7 @@ footer {
   color: var(--text-dark);
   resize: vertical;
   outline: none;
+  box-sizing: border-box;
   transition: var(--transition-smooth);
 }
 
@@ -2063,7 +2090,7 @@ footer {
 }
 
 .cover-letter-price {
-  font-size: 24px;
+  font-size: 26px;
   font-family: var(--font-display);
   font-weight: 800;
   color: #4f46e5;
@@ -2089,26 +2116,27 @@ footer {
   border-radius: var(--border-radius-sm);
   transition: all 0.2s ease;
   margin-top: 0;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
 }
 
 .cover-letter-btn:hover {
   background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.42);
   transform: translateY(-1px);
 }
 
 .cover-letter-output-box {
   margin-top: 24px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1.5px solid rgba(99, 102, 241, 0.3);
   border-radius: var(--border-radius-sm);
   background: #ffffff;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
 }
 
 .cover-letter-output-header {
-  background: #f0fdf4;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  background: #faf8ff;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
   padding: 14px 20px;
   display: flex;
   align-items: center;
@@ -2121,7 +2149,7 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #065f46;
+  color: #4f46e5;
   font-weight: 700;
   font-size: 14px;
   font-family: var(--font-display);
@@ -2140,7 +2168,7 @@ footer {
   line-height: 1.7;
   color: var(--text-dark);
   white-space: pre-wrap;
-  background: #fafafa;
+  background: #fdfcff;
   max-height: 480px;
   overflow-y: auto;
 }
@@ -2152,8 +2180,10 @@ footer {
 }
 
 @media (max-width: 768px) {
-  .cover-letter-card {
-    padding: 20px;
+  .cover-letter-card,
+  .plan-card.expert-featured-card,
+  .blurred-doc-card {
+    padding: 24px 20px;
   }
   .cover-letter-cta-box {
     flex-direction: column;
