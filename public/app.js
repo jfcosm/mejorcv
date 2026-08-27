@@ -867,16 +867,23 @@ document.addEventListener('DOMContentLoaded', () => {
       currentTier = tier;
 
       const isExpert = tier === 'expert';
+      const isCoverLetter = tier === 'cover_letter';
       const serviceName = isExpert
         ? (currentLanguage === 'en' ? 'Human Expert Mentoring & CV Optimization' : 'Asesoría y Optimización con Experto Humano')
+        : isCoverLetter
+        ? (currentLanguage === 'en' ? 'Custom Tailored Cover Letter' : 'Carta de Presentación Personalizada')
         : (currentLanguage === 'en' ? 'Instant AI CV Optimization' : 'Optimización Instantánea con IA');
       
       const priceUsd = isExpert
         ? (appConfig.priceExpert || 25).toFixed(2)
+        : isCoverLetter
+        ? (appConfig.priceCoverLetter || 2).toFixed(2)
         : (appConfig.priceAi || 1).toFixed(2);
       
       const priceClp = isExpert
         ? (appConfig.priceExpertClp || 25000)
+        : isCoverLetter
+        ? (appConfig.priceCoverLetterClp || 2000)
         : (appConfig.priceAiClp || 1000);
 
       checkoutTitle.textContent = currentLanguage === 'en' ? `Confirmed: ${serviceName}` : `Confirmado: ${serviceName}`;
@@ -1699,6 +1706,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const priceClp = currentTier === 'ai'
       ? (appConfig.priceAiClp || 1000)
+      : currentTier === 'cover_letter'
+      ? (appConfig.priceCoverLetterClp || 2000)
       : (appConfig.priceExpertClp || 25000);
     if (checkoutTotalClp) {
       checkoutTotalClp.textContent = `(~ $${priceClp.toLocaleString('es-CL')} CLP)`;
