@@ -182,7 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
       step2Title: "2. Obtén un Diagnóstico Honesto",
       step2Desc: "Descubre qué puntaje obtienes frente a los algoritmos ATS y lee consejos detallados para corregir errores invisibles.",
       step3Title: "3. Optimiza y Destaca",
-      step3Desc: "Elige mejorar tu redacción con nuestra Inteligencia Artificial o solicita la ayuda personalizada de un experto humano."
+      step3Desc: "Elige mejorar tu redacción con nuestra Inteligencia Artificial o solicita la ayuda personalizada de un experto humano.",
+      faqTitle: "Preguntas Frecuentes",
+      faqSubtitle: "Todo lo que necesitas saber antes de analizar u optimizar tu currículum.",
+      faqQ1: "¿Quién desarrolló Cintia.pro?",
+      faqA1: "Cintia.pro fue desarrollada por el estudio de software chileno <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">MelodIA Lab</a>, ubicado en La Serena, Chile, y liderado por su fundador <a href=\"https://www.franciscocarle.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">Francisco Carle</a>. Es un joven estudio de desarrollo de software, que también genera soluciones audiovisuales y musicales con tecnología de última generación junto con técnicas artesanales tradicionales. MelodIA Lab es una Sociedad por Acciones con domicilio legal en La Serena, Chile y cuyo RUT es 78.343.801-1. Nuestros clientes son empresas, instituciones y personas particulares.",
+      faqQ2: "¿Qué es un filtro ATS y por qué mi currículum podría estar siendo descartado?",
+      faqA2: "Los <em>Applicant Tracking Systems</em> (ATS) son sistemas automatizados que empresas y reclutadores utilizan para escanear y filtrar currículums antes de que un evaluador humano los revise. Si tu CV carece de las palabras clave adecuadas, tiene estructuras confusas o elementos gráficos incompatibles, el algoritmo lo descarta de forma automática. Cintia analiza tu documento bajo estos mismos estándares para garantizar que superes ese primer filtro invisible.",
+      faqQ3: "¿El diagnóstico inicial es realmente 100% gratuito?",
+      faqA3: "<strong>Sí, totalmente.</strong> Puedes subir tu archivo y obtener en segundos tu calificación en estrellas, el gráfico de balance de competencias en 7 ejes y la explicación detallada de fortalezas y aspectos a corregir, sin ingresar tarjetas de crédito ni pagar nada.",
+      faqQ4: "¿Qué diferencia hay entre la Optimización con IA ($1 USD) y la Asesoría con Experto ($25 USD)?",
+      faqA4: "La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto/markdown. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.",
+      faqQ5: "¿Qué tan seguros están mis datos personales y mi documento?",
+      faqA5: "En Cintia.pro nos tomamos la privacidad muy en serio. Tu archivo se procesa de forma temporal y encriptada únicamente para generar tu análisis y optimización. No compartimos, vendemos ni distribuimos tu información personal con terceros.",
+      faqQ6: "¿En qué formatos e idiomas puedo subir mi currículum?",
+      faqA6: "Aceptamos archivos en formatos <strong>.pdf, .docx, .odt y .txt</strong> con un tamaño máximo de 5 MB. Además, la plataforma y el motor de evaluación son 100% compatibles tanto con currículums en <strong>Español</strong> como en <strong>Inglés</strong>.",
+      faqQ7: "¿Qué métodos de pago aceptan para los servicios de pago?",
+      faqA7: "Aceptamos pagos seguros mediante <strong>Mercado Pago</strong> (tarjetas de crédito, débito y transferencias en pesos chilenos) y <strong>PayPal</strong> para pagos internacionales con tarjeta de crédito o débito en dólares (USD)."
     },
     en: {
       navHome: "Home",
@@ -260,7 +276,23 @@ document.addEventListener('DOMContentLoaded', () => {
       step2Title: "2. Get an Honest Diagnostic",
       step2Desc: "Receive a transparent rating and detailed recommendations matching ATS algorithms and recruiter standards.",
       step3Title: "3. Optimize & Stand Out",
-      step3Desc: "Upgrade your resume instantly using AI or request manual assistance from a human expert. Make your talent visible!"
+      step3Desc: "Upgrade your resume instantly using AI or request manual assistance from a human expert. Make your talent visible!",
+      faqTitle: "Frequently Asked Questions",
+      faqSubtitle: "Everything you need to know before analyzing or optimizing your resume.",
+      faqQ1: "Who developed Cintia.pro?",
+      faqA1: "Cintia.pro was developed by the Chilean software studio <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">MelodIA Lab</a>, based in La Serena, Chile, and led by its founder <a href=\"https://www.franciscocarle.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">Francisco Carle</a>. It is a modern software studio that also creates audiovisual and musical solutions utilizing cutting-edge technologies paired with traditional craft techniques. MelodIA Lab is a corporation (SpA) legally registered in La Serena, Chile (Tax ID: 78.343.801-1). Our clients include companies, institutions, and individuals worldwide.",
+      faqQ2: "What is an ATS filter and why might my resume be filtered out?",
+      faqA2: "<em>Applicant Tracking Systems</em> (ATS) are automated screening tools that recruiters use to scan and filter resumes before human review. If your resume lacks required keywords or uses unreadable formatting, it gets rejected automatically. Cintia benchmarks your document against these exact standards so you pass the screen.",
+      faqQ3: "Is the initial resume evaluation truly 100% free?",
+      faqA3: "<strong>Yes, absolutely.</strong> You can upload your resume and instantly receive your star rating, 7-axis competency radar chart, and detailed strengths and improvement areas without entering credit card details or paying anything.",
+      faqQ4: "What is the difference between AI Optimization ($1 USD) and Expert Mentoring ($25 USD)?",
+      faqA4: "<strong>AI Optimization ($1 USD)</strong> delivers an instant rewrite powered by Cintia with ATS keyword injection, quantifiable achievements, and recruiter-ready layout downloadable in text/markdown. <strong>1-on-1 Expert Mentoring ($25 USD)</strong> is a comprehensive 1.5-hour session with an HR and recruitment senior specialist, interview prep, and delivery of your finalized resume in PDF and editable Word formats.",
+      faqQ5: "How secure is my personal data and uploaded document?",
+      faqA5: "We treat your privacy with highest confidentiality. Your file is processed temporarily in an encrypted environment solely to generate your analysis. We never sell, share, or distribute your personal information to third parties.",
+      faqQ6: "What file formats and languages are supported?",
+      faqA6: "We accept <strong>.pdf, .docx, .odt, and .txt</strong> files up to 5 MB in size. Our evaluation engine fully supports resumes written in both <strong>Spanish</strong> and <strong>English</strong>.",
+      faqQ7: "Which payment methods are accepted for upgrades?",
+      faqA7: "We securely process payments via <strong>Mercado Pago</strong> (credit/debit cards and bank transfers in Chilean Pesos) and <strong>PayPal</strong> for global debit and credit card payments in US Dollars (USD)."
     }
   };
 
@@ -439,6 +471,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.querySelector('#successPaymentView h3').textContent = t.modalSuccessTitle;
     
+    // FAQ Dynamic Translations
+    const faqTitleEl = document.getElementById('faqTitle');
+    if (faqTitleEl) faqTitleEl.textContent = t.faqTitle;
+    const faqSubtitleEl = document.getElementById('faqSubtitle');
+    if (faqSubtitleEl) faqSubtitleEl.textContent = t.faqSubtitle;
+
+    for (let i = 1; i <= 7; i++) {
+      const qEl = document.getElementById(`faqQ${i}`);
+      const aEl = document.getElementById(`faqA${i}`);
+      if (qEl && t[`faqQ${i}`]) qEl.textContent = t[`faqQ${i}`];
+      if (aEl && t[`faqA${i}`]) aEl.innerHTML = t[`faqA${i}`];
+    }
+
     // Footer
     document.getElementById('footerCopyright').innerHTML = t.footerCopyright;
     document.getElementById('footerCredits').innerHTML = t.footerCredits;
@@ -446,6 +491,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply configuration UI overrides
     applyConfigToUi();
   }
+
+  // Accordion Logic for FAQ
+  function initFaqAccordion() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      const questionBtn = item.querySelector('.faq-question');
+      const answer = item.querySelector('.faq-answer');
+      if (questionBtn && answer) {
+        questionBtn.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          // Close other open items
+          faqItems.forEach(otherItem => {
+            if (otherItem !== item && otherItem.classList.contains('active')) {
+              otherItem.classList.remove('active');
+              const btn = otherItem.querySelector('.faq-question');
+              const ans = otherItem.querySelector('.faq-answer');
+              if (btn) btn.setAttribute('aria-expanded', 'false');
+              if (ans) ans.style.maxHeight = null;
+            }
+          });
+
+          // Toggle current
+          if (isActive) {
+            item.classList.remove('active');
+            questionBtn.setAttribute('aria-expanded', 'false');
+            answer.style.maxHeight = null;
+          } else {
+            item.classList.add('active');
+            questionBtn.setAttribute('aria-expanded', 'true');
+            answer.style.maxHeight = `${answer.scrollHeight + 30}px`;
+          }
+        });
+      }
+    });
+  }
+
+  initFaqAccordion();
 
   // Fetch Public Config Parameters on Load
   // Also dynamically loads the PayPal JS SDK with the correct client-id
