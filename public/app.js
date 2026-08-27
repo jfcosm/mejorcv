@@ -1172,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadWrapper.style.display = 'none';
     loadingWrapper.style.display = 'flex';
     resultsSection.style.display = 'none';
-    optimizedOutputContainer.style.display = 'none';
+    if (optimizedOutputContainer) optimizedOutputContainer.style.display = 'none';
 
     // Hide language selector during analysis/results phase
     const langContainer = document.querySelector('.lang-selector-container');
