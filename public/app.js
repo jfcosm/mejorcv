@@ -338,24 +338,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyLanguage(lang) {
     currentLanguage = lang;
-    const t = translations[lang];
+    const t = translations[lang] || translations.es;
     
     // Update labels
-    document.getElementById('navHome').textContent = t.navHome;
+    const navHomeEl = document.getElementById('navHome');
+    if (navHomeEl) navHomeEl.textContent = t.navHome;
     const navAdminEl = document.getElementById('navAdmin');
     if (navAdminEl) navAdminEl.textContent = t.navAdmin;
     
-    document.querySelector('.hero h1').innerHTML = t.heroTitle;
-    document.querySelector('.hero p').textContent = t.heroDesc;
+    const heroH1 = document.querySelector('.hero h1');
+    if (heroH1) heroH1.innerHTML = t.heroTitle;
+    const heroP = document.querySelector('.hero p');
+    if (heroP) heroP.textContent = t.heroDesc;
     
-    document.querySelector('.upload-title').textContent = t.uploadTitle;
-    document.querySelector('.upload-hint').textContent = t.uploadHint;
+    const uploadTitleEl = document.querySelector('.upload-title');
+    if (uploadTitleEl) uploadTitleEl.textContent = t.uploadTitle;
+    const uploadHintEl = document.querySelector('.upload-hint');
+    if (uploadHintEl) uploadHintEl.textContent = t.uploadHint;
     
     updateBulletinSlide();
     
-    document.querySelector('.captcha-label').textContent = t.captchaLabel;
-    document.getElementById('captchaInput').placeholder = t.captchaPlaceholder;
-    document.getElementById('refreshCaptchaBtn').textContent = t.captchaRefresh;
+    const captchaLabelEl = document.querySelector('.captcha-label');
+    if (captchaLabelEl) captchaLabelEl.textContent = t.captchaLabel;
+    const captchaInputEl = document.getElementById('captchaInput');
+    if (captchaInputEl) captchaInputEl.placeholder = t.captchaPlaceholder;
+    const refreshCaptchaBtnEl = document.getElementById('refreshCaptchaBtn');
+    if (refreshCaptchaBtnEl) refreshCaptchaBtnEl.textContent = t.captchaRefresh;
     
     const consentTextEl = document.getElementById('consentText');
     if (consentTextEl) consentTextEl.textContent = t.consentText;
@@ -363,15 +371,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const termsConsentTextEl = document.getElementById('termsConsentText');
     if (termsConsentTextEl) termsConsentTextEl.innerHTML = t.termsConsentText;
     
-    document.getElementById('submitBtn').textContent = t.submitBtn;
+    const submitBtnEl = document.getElementById('submitBtn');
+    if (submitBtnEl) submitBtnEl.textContent = t.submitBtn;
     
-    document.getElementById('loadingStatus').textContent = t.loadingStatus;
-    document.getElementById('step0').textContent = t.step0;
-    document.getElementById('step1').textContent = t.step1;
-    document.getElementById('step2').textContent = t.step2;
-    document.getElementById('step3').textContent = t.step3;
-    document.getElementById('step4').textContent = t.step4;
-    document.getElementById('step5').textContent = t.step5;
+    const loadingStatusEl = document.getElementById('loadingStatus');
+    if (loadingStatusEl) loadingStatusEl.textContent = t.loadingStatus;
+    const step0El = document.getElementById('step0');
+    if (step0El) step0El.textContent = t.step0;
+    const step1El = document.getElementById('step1');
+    if (step1El) step1El.textContent = t.step1;
+    const step2El = document.getElementById('step2');
+    if (step2El) step2El.textContent = t.step2;
+    const step3El = document.getElementById('step3');
+    if (step3El) step3El.textContent = t.step3;
+    const step4El = document.getElementById('step4');
+    if (step4El) step4El.textContent = t.step4;
+    const step5El = document.getElementById('step5');
+    if (step5El) step5El.textContent = t.step5;
     
     const resultsTitleEl = document.querySelector('#resultsSection .results-header h2');
     if (resultsTitleEl) resultsTitleEl.textContent = t.resultsTitle;
@@ -397,7 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const kpiFixesLabelEl = document.getElementById('kpiFixesLabel');
     if (kpiFixesLabelEl) kpiFixesLabelEl.textContent = t.kpiFixesLabel;
 
-    document.querySelector('.detailed-explanation h3').textContent = t.critiqueExplanationTitle;
+    const detExp = document.querySelector('.detailed-explanation h3');
+    if (detExp) detExp.textContent = t.critiqueExplanationTitle;
     
     // Blurred Preview Dynamic Text
     const previewPillTextEl = document.getElementById('previewPillText');
@@ -426,8 +443,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderEvaluation(lastEvaluationData);
     }
     
-    document.querySelector('.pricing-title').textContent = t.pricingTitle;
-    document.querySelector('.pricing-subtitle').textContent = t.pricingSubtitle;
+    const pTitle = document.getElementById('pricingTitle') || document.querySelector('.pricing-title');
+    if (pTitle) pTitle.textContent = t.pricingTitle;
+    const pSub = document.getElementById('pricingSubtitle') || document.querySelector('.pricing-subtitle');
+    if (pSub) pSub.textContent = t.pricingSubtitle;
     
     // How it Works Section dynamic translations
     const howItWorksTitleEl = document.getElementById('howItWorksTitle');
@@ -448,7 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Expert Plan Card
     const expertCard = document.getElementById('expertPlanCard');
     if (expertCard) {
-      expertCard.querySelector('.plan-name').textContent = t.expertPlanName;
+      const planNameEl = expertCard.querySelector('.plan-name');
+      if (planNameEl) planNameEl.textContent = t.expertPlanName;
       const priceSpan = expertCard.querySelector('.plan-price span');
       if (priceSpan) priceSpan.textContent = t.expertPlanPriceUnit;
       
@@ -476,28 +496,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Output Panel
-    document.querySelector('.optimized-title').textContent = t.optimizedTitle;
+    const optTitle = document.querySelector('.optimized-title');
+    if (optTitle) optTitle.textContent = t.optimizedTitle;
     
-    document.getElementById('copyCvBtn').innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-      </svg> ${t.copyBtn}`;
+    const copyCvBtn = document.getElementById('copyCvBtn');
+    if (copyCvBtn) {
+      copyCvBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg> ${t.copyBtn}`;
+    }
       
-    document.getElementById('downloadCvBtn').innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="7 10 12 15 17 10"></polyline>
-        <line x1="12" y1="15" x2="12" y2="3"></line>
-      </svg> ${t.downloadBtn}`;
+    const downloadCvBtn = document.getElementById('downloadCvBtn');
+    if (downloadCvBtn) {
+      downloadCvBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg> ${t.downloadBtn}`;
+    }
     
     // Modal
-    document.getElementById('checkoutTitle').textContent = t.modalTitle;
+    const checkoutTitleEl = document.getElementById('checkoutTitle');
+    if (checkoutTitleEl) checkoutTitleEl.textContent = t.modalTitle;
     const checkoutRows = document.querySelectorAll('.checkout-row');
     if (checkoutRows.length > 1) {
-      checkoutRows[checkoutRows.length - 1].querySelectorAll('span')[0].textContent = t.modalTotal;
+      const spanTotal = checkoutRows[checkoutRows.length - 1].querySelectorAll('span')[0];
+      if (spanTotal) spanTotal.textContent = t.modalTotal;
     }
-    document.querySelector('#successPaymentView h3').textContent = t.modalSuccessTitle;
+    const successPaymentH3 = document.querySelector('#successPaymentView h3');
+    if (successPaymentH3) successPaymentH3.textContent = t.modalSuccessTitle;
     
     // FAQ Dynamic Translations
     const faqTitleEl = document.getElementById('faqTitle');
@@ -541,8 +571,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (expBadge) expBadge.textContent = t.expertBadgeText;
 
     // Footer
-    document.getElementById('footerCopyright').innerHTML = t.footerCopyright;
-    document.getElementById('footerCredits').innerHTML = t.footerCredits;
+    const footerCopyrightEl = document.getElementById('footerCopyright');
+    if (footerCopyrightEl) footerCopyrightEl.innerHTML = t.footerCopyright;
+    const footerCreditsEl = document.getElementById('footerCredits');
+    if (footerCreditsEl) footerCreditsEl.innerHTML = t.footerCredits;
 
     // Apply configuration UI overrides
     applyConfigToUi();
