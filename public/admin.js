@@ -86,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const setPriceCoverLetterClp = document.getElementById('setPriceCoverLetterClp');
   const setPriceHeadshotsClp = document.getElementById('setPriceHeadshotsClp');
   const setPriceExpertClp = document.getElementById('setPriceExpertClp');
+  const setHeadshotsPackSize = document.getElementById('setHeadshotsPackSize');
+  const setHeadshotsResolution = document.getElementById('setHeadshotsResolution');
+  const setHeadshotCatCorp = document.getElementById('setHeadshotCatCorp');
+  const setHeadshotCatCasual = document.getElementById('setHeadshotCatCasual');
+  const setHeadshotCatTech = document.getElementById('setHeadshotCatTech');
+  const setHeadshotCatEdit = document.getElementById('setHeadshotCatEdit');
+  const setHeadshotsPrompt = document.getElementById('setHeadshotsPrompt');
   const setRateLimit = document.getElementById('setRateLimit');
   const setAdminPassword = null;
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
@@ -1181,6 +1188,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (setPriceCoverLetterClp) setPriceCoverLetterClp.value = settings.priceCoverLetterClp !== undefined ? settings.priceCoverLetterClp : 2000;
       if (setPriceHeadshotsClp) setPriceHeadshotsClp.value = settings.priceHeadshotsClp !== undefined ? settings.priceHeadshotsClp : 5000;
       if (setPriceExpertClp) setPriceExpertClp.value = settings.priceExpertClp !== undefined ? settings.priceExpertClp : 25000;
+      if (setHeadshotsPackSize) setHeadshotsPackSize.value = settings.headshotsPackSize !== undefined ? settings.headshotsPackSize : 20;
+      if (setHeadshotsResolution) setHeadshotsResolution.value = settings.headshotsResolution || '1:1 (480x480)';
+      if (setHeadshotCatCorp) setHeadshotCatCorp.checked = settings.headshotsCatCorp !== false;
+      if (setHeadshotCatCasual) setHeadshotCatCasual.checked = settings.headshotsCatCasual !== false;
+      if (setHeadshotCatTech) setHeadshotCatTech.checked = settings.headshotsCatTech !== false;
+      if (setHeadshotCatEdit) setHeadshotCatEdit.checked = settings.headshotsCatEdit !== false;
+      if (setHeadshotsPrompt) setHeadshotsPrompt.value = settings.headshotsPrompt || '';
       setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
       if (setOptCoverLetterEnabled) setOptCoverLetterEnabled.checked = settings.optCoverLetterEnabled !== false;
@@ -1220,6 +1234,13 @@ document.addEventListener('DOMContentLoaded', () => {
       priceCoverLetterClp: setPriceCoverLetterClp ? parseInt(setPriceCoverLetterClp.value, 10) : 2000,
       priceHeadshotsClp: setPriceHeadshotsClp ? parseInt(setPriceHeadshotsClp.value, 10) : 5000,
       priceExpertClp: setPriceExpertClp ? parseInt(setPriceExpertClp.value, 10) : 25000,
+      headshotsPackSize: setHeadshotsPackSize ? parseInt(setHeadshotsPackSize.value, 10) : 20,
+      headshotsResolution: setHeadshotsResolution ? setHeadshotsResolution.value : '1:1 (480x480)',
+      headshotsCatCorp: setHeadshotCatCorp ? setHeadshotCatCorp.checked : true,
+      headshotsCatCasual: setHeadshotCatCasual ? setHeadshotCatCasual.checked : true,
+      headshotsCatTech: setHeadshotCatTech ? setHeadshotCatTech.checked : true,
+      headshotsCatEdit: setHeadshotCatEdit ? setHeadshotCatEdit.checked : true,
+      headshotsPrompt: setHeadshotsPrompt ? setHeadshotsPrompt.value : '',
       rateLimitPerHour: parseInt(setRateLimit.value, 10),
       optAiEnabled: setOptAiEnabled.checked,
       optCoverLetterEnabled: setOptCoverLetterEnabled ? setOptCoverLetterEnabled.checked : true,

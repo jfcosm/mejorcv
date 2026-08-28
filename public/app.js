@@ -2091,6 +2091,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentTier === 'ai') {
           unlockOptimizedCv(result.optimizedText || optimizedContentText);
+        } else if (currentTier === 'headshots') {
+          await generateAndDisplayHeadshots(result.headshots);
         } else if (currentTier === 'cover_letter') {
           if (coverLetterContentText && result.coverLetterText) {
             coverLetterContentText.textContent = cleanMarkdownToPlainText(result.coverLetterText);

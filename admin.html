@@ -886,6 +886,72 @@
             </div>
           </div>
 
+          <!-- Headshots Detailed Configuration Card -->
+          <div class="card" style="border: 1.5px solid rgba(14, 165, 233, 0.35); background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%); padding: 20px; border-radius: var(--border-radius-sm); margin: 20px 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid rgba(14, 165, 233, 0.2); padding-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 22px;">📸</span>
+                <div>
+                  <h4 style="margin: 0; font-size: 15px; color: #0369a1;">Configuración Detallada: Pack de Fotos de Estudio (Headshots IA)</h4>
+                  <p style="margin: 2px 0 0 0; font-size: 11.5px; color: var(--text-medium);">Parámetros de entrega, número de fotos, categorías de estudio, iluminación 85mm y prompts del sistema.</p>
+                </div>
+              </div>
+              <div class="checkbox-group" style="margin: 0;">
+                <input type="checkbox" id="setOptHeadshotsEnabled">
+                <label for="setOptHeadshotsEnabled" style="font-weight: 700; color: #0284c7;">Habilitar Módulo Headshots</label>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="setPriceHeadshots">Precio USD</label>
+                <input type="number" step="0.01" id="setPriceHeadshots" class="form-control" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="setPriceHeadshotsClp">Precio CLP (Mercado Pago)</label>
+                <input type="number" step="100" id="setPriceHeadshotsClp" class="form-control" placeholder="5000" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="setHeadshotsPackSize">Fotos por Pack Entregado</label>
+                <input type="number" id="setHeadshotsPackSize" class="form-control" min="1" max="50" value="20" placeholder="20" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="setHeadshotsResolution">Resolución y Óptica</label>
+                <select id="setHeadshotsResolution" class="form-control">
+                  <option value="1:1 (480x480)">1:1 Cuadrado (480x480 - Avatar LinkedIn / CV)</option>
+                  <option value="1:1 (1024x1024)">1:1 Alta Definición (1024x1024 HD)</option>
+                  <option value="4:5 (800x1000)">4:5 Retrato Vertical Editorial</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; background: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid rgba(14, 165, 233, 0.25);">
+              <div style="font-size: 12px; font-weight: 700; color: #0f172a; grid-column: 1 / -1;">Categorías de Estilo Incluidas en los Retratos:</div>
+              <div class="checkbox-group" style="margin: 0;">
+                <input type="checkbox" id="setHeadshotCatCorp" checked>
+                <label for="setHeadshotCatCorp" style="font-size: 12px;">👔 Corporativo & Liderazgo</label>
+              </div>
+              <div class="checkbox-group" style="margin: 0;">
+                <input type="checkbox" id="setHeadshotCatCasual" checked>
+                <label for="setHeadshotCatCasual" style="font-size: 12px;">👕 Smart Casual & Oxford</label>
+              </div>
+              <div class="checkbox-group" style="margin: 0;">
+                <input type="checkbox" id="setHeadshotCatTech" checked>
+                <label for="setHeadshotCatTech" style="font-size: 12px;">🚀 Tech & Coworking</label>
+              </div>
+              <div class="checkbox-group" style="margin: 0;">
+                <input type="checkbox" id="setHeadshotCatEdit" checked>
+                <label for="setHeadshotCatEdit" style="font-size: 12px;">🎨 Editorial & Monocromo</label>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="setHeadshotsPrompt">Prompt del Sistema / Directrices de Estudio para Headshots</label>
+              <textarea id="setHeadshotsPrompt" class="form-control" style="min-height: 80px;"></textarea>
+              <small style="color: var(--text-light); font-size: 11px;">Define las instrucciones ópticas (85mm f/1.4, iluminación 3 puntos, bokeh de fondo, vestimentas) aplicadas a cada sesión.</small>
+            </div>
+          </div>
+
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptAiEnabled">
@@ -894,10 +960,6 @@
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptCoverLetterEnabled">
               <label for="setOptCoverLetterEnabled">Habilitar Carta de Presentación</label>
-            </div>
-            <div class="checkbox-group" style="margin-bottom: 0;">
-              <input type="checkbox" id="setOptHeadshotsEnabled">
-              <label for="setOptHeadshotsEnabled">Habilitar Pack 20 Fotos</label>
             </div>
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptExpertEnabled">
