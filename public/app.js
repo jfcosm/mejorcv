@@ -240,7 +240,20 @@ document.addEventListener('DOMContentLoaded', () => {
       copyCoverLetterBtnText: "Copiar Carta",
       downloadCoverLetterBtnText: "Descargar .txt",
       coverLetterEmptyWarning: "Por favor, pega el texto de la oferta laboral antes de generar tu carta (mínimo 20 caracteres).",
-      coverLetterLoadingStatus: "Cintia está redactando tu Carta de Presentación personalizada..."
+      coverLetterLoadingStatus: "Cintia está redactando tu Carta de Presentación personalizada...",
+      headshotsBadgeText: "NUEVO SERVICIO",
+      headshotsTitle: "Pack de 20 Fotos de Estudio con IA para LinkedIn y CV",
+      headshotsSubtitle: "Sube 1 foto nítida de tu rostro. Cintia analizará tu sector profesional y generará 20 retratos de estudio fotográfico en alta definición con iluminación profesional y vestimenta ejecutiva.",
+      photoDropzoneTitle: "Arrastra tu foto aquí o haz clic para seleccionarla",
+      photoDropzoneSubtitle: "Sube 1 foto selfie o retrato nítido (JPG o PNG, máx 5MB). Consejos: Buena luz frontal, rostro despejado y mirando a la cámara.",
+      headshotsPricePeriod: "/ $5.000 CLP · 20 Retratos HD",
+      generateHeadshotsBtnText: "Generar Pack 20 Fotos de Estudio ($5 USD)",
+      headshotsSuccessPillText: "¡Tus 20 Fotos de Estudio Están Listas!",
+      downloadAllZipBtnText: "Descargar Todas (.ZIP)",
+      headshotsEmptyPhotoWarning: "Por favor, sube una foto de tu rostro antes de generar tus fotos de estudio.",
+      headshotsLoadingStatus: "Cintia está creando tus 20 retratos de estudio en alta resolución...",
+      faqQ10: "¿Cómo funciona el Pack de 20 Fotos de Estudio con IA para LinkedIn y CV?",
+      faqA10: "Subes una foto nítida de tu rostro (selfie o retrato). Cintia analiza tu perfil profesional e industria y genera <strong>20 retratos fotográficos de calidad de estudio profesional (óptica 85mm f/1.4)</strong>, combinando vestimentas ejecutivas, iluminación de tres puntos y fondos corporativos modernos. Puedes descargar cada retrato individualmente o descargar el pack completo en un archivo <strong>.ZIP</strong> listo para subir a LinkedIn, tu currículum o conferencias."
     },
     en: {
       navHome: "Home",
@@ -587,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const faqSubtitleEl = document.getElementById('faqSubtitle');
     if (faqSubtitleEl) faqSubtitleEl.textContent = t.faqSubtitle;
 
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 10; i++) {
       const qEl = document.getElementById(`faqQ${i}`);
       const aEl = document.getElementById(`faqA${i}`);
       if (qEl && t[`faqQ${i}`]) qEl.textContent = t[`faqQ${i}`];
@@ -617,6 +630,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clCopyBtn) clCopyBtn.textContent = t.copyCoverLetterBtnText;
     const clDownloadBtn = document.getElementById('downloadCoverLetterBtnText');
     if (clDownloadBtn) clDownloadBtn.textContent = t.downloadCoverLetterBtnText;
+
+    // Headshots Section Translations
+    const hsBadge = document.getElementById('headshotsBadgeText');
+    if (hsBadge) hsBadge.textContent = t.headshotsBadgeText;
+    const hsTitle = document.getElementById('headshotsTitle');
+    if (hsTitle) hsTitle.textContent = t.headshotsTitle;
+    const hsSub = document.getElementById('headshotsSubtitle');
+    if (hsSub) hsSub.textContent = t.headshotsSubtitle;
+    const photoTitle = document.getElementById('photoDropzoneTitle');
+    if (photoTitle) photoTitle.textContent = t.photoDropzoneTitle;
+    const photoSub = document.getElementById('photoDropzoneSubtitle');
+    if (photoSub) photoSub.textContent = t.photoDropzoneSubtitle;
+    const hsPeriod = document.getElementById('headshotsPricePeriod');
+    if (hsPeriod) hsPeriod.textContent = t.headshotsPricePeriod;
+    const hsBtnText = document.getElementById('generateHeadshotsBtnText');
+    if (hsBtnText) hsBtnText.textContent = t.generateHeadshotsBtnText;
+    const hsSuccessPill = document.getElementById('headshotsSuccessPillText');
+    if (hsSuccessPill) hsSuccessPill.textContent = t.headshotsSuccessPillText;
+    const hsZipBtn = document.getElementById('downloadAllZipBtnText');
+    if (hsZipBtn) hsZipBtn.textContent = t.downloadAllZipBtnText;
 
     // Expert Badge
     const expBadge = document.getElementById('expertBadgeText');
@@ -760,6 +793,29 @@ document.addEventListener('DOMContentLoaded', () => {
       generateCoverLetterBtnText.textContent = currentLanguage === 'en'
         ? `Generate Cover Letter ($${appConfig.priceCoverLetter || 2} USD)`
         : `Generar Carta de Presentación ($${appConfig.priceCoverLetter || 2} USD)`;
+    }
+
+    // 4. Apply Headshots pricing & visibility
+    const headshotsSection = document.getElementById('headshotsSection');
+    const headshotsPriceDisplay = document.getElementById('headshotsPriceDisplay');
+    const headshotsPricePeriod = document.getElementById('headshotsPricePeriod');
+    const generateHeadshotsBtnText = document.getElementById('generateHeadshotsBtnText');
+
+    if (headshotsSection) {
+      headshotsSection.style.display = appConfig.optHeadshotsEnabled !== false ? 'block' : 'none';
+    }
+    if (headshotsPriceDisplay) {
+      headshotsPriceDisplay.textContent = `$${appConfig.priceHeadshots || 5} USD`;
+    }
+    if (headshotsPricePeriod) {
+      headshotsPricePeriod.textContent = currentLanguage === 'en'
+        ? `/ $${(appConfig.priceHeadshots || 5).toFixed(2)} USD · 20 HD Portraits`
+        : `/ $${(appConfig.priceHeadshotsClp || 5000).toLocaleString('es-CL')} CLP · 20 Retratos HD`;
+    }
+    if (generateHeadshotsBtnText) {
+      generateHeadshotsBtnText.textContent = currentLanguage === 'en'
+        ? `Generate 20 Studio Headshots ($${appConfig.priceHeadshots || 5} USD)`
+        : `Generar Pack 20 Fotos de Estudio ($${appConfig.priceHeadshots || 5} USD)`;
     }
 
     // 4. Update & start live rotating bulletin news ticker
@@ -955,6 +1011,28 @@ document.addEventListener('DOMContentLoaded', () => {
           await new Promise(r => setTimeout(r, 1500));
           checkoutModal.close();
           unlockOptimizedCv(result?.optimizedText || '');
+        } else if (tier === 'headshots') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Studio Headshots Unlocked!' : '✅ ¡Fotos de Estudio Desbloqueadas!';
+          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Generating your 20 studio portraits...' : 'Generando tus 20 retratos de estudio...';
+          await new Promise(r => setTimeout(r, 1500));
+          checkoutModal.close();
+          await generateAndDisplayHeadshots(result?.headshots);
+        } else if (tier === 'cover_letter') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Cover Letter Unlocked!' : '✅ ¡Carta de Presentación Desbloqueada!';
+          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Generating your tailored cover letter...' : 'Generando tu carta de presentación personalizada...';
+          await new Promise(r => setTimeout(r, 1500));
+          checkoutModal.close();
+          if (coverLetterContentText && result?.coverLetterText) {
+            coverLetterContentText.textContent = cleanMarkdownToPlainText(result.coverLetterText);
+          } else {
+            await generateAndDisplayCoverLetter();
+          }
+          if (coverLetterOutputBox) {
+            coverLetterOutputBox.style.display = 'block';
+            coverLetterOutputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          const ctaBox = document.getElementById('coverLetterCtaBox');
+          if (ctaBox) ctaBox.style.display = 'none';
         } else {
           successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Expert Session Confirmed!' : '✅ ¡Sesión con Experto Confirmada!';
           successPaymentMessage.textContent = currentLanguage === 'en'
@@ -1708,6 +1786,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ? (appConfig.priceAiClp || 1000)
       : currentTier === 'cover_letter'
       ? (appConfig.priceCoverLetterClp || 2000)
+      : currentTier === 'headshots'
+      ? (appConfig.priceHeadshotsClp || 5000)
       : (appConfig.priceExpertClp || 25000);
     if (checkoutTotalClp) {
       checkoutTotalClp.textContent = `(~ $${priceClp.toLocaleString('es-CL')} CLP)`;
@@ -1885,6 +1965,15 @@ document.addEventListener('DOMContentLoaded', () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
             checkoutModal.close();
             unlockOptimizedCv(result.optimizedText || optimizedContentText);
+
+          } else if (currentTier === 'headshots') {
+            successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Studio Headshots Unlocked!' : '✅ ¡Fotos de Estudio Desbloqueadas!';
+            successPaymentMessage.textContent = currentLanguage === 'en'
+              ? 'Cintia is generating your 20 studio portraits...'
+              : 'Cintia está creando tus 20 retratos fotográficos de estudio...';
+            
+            await generateAndDisplayHeadshots(result.headshots);
+            checkoutModal.close();
 
           } else if (currentTier === 'cover_letter') {
             successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Cover Letter Unlocked!' : '✅ ¡Carta de Presentación Desbloqueada!';
@@ -2332,6 +2421,215 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+    });
+  }
+
+  // ─── AI Headshots Interaction Handlers ───
+  const photoDropzone = document.getElementById('photoDropzone');
+  const photoFileInput = document.getElementById('photoFileInput');
+  const photoDropzonePrompt = document.getElementById('photoDropzonePrompt');
+  const photoSelectedPreview = document.getElementById('photoSelectedPreview');
+  const photoPreviewImg = document.getElementById('photoPreviewImg');
+  const photoPreviewName = document.getElementById('photoPreviewName');
+  const photoPreviewSize = document.getElementById('photoPreviewSize');
+  const photoRemoveBtn = document.getElementById('photoRemoveBtn');
+  const generateHeadshotsBtn = document.getElementById('generateHeadshotsBtn');
+  const headshotsError = document.getElementById('headshotsError');
+  const headshotsGalleryBox = document.getElementById('headshotsGalleryBox');
+  const headshotsGrid = document.getElementById('headshotsGrid');
+  const downloadAllZipBtn = document.getElementById('downloadAllZipBtn');
+
+  let uploadedPhotoBase64 = null;
+
+  if (photoDropzone && photoFileInput) {
+    photoDropzone.addEventListener('click', (e) => {
+      if (e.target !== photoRemoveBtn && !photoRemoveBtn.contains(e.target)) {
+        photoFileInput.click();
+      }
+    });
+
+    photoDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      photoDropzone.classList.add('dragover');
+    });
+
+    photoDropzone.addEventListener('dragleave', () => {
+      photoDropzone.classList.remove('dragover');
+    });
+
+    photoDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      photoDropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleSelectedPhoto(e.dataTransfer.files[0]);
+      }
+    });
+
+    photoFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleSelectedPhoto(e.target.files[0]);
+      }
+    });
+  }
+
+  if (photoRemoveBtn) {
+    photoRemoveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      uploadedPhotoBase64 = null;
+      if (photoFileInput) photoFileInput.value = '';
+      if (photoSelectedPreview) photoSelectedPreview.style.display = 'none';
+      if (photoDropzonePrompt) photoDropzonePrompt.style.display = 'block';
+    });
+  }
+
+  function handleSelectedPhoto(file) {
+    if (!file.type.startsWith('image/')) {
+      if (headshotsError) {
+        headshotsError.textContent = currentLanguage === 'en'
+          ? 'Please select a valid image file (JPG or PNG).'
+          : 'Por favor, selecciona un archivo de imagen válido (JPG o PNG).';
+        headshotsError.style.display = 'block';
+      }
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      if (headshotsError) {
+        headshotsError.textContent = currentLanguage === 'en'
+          ? 'Image file size exceeds 5MB limit.'
+          : 'La imagen excede el límite de 5MB.';
+        headshotsError.style.display = 'block';
+      }
+      return;
+    }
+
+    if (headshotsError) headshotsError.style.display = 'none';
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      uploadedPhotoBase64 = event.target.result;
+      if (photoPreviewImg) photoPreviewImg.src = uploadedPhotoBase64;
+      if (photoPreviewName) photoPreviewName.textContent = file.name;
+      if (photoPreviewSize) photoPreviewSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+      if (photoDropzonePrompt) photoDropzonePrompt.style.display = 'none';
+      if (photoSelectedPreview) photoSelectedPreview.style.display = 'flex';
+
+      // If we already have currentAnalysisId, upload photo to server in background
+      if (currentAnalysisId) {
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('analysisId', currentAnalysisId);
+        try {
+          await fetch('/api/headshots/upload-photo', {
+            method: 'POST',
+            body: formData
+          });
+        } catch (err) {
+          console.warn('Background photo upload error:', err);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (generateHeadshotsBtn) {
+    generateHeadshotsBtn.addEventListener('click', async () => {
+      const t = translations[currentLanguage] || translations.es;
+      if (headshotsError) headshotsError.style.display = 'none';
+
+      // Open checkout for headshots tier
+      currentTier = 'headshots';
+      pendingExpertContact = null;
+      openCheckout(
+        currentLanguage === 'en' ? '20 AI Studio Headshots Pack' : 'Pack 20 Fotos de Estudio con IA',
+        (appConfig.priceHeadshots || 5).toFixed(2)
+      );
+    });
+  }
+
+  async function generateAndDisplayHeadshots(preloadedHeadshots) {
+    try {
+      if (generateHeadshotsBtn) {
+        generateHeadshotsBtn.disabled = true;
+        generateHeadshotsBtn.innerHTML = `
+          <svg class="btn-spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+          <span>${translations[currentLanguage]?.headshotsLoadingStatus || 'Generando retratos...'}</span>
+        `;
+      }
+
+      let headshots = preloadedHeadshots;
+      if (!headshots || !Array.isArray(headshots) || headshots.length < 20) {
+        const resp = await fetch('/api/headshots/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            lang: currentLanguage
+          })
+        });
+        const data = await resp.json();
+        if (data.success && data.headshots) {
+          headshots = data.headshots;
+        } else if (data.error) {
+          throw new Error(data.error);
+        }
+      }
+
+      if (headshots && Array.isArray(headshots) && headshots.length > 0) {
+        renderHeadshotsGallery(headshots);
+        if (headshotsGalleryBox) {
+          headshotsGalleryBox.style.display = 'block';
+          headshotsGalleryBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        const ctaBox = document.getElementById('headshotsCtaBox');
+        if (ctaBox) ctaBox.style.display = 'none';
+        if (downloadAllZipBtn && currentAnalysisId) {
+          downloadAllZipBtn.href = `/api/headshots/download-zip/${currentAnalysisId}`;
+        }
+      }
+    } catch (err) {
+      console.error('Error generating headshots:', err);
+      if (headshotsError) {
+        headshotsError.textContent = err.message || 'Error al generar los retratos.';
+        headshotsError.style.display = 'block';
+      }
+    } finally {
+      if (generateHeadshotsBtn) {
+        generateHeadshotsBtn.disabled = false;
+        generateHeadshotsBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+          <span id="generateHeadshotsBtnText">${translations[currentLanguage]?.generateHeadshotsBtnText || 'Generar Pack 20 Fotos de Estudio ($5 USD)'}</span>
+        `;
+      }
+    }
+  }
+
+  function renderHeadshotsGallery(headshots) {
+    if (!headshotsGrid) return;
+    headshotsGrid.innerHTML = '';
+
+    headshots.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'headshot-item-card';
+
+      const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${item.title.replace(/\s+/g, '_')}.svg`;
+
+      card.innerHTML = `
+        <div class="headshot-item-img-wrap">
+          <img src="${item.svgDataUrl}" alt="${item.title}" class="headshot-item-img" loading="lazy">
+          <div class="headshot-item-overlay">
+            <a href="${item.svgDataUrl}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Descargar</span>
+            </a>
+          </div>
+        </div>
+        <div class="headshot-item-meta">
+          <div class="headshot-item-title">${item.title}</div>
+          <span class="headshot-item-cat">${item.category}</span>
+        </div>
+      `;
+
+      headshotsGrid.appendChild(card);
     });
   }
 

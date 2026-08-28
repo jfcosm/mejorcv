@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statAnalyses = document.getElementById('statAnalyses');
   const statPaidAi = document.getElementById('statPaidAi');
   const statPaidCoverLetter = document.getElementById('statPaidCoverLetter');
+  const statPaidHeadshots = document.getElementById('statPaidHeadshots');
   const statExpertPending = document.getElementById('statExpertPending');
   const statRevenue = document.getElementById('statRevenue');
   const statGeminiCalls = document.getElementById('statGeminiCalls');
@@ -79,15 +80,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const setGeminiKey = document.getElementById('setGeminiKey');
   const setPriceAi = document.getElementById('setPriceAi');
   const setPriceCoverLetter = document.getElementById('setPriceCoverLetter');
+  const setPriceHeadshots = document.getElementById('setPriceHeadshots');
   const setPriceExpert = document.getElementById('setPriceExpert');
   const setPriceAiClp = document.getElementById('setPriceAiClp');
   const setPriceCoverLetterClp = document.getElementById('setPriceCoverLetterClp');
+  const setPriceHeadshotsClp = document.getElementById('setPriceHeadshotsClp');
   const setPriceExpertClp = document.getElementById('setPriceExpertClp');
   const setRateLimit = document.getElementById('setRateLimit');
   const setAdminPassword = null;
   const setCaptchaEnabled = document.getElementById('setCaptchaEnabled');
   const setOptAiEnabled = document.getElementById('setOptAiEnabled');
   const setOptCoverLetterEnabled = document.getElementById('setOptCoverLetterEnabled');
+  const setOptHeadshotsEnabled = document.getElementById('setOptHeadshotsEnabled');
   const setOptExpertEnabled = document.getElementById('setOptExpertEnabled');
   const setEvalPrompt = document.getElementById('setEvalPrompt');
   const setOptPrompt = document.getElementById('setOptPrompt');
@@ -333,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
       statAnalyses.textContent = data.stats.totalAnalyses;
       statPaidAi.textContent = data.stats.paidAi;
       if (statPaidCoverLetter) statPaidCoverLetter.textContent = data.stats.paidCoverLetter || 0;
+      if (statPaidHeadshots) statPaidHeadshots.textContent = data.stats.paidHeadshots || 0;
       statExpertPending.textContent = data.stats.paidExpertPending;
       statRevenue.textContent = `$${data.stats.totalRevenue.toFixed(2)} USD`;
 
@@ -404,12 +409,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (historyPaymentFilterVal !== 'all') {
         const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
         const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
+        const isHeadshotsPaid = Boolean(row.hasHeadshotsPaid === true || row.paymentStatus === 'completed_headshots');
         const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
         const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
-        const isFree = !isAiPaid && !isCoverLetterPaid && !isExpertPending && !isExpertDone && row.paymentStatus === 'free';
+        const isFree = !isAiPaid && !isCoverLetterPaid && !isHeadshotsPaid && !row.hasExpertPaid && row.paymentStatus === 'free';
 
         if (historyPaymentFilterVal === 'paid_ai' && !isAiPaid) return false;
         if (historyPaymentFilterVal === 'paid_cover_letter' && !isCoverLetterPaid) return false;
+        if (historyPaymentFilterVal === 'paid_headshots' && !isHeadshotsPaid) return false;
         if (historyPaymentFilterVal === 'paid_expert_pending' && !isExpertPending) return false;
         if (historyPaymentFilterVal === 'paid_expert_completed' && !isExpertDone) return false;
         if (historyPaymentFilterVal === 'free' && !isFree) return false;
@@ -618,10 +625,11 @@ document.addEventListener('DOMContentLoaded', () => {
     visibleLeads.forEach(row => {
       const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
       const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
+      const isHeadshotsPaid = Boolean(row.hasHeadshotsPaid === true || row.paymentStatus === 'completed_headshots');
       const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
       const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
-      if (isExpertDone || ((isAiPaid || isCoverLetterPaid) && !row.hasExpertPaid)) {
+      if (isExpertDone || ((isAiPaid || isCoverLetterPaid || isHeadshotsPaid) && !row.hasExpertPaid)) {
         doneList.push(row);
       } else {
         doingList.push(row);
@@ -690,6 +698,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="status-item" title="${isCoverLetterPaid ? 'Carta de Presentación: Pagada y generada' : 'Carta de Presentación: No solicitada'}">
                 <span class="status-dot ${isCoverLetterPaid ? 'solid' : 'outline'}" style="background:${isCoverLetterPaid ? '#8b5cf6' : 'transparent'}; border-color:#8b5cf6;"></span>
                 <span style="color:${isCoverLetterPaid ? 'var(--text-dark)' : 'var(--text-light)'}">Carta</span>
+              </div>
+              <div class="status-item" title="${Boolean(row.hasHeadshotsPaid || row.paymentStatus === 'completed_headshots') ? 'Pack 20 Fotos: Pagado y generado' : 'Pack 20 Fotos: No solicitado'}">
+                <span class="status-dot ${Boolean(row.hasHeadshotsPaid || row.paymentStatus === 'completed_headshots') ? 'solid' : 'outline'}" style="background:${Boolean(row.hasHeadshotsPaid || row.paymentStatus === 'completed_headshots') ? '#0284c7' : 'transparent'}; border-color:#0284c7;"></span>
+                <span style="color:${Boolean(row.hasHeadshotsPaid || row.paymentStatus === 'completed_headshots') ? 'var(--text-dark)' : 'var(--text-light)'}">Fotos</span>
               </div>
               <div class="status-item" title="${isExpertPending ? 'Asesoría Experta: Pendiente de entrega' : 'Asesoría Experta: No pendiente'}">
                 <span class="status-dot dot-expert-pending ${isExpertPending ? 'solid' : 'outline'}"></span>
@@ -948,6 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'free': return '<span class="badge free">Gratis (Eval)</span>';
       case 'completed_ai': return '<span class="badge ai">IA Pagado ($1)</span>';
       case 'completed_cover_letter': return '<span class="badge cover-letter">Carta Pagada ($2)</span>';
+      case 'completed_headshots': return '<span class="badge headshots">20 Fotos ($5)</span>';
       case 'pending_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
       case 'paid_expert': return '<span class="badge pending">Experto Pend. ($25 ✓)</span>';
       case 'completed_expert': return '<span class="badge completed">Experto Entregado</span>';
@@ -1162,13 +1175,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 1.0;
       if (setPriceCoverLetter) setPriceCoverLetter.value = settings.priceCoverLetter !== undefined ? settings.priceCoverLetter : 2.0;
+      if (setPriceHeadshots) setPriceHeadshots.value = settings.priceHeadshots !== undefined ? settings.priceHeadshots : 5.0;
       setPriceExpert.value = settings.priceExpert !== undefined ? settings.priceExpert : 25.0;
       if (setPriceAiClp) setPriceAiClp.value = settings.priceAiClp !== undefined ? settings.priceAiClp : 1000;
       if (setPriceCoverLetterClp) setPriceCoverLetterClp.value = settings.priceCoverLetterClp !== undefined ? settings.priceCoverLetterClp : 2000;
+      if (setPriceHeadshotsClp) setPriceHeadshotsClp.value = settings.priceHeadshotsClp !== undefined ? settings.priceHeadshotsClp : 5000;
       if (setPriceExpertClp) setPriceExpertClp.value = settings.priceExpertClp !== undefined ? settings.priceExpertClp : 25000;
       setRateLimit.value = settings.rateLimitPerHour !== undefined ? settings.rateLimitPerHour : 20;
       setOptAiEnabled.checked = settings.optAiEnabled !== false;
       if (setOptCoverLetterEnabled) setOptCoverLetterEnabled.checked = settings.optCoverLetterEnabled !== false;
+      if (setOptHeadshotsEnabled) setOptHeadshotsEnabled.checked = settings.optHeadshotsEnabled !== false;
       setOptExpertEnabled.checked = settings.optExpertEnabled !== false;
       setCaptchaEnabled.checked = settings.captchaEnabled !== false;
       setEvalPrompt.value = settings.evaluationPrompt || '';
@@ -1198,13 +1214,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = {
       priceAi: parseFloat(setPriceAi.value),
       priceCoverLetter: setPriceCoverLetter ? parseFloat(setPriceCoverLetter.value) : 2.0,
+      priceHeadshots: setPriceHeadshots ? parseFloat(setPriceHeadshots.value) : 5.0,
       priceExpert: parseFloat(setPriceExpert.value),
       priceAiClp: setPriceAiClp ? parseInt(setPriceAiClp.value, 10) : 1000,
       priceCoverLetterClp: setPriceCoverLetterClp ? parseInt(setPriceCoverLetterClp.value, 10) : 2000,
+      priceHeadshotsClp: setPriceHeadshotsClp ? parseInt(setPriceHeadshotsClp.value, 10) : 5000,
       priceExpertClp: setPriceExpertClp ? parseInt(setPriceExpertClp.value, 10) : 25000,
       rateLimitPerHour: parseInt(setRateLimit.value, 10),
       optAiEnabled: setOptAiEnabled.checked,
       optCoverLetterEnabled: setOptCoverLetterEnabled ? setOptCoverLetterEnabled.checked : true,
+      optHeadshotsEnabled: setOptHeadshotsEnabled ? setOptHeadshotsEnabled.checked : true,
       optExpertEnabled: setOptExpertEnabled.checked,
       captchaEnabled: setCaptchaEnabled.checked,
       evaluationPrompt: setEvalPrompt.value,

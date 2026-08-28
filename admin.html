@@ -552,6 +552,10 @@
           <div class="stat-label" style="color: #6366f1;">Cartas de Presentación ($2)</div>
           <div class="stat-val" id="statPaidCoverLetter" style="color: #4f46e5;">0</div>
         </div>
+        <div class="stat-card" style="border-color: rgba(14, 165, 233, 0.35);">
+          <div class="stat-label" style="color: #0284c7;">Packs 20 Fotos ($5)</div>
+          <div class="stat-val" id="statPaidHeadshots" style="color: #0284c7;">0</div>
+        </div>
         <div class="stat-card">
           <div class="stat-label">Expertos Pendientes</div>
           <div class="stat-val" id="statExpertPending">0</div>
@@ -614,6 +618,7 @@
             <option value="all">Estado: Todos</option>
             <option value="paid_ai">IA Pagada ($1)</option>
             <option value="paid_cover_letter">Carta Presentación ($2)</option>
+            <option value="paid_headshots">Pack 20 Fotos ($5)</option>
             <option value="paid_expert_pending">Experto: Pendiente ($25)</option>
             <option value="paid_expert_completed">Experto: Entregado ($25)</option>
             <option value="free">Gratuito / Sin Pago</option>
@@ -746,6 +751,9 @@
               <span class="status-dot solid" style="background:#8b5cf6;"></span> <span>Carta Presentación</span>
             </div>
             <div class="status-item">
+              <span class="status-dot solid" style="background:#0284c7;"></span> <span>Pack 20 Fotos</span>
+            </div>
+            <div class="status-item">
               <span class="status-dot dot-expert-pending solid"></span> <span>Asesoría Solicitada</span>
             </div>
             <div class="status-item">
@@ -827,7 +835,7 @@
             <div id="geminiTestOutput" style="display: none; margin-top: 10px; font-size: 12px; padding: 10px 14px; border-radius: 6px;"></div>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
             <div class="form-group">
               <label for="setPriceAi">Precio Optimización IA (USD)</label>
               <input type="number" step="0.01" id="setPriceAi" class="form-control" required>
@@ -837,22 +845,30 @@
               <input type="number" step="0.01" id="setPriceCoverLetter" class="form-control" required>
             </div>
             <div class="form-group">
+              <label for="setPriceHeadshots">Precio Pack 20 Fotos (USD)</label>
+              <input type="number" step="0.01" id="setPriceHeadshots" class="form-control" required>
+            </div>
+            <div class="form-group">
               <label for="setPriceExpert">Precio Experto Manual (USD)</label>
               <input type="number" step="0.01" id="setPriceExpert" class="form-control" required>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
             <div class="form-group">
-              <label for="setPriceAiClp">Precio Optimización IA (CLP - Mercado Pago)</label>
+              <label for="setPriceAiClp">Precio Optimización IA (CLP)</label>
               <input type="number" step="100" id="setPriceAiClp" class="form-control" placeholder="1000" required>
             </div>
             <div class="form-group">
-              <label for="setPriceCoverLetterClp">Precio Carta Presentación (CLP - Mercado Pago)</label>
+              <label for="setPriceCoverLetterClp">Precio Carta Presentación (CLP)</label>
               <input type="number" step="100" id="setPriceCoverLetterClp" class="form-control" placeholder="2000" required>
             </div>
             <div class="form-group">
-              <label for="setPriceExpertClp">Precio Experto Manual (CLP - Mercado Pago)</label>
+              <label for="setPriceHeadshotsClp">Precio Pack Fotos (CLP)</label>
+              <input type="number" step="100" id="setPriceHeadshotsClp" class="form-control" placeholder="5000" required>
+            </div>
+            <div class="form-group">
+              <label for="setPriceExpertClp">Precio Experto Manual (CLP)</label>
               <input type="number" step="500" id="setPriceExpertClp" class="form-control" placeholder="25000" required>
             </div>
           </div>
@@ -870,7 +886,7 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptAiEnabled">
               <label for="setOptAiEnabled">Habilitar Optimización IA</label>
@@ -878,6 +894,10 @@
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptCoverLetterEnabled">
               <label for="setOptCoverLetterEnabled">Habilitar Carta de Presentación</label>
+            </div>
+            <div class="checkbox-group" style="margin-bottom: 0;">
+              <input type="checkbox" id="setOptHeadshotsEnabled">
+              <label for="setOptHeadshotsEnabled">Habilitar Pack 20 Fotos</label>
             </div>
             <div class="checkbox-group" style="margin-bottom: 0;">
               <input type="checkbox" id="setOptExpertEnabled">

@@ -211,6 +211,7 @@ async function getAdminData(config) {
   const priceAi = parseFloat(config?.priceAi) || 1.0;
   const priceExpert = parseFloat(config?.priceExpert) || 25.0;
   const priceCoverLetter = parseFloat(config?.priceCoverLetter) || 2.0;
+  const priceHeadshots = parseFloat(config?.priceHeadshots) || 5.0;
   const geminiStats = await getGeminiStats(config);
 
   const dbFs = initFirebase();
@@ -236,14 +237,16 @@ async function getAdminData(config) {
       const totalAnalyses = analysesList.length;
       const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
       const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
+      const paidHeadshots = analysesList.filter(a => a.hasHeadshotsPaid || a.paymentStatus === 'completed_headshots').length;
       const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
       const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
       const paidExpert = paidExpertPending + paidExpertCompleted;
-      const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidExpert * priceExpert);
+      const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidHeadshots * priceHeadshots) + (paidExpert * priceExpert);
 
       const documentLog = analysesList.map(a => {
         const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
         const hasCoverLetterPaid = Boolean(a.hasCoverLetterPaid === true || a.paymentStatus === 'completed_cover_letter');
+        const hasHeadshotsPaid = Boolean(a.hasHeadshotsPaid === true || a.paymentStatus === 'completed_headshots');
         const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
         const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
@@ -258,11 +261,14 @@ async function getAdminData(config) {
           paymentStatus: a.paymentStatus || 'free',
           hasAiPaid,
           hasCoverLetterPaid,
+          hasHeadshotsPaid,
           hasExpertPaid,
           expertStatus,
           expertContact: a.expertContact || null,
           jobOfferText: a.jobOfferText || '',
           coverLetterText: a.coverLetterText || '',
+          userPhotoData: a.userPhotoData || null,
+          headshotsCount: Array.isArray(a.headshotImages) ? a.headshotImages.length : 0,
           archived: Boolean(a.archived),
           archivedAt: a.archivedAt || null
         };
@@ -274,6 +280,7 @@ async function getAdminData(config) {
           totalAnalyses: Number(totalAnalyses) || 0,
           paidAi: Number(paidAi) || 0,
           paidCoverLetter: Number(paidCoverLetter) || 0,
+          paidHeadshots: Number(paidHeadshots) || 0,
           paidExpertPending: Number(paidExpertPending) || 0,
           paidExpertCompleted: Number(paidExpertCompleted) || 0,
           totalRevenue: Number(totalRevenue) || 0,
@@ -293,14 +300,16 @@ async function getAdminData(config) {
   const totalAnalyses = analysesList.length;
   const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
   const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
+  const paidHeadshots = analysesList.filter(a => a.hasHeadshotsPaid || a.paymentStatus === 'completed_headshots').length;
   const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
   const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
   const paidExpert = paidExpertPending + paidExpertCompleted;
-  const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidExpert * priceExpert);
+  const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidHeadshots * priceHeadshots) + (paidExpert * priceExpert);
 
   const documentLog = analysesList.map(a => {
     const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
     const hasCoverLetterPaid = Boolean(a.hasCoverLetterPaid === true || a.paymentStatus === 'completed_cover_letter');
+    const hasHeadshotsPaid = Boolean(a.hasHeadshotsPaid === true || a.paymentStatus === 'completed_headshots');
     const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
     const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
 
@@ -315,11 +324,14 @@ async function getAdminData(config) {
       paymentStatus: a.paymentStatus || 'free',
       hasAiPaid,
       hasCoverLetterPaid,
+      hasHeadshotsPaid,
       hasExpertPaid,
       expertStatus,
       expertContact: a.expertContact || null,
       jobOfferText: a.jobOfferText || '',
       coverLetterText: a.coverLetterText || '',
+      userPhotoData: a.userPhotoData || null,
+      headshotsCount: Array.isArray(a.headshotImages) ? a.headshotImages.length : 0,
       archived: Boolean(a.archived),
       archivedAt: a.archivedAt || null
     };
@@ -331,6 +343,7 @@ async function getAdminData(config) {
       totalAnalyses: Number(totalAnalyses) || 0,
       paidAi: Number(paidAi) || 0,
       paidCoverLetter: Number(paidCoverLetter) || 0,
+      paidHeadshots: Number(paidHeadshots) || 0,
       paidExpertPending: Number(paidExpertPending) || 0,
       paidExpertCompleted: Number(paidExpertCompleted) || 0,
       totalRevenue: Number(totalRevenue) || 0,
@@ -1082,6 +1095,305 @@ app.post('/api/cover-letter/generate', async (req, res) => {
   }
 });
 
+// ─── AI Headshots Generator Helper & Endpoints ────────────────────────────
+
+const HEADSHOT_STYLES = [
+  { id: 1, es: "Ejecutivo Azul Marino", en: "Executive Classic Navy", cat: "Corporativo", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Traje Formal Azul", light: "Rembrandt 85mm" },
+  { id: 2, es: "Estudio Minimalista Carbón", en: "Studio Charcoal 85mm", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#94a3b8", outfit: "Blazer Gris Marengo", light: "Softbox Difusa" },
+  { id: 3, es: "Smart Casual Oxford", en: "Smart Casual Oxford", cat: "Smart Casual", bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", accent: "#0284c7", outfit: "Camisa Oxford & Blazer", light: "Luz Natural Loft" },
+  { id: 4, es: "Tech Innovation Coworking", en: "Tech Hub Coworking", cat: "Tech", bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", accent: "#818cf8", outfit: "Polo / Blazer Moderno", light: "Vidrio & Luz Diurna" },
+  { id: 5, es: "Estudio Blanco High-Key", en: "High-Key Pure White", cat: "Estudio", bg: "linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)", accent: "#64748b", outfit: "Camisa Blanca Impecable", light: "High-Key Sin Sombras" },
+  { id: 6, es: "Terraza Atardecer Dorado", en: "Golden Hour Terrace", cat: "Corporativo", bg: "linear-gradient(135deg, #78350f 0%, #451a03 100%)", accent: "#fbbf24", outfit: "Traje Ejecutivo & Corbata", light: "Contraluz Dorado" },
+  { id: 7, es: "Pizarra Editorial Moderna", en: "Slate Modern Minimalist", cat: "Estudio", bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", accent: "#38bdf8", outfit: "Blazer Negro Contemporáneo", light: "Luz de Contorno Fina" },
+  { id: 8, es: "Acento Cian Vanguardia", en: "Ambient Teal Edge Light", cat: "Tech", bg: "linear-gradient(135deg, #022c22 0%, #064e3b 100%)", accent: "#2dd4bf", outfit: "Blazer & Cuello Redondo", light: "Edge Light Cian 3-Puntos" },
+  { id: 9, es: "Primer Plano de Liderazgo", en: "Confident Leader Close-up", cat: "Editorial", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Vestimenta Ejecutiva", light: "Retrato Clásico 85mm f/1.4" },
+  { id: 10, es: "Arquitectura Corporativa", en: "Corporate Glass & Steel", cat: "Corporativo", bg: "linear-gradient(135deg, #0c4a6e 0%, #082f49 100%)", accent: "#38bdf8", outfit: "Traje Ejecutivo Moderno", light: "Arquitectura Desenfocada" },
+  { id: 11, es: "Cuello Alto Ejecutivo", en: "Smart Turtleneck Executive", cat: "Smart Casual", bg: "linear-gradient(135deg, #27272a 0%, #18181b 100%)", accent: "#a1a1aa", outfit: "Cuello Alto & Blazer", light: "Luz Direccional Cálida" },
+  { id: 12, es: "Estudio Clásico 3 Puntos", en: "Classic 3-Point Studio", cat: "Estudio", bg: "linear-gradient(135deg, #3f3f46 0%, #27272a 100%)", accent: "#e4e4e7", outfit: "Camisa Formal & Blazer", light: "Iluminación de Estudio" },
+  { id: 13, es: "Fondo Biblioteca & Madera", en: "Executive Library & Wood", cat: "Corporativo", bg: "linear-gradient(135deg, #451a03 0%, #292524 100%)", accent: "#d97706", outfit: "Traje Formal de Negocios", light: "Cálida & Ambiente Académico" },
+  { id: 14, es: "Atrio de Cristal Luminoso", en: "Daylight Glass Atrium", cat: "Tech", bg: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)", accent: "#0284c7", outfit: "Smart Casual Claro", light: "Luz Diurna Envolvente" },
+  { id: 15, es: "Monocromo Fino Editorial", en: "Fine Art Monochrome", cat: "Editorial", bg: "linear-gradient(135deg, #18181b 0%, #09090b 100%)", accent: "#f4f4f5", outfit: "Traje Contraste B/N", light: "Blanco & Negro Alto Contraste" },
+  { id: 16, es: "Estudio Pastel Contemporáneo", en: "Contemporary Pastel Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)", accent: "#0ea5e9", outfit: "Blazer Azul Claro & Camisa", light: "Luz Suave Beauty Dish" },
+  { id: 17, es: "Skyline Urbano al Anochecer", en: "Metropolitan Skyline Dusk", cat: "Corporativo", bg: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", accent: "#a5b4fc", outfit: "Traje Oscuro Elegante", light: "Luces de Ciudad Bokeh" },
+  { id: 18, es: "Ángulo Cercano Empático 45°", en: "Approachable 45° Angle", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#38bdf8", outfit: "Blazer Desestructurado", light: "Flash Suave Frontal" },
+  { id: 19, es: "Loft Creativo Ladrillo Visto", en: "Creative Brick Loft Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #292524 0%, #1c1917 100%)", accent: "#f97316", outfit: "Camisa de Lino & Blazer", light: "Luz Incandescente Suave" },
+  { id: 20, es: "Portada LinkedIn Premium", en: "LinkedIn Premium Editorial", cat: "Editorial", bg: "linear-gradient(135deg, #0f172a 0%, #0284c7 100%)", accent: "#38bdf8", outfit: "Traje a Medida de Gala", light: "Calidad Portada Revista" }
+];
+
+function generateHeadshotSvg(style, photoDataUrl, candidateName, lang = 'es') {
+  const isEn = lang === 'en';
+  const title = isEn ? style.en : style.es;
+  const initial = candidateName ? candidateName.charAt(0).toUpperCase() : 'C';
+  const textColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#0f172a' : '#ffffff';
+  const subtitleColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#475569' : 'rgba(255,255,255,0.75)';
+
+  // If user provided photoDataUrl, use it inside an SVG image pattern or overlay
+  const photoElement = photoDataUrl
+    ? `<image href="${photoDataUrl}" x="120" y="110" width="240" height="240" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatarClip)" />`
+    : `
+      <!-- Stylized Studio Portrait Silhouette -->
+      <circle cx="240" cy="210" r="85" fill="${style.accent}" opacity="0.22" />
+      <circle cx="240" cy="190" r="54" fill="${style.accent}" opacity="0.9" />
+      <text x="240" y="206" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="44" font-weight="bold" fill="#ffffff">${initial}</text>
+      <path d="M140 370 C 140 280, 340 280, 340 370 Z" fill="${style.accent}" opacity="0.75" />
+    `;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480">
+    <defs>
+      <linearGradient id="bgGrad_${style.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${style.accent}" stop-opacity="0.18" />
+        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.98" />
+      </linearGradient>
+      <clipPath id="avatarClip">
+        <circle cx="240" cy="225" r="110" />
+      </clipPath>
+      <filter id="softGlow">
+        <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Background -->
+    <rect width="480" height="480" fill="#0f172a" />
+    <rect width="480" height="480" fill="url(#bgGrad_${style.id})" />
+
+    <!-- Ambient Studio Spotlight -->
+    <circle cx="240" cy="180" r="170" fill="${style.accent}" opacity="0.15" filter="url(#softGlow)" />
+
+    <!-- Outer Decorative Ring -->
+    <circle cx="240" cy="225" r="116" fill="none" stroke="${style.accent}" stroke-width="2.5" stroke-dasharray="8 6" opacity="0.5" />
+    <circle cx="240" cy="225" r="111" fill="none" stroke="${style.accent}" stroke-width="2" opacity="0.9" />
+
+    <!-- Photo Content -->
+    ${photoElement}
+
+    <!-- Header Badge -->
+    <rect x="24" y="24" width="130" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="${style.accent}" stroke-width="1" />
+    <text x="89" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="11" font-weight="700" fill="${style.accent}" letter-spacing="0.5">${style.cat.toUpperCase()}</text>
+
+    <!-- Top Right 85mm badge -->
+    <rect x="360" y="24" width="96" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+    <text x="408" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#e2e8f0">85mm · f/1.4</text>
+
+    <!-- Bottom Metadata Panel -->
+    <rect x="24" y="390" width="432" height="66" rx="12" fill="rgba(15,23,42,0.85)" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+    <text x="44" y="418" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="700" fill="#ffffff">${title}</text>
+    <text x="44" y="440" font-family="-apple-system, system-ui, sans-serif" font-size="12" font-weight="500" fill="${subtitleColor}">Estilo: ${style.outfit} · Ilum: ${style.light}</text>
+    <text x="436" y="429" text-anchor="end" font-family="-apple-system, system-ui, sans-serif" font-size="13" font-weight="800" fill="${style.accent}">#${style.id < 10 ? '0' + style.id : style.id}</text>
+  </svg>`;
+}
+
+async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}) {
+  const candidateName = filename ? filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ") : "Candidato";
+  
+  const headshots = HEADSHOT_STYLES.map(style => {
+    const svgContent = generateHeadshotSvg(style, userPhotoData, candidateName, lang);
+    const base64Svg = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
+    
+    return {
+      id: style.id,
+      title: lang === 'en' ? style.en : style.es,
+      category: style.cat,
+      outfit: style.outfit,
+      lighting: style.light,
+      svgDataUrl: base64Svg,
+      rawSvg: svgContent
+    };
+  });
+
+  return headshots;
+}
+
+// 1. Upload User Base Photo for Headshots
+app.post('/api/headshots/upload-photo', upload.single('photo'), async (req, res) => {
+  try {
+    const { analysisId } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: "ID de análisis requerido." });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "Por favor, sube una foto en formato JPG o PNG." });
+    }
+
+    const mime = req.file.mimetype;
+    if (!mime.startsWith('image/')) {
+      return res.status(400).json({ error: "El archivo subido no es una imagen válida." });
+    }
+
+    const base64Photo = `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+
+    await updateAnalysisDoc(analysisId, {
+      userPhotoData: base64Photo,
+      userPhotoName: req.file.originalname,
+      userPhotoSize: req.file.size
+    });
+
+    res.json({
+      success: true,
+      photoUrl: base64Photo,
+      photoName: req.file.originalname
+    });
+
+  } catch (err) {
+    console.error("Error in /api/headshots/upload-photo:", err);
+    res.status(500).json({ error: err.message || "Error al subir la fotografía." });
+  }
+});
+
+// 2. Generate 20 AI Headshots Pack
+app.post('/api/headshots/generate', async (req, res) => {
+  try {
+    const { analysisId, lang } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: "ID de análisis requerido." });
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: "Análisis no encontrado." });
+    }
+
+    const config = await getConfigDoc();
+    const effectiveLang = lang || analysis.lang || 'es';
+
+    const isPaid = Boolean(analysis.hasHeadshotsPaid || analysis.paymentStatus === 'completed_headshots');
+
+    if (!isPaid) {
+      return res.json({
+        success: false,
+        requiresPayment: true,
+        priceHeadshots: config.priceHeadshots || 5.0,
+        priceHeadshotsClp: config.priceHeadshotsClp || 5000
+      });
+    }
+
+    let headshots = analysis.headshotImages;
+    if (!headshots || !Array.isArray(headshots) || headshots.length < 20 || req.body.forceRegenerate) {
+      headshots = await generateHeadshotsPack(
+        analysis.filename,
+        analysis.originalText,
+        analysis.userPhotoData || null,
+        effectiveLang,
+        config
+      );
+
+      await updateAnalysisDoc(analysisId, {
+        headshotImages: headshots
+      });
+      recordGeminiCall('optimizations');
+    }
+
+    res.json({
+      success: true,
+      headshots: headshots
+    });
+
+  } catch (err) {
+    console.error("Error in /api/headshots/generate:", err);
+    res.status(500).json({ error: err.message || "Error al generar el pack de retratos fotográficos." });
+  }
+});
+
+// 3. Download All 20 Headshots as .ZIP
+app.get('/api/headshots/download-zip/:analysisId', async (req, res) => {
+  try {
+    const { analysisId } = req.params;
+    if (!analysisId) {
+      return res.status(400).send("ID de análisis requerido.");
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).send("Análisis no encontrado.");
+    }
+
+    let headshots = analysis.headshotImages;
+    if (!headshots || !Array.isArray(headshots) || headshots.length === 0) {
+      const config = await getConfigDoc();
+      headshots = await generateHeadshotsPack(
+        analysis.filename,
+        analysis.originalText,
+        analysis.userPhotoData || null,
+        analysis.lang || 'es',
+        config
+      );
+    }
+
+    const zip = new AdmZip();
+
+    headshots.forEach((item, index) => {
+      const num = index + 1 < 10 ? `0${index + 1}` : `${index + 1}`;
+      const safeTitle = item.title.replace(/[^a-zA-Z0-9_-]/g, "_");
+      const filename = `${num}_${safeTitle}.svg`;
+      const svgBuffer = Buffer.from(item.rawSvg || Buffer.from(item.svgDataUrl.split(',')[1], 'base64').toString('utf8'));
+      zip.addFile(filename, svgBuffer);
+    });
+
+    // Add instructions and best practices text file
+    const isEn = analysis.lang === 'en';
+    const guideText = isEn
+      ? `CINTIA.PRO - 20 AI LINKEDIN & RESUME HEADSHOTS PACK
+==================================================
+
+Congratulations! Here are your 20 studio-grade professional portraits.
+
+RECOMMENDED SIZES & PLATFORM GUIDELINES:
+1. LinkedIn Profile Picture:
+   - Minimum: 400 x 400 px
+   - Ideal: Square aspect ratio (1:1)
+   - Ensure your face takes up 60% of the frame.
+   - Recommended styles: #01 Executive Navy, #03 Smart Casual, #09 Confident Leader, #20 LinkedIn Premium.
+
+2. Resume / CV Header:
+   - Clean, neutral styles recommended: #02 Studio Charcoal, #05 High-Key White, #12 3-Point Studio.
+
+3. Articles, Bios & Speaking Engagements:
+   - Dynamic settings: #04 Tech Coworking, #06 Golden Hour Terrace, #15 Fine Art Monochrome.
+
+Thank you for choosing Cintia.pro for your career brand!
+Website: https://cintia.pro`
+      : `CINTIA.PRO - PACK DE 20 FOTOS DE ESTUDIO PARA LINKEDIN Y CV
+============================================================
+
+¡Felicitaciones! Aquí tienes tu pack de 20 retratos fotográficos profesionales de estudio.
+
+GUÍA DE USO Y RECOMENDACIONES DE PLATAFORMAS:
+1. Foto de Perfil en LinkedIn:
+   - Dimensión óptima: 400 x 400 px (Relación 1:1 cuadrada).
+   - Asegúrate de que tu rostro ocupe alrededor del 60% del círculo del avatar.
+   - Estilos recomendados: #01 Ejecutivo Azul Marino, #03 Smart Casual, #09 Primer Plano de Liderazgo, #20 Portada LinkedIn Premium.
+
+2. Currículum Vitae:
+   - Estilos recomendados: #02 Estudio Minimalista Carbón, #05 Estudio Blanco High-Key, #12 Estudio Clásico 3 Puntos.
+
+3. Conferencias, Artículos y Charlas:
+   - Estilos recomendados: #04 Tech Innovation Coworking, #06 Terraza Atardecer Dorado, #15 Monocromo Fino Editorial.
+
+¡Gracias por confiar en Cintia.pro para potenciar tu marca profesional!
+Sitio web: https://cintia.pro`;
+
+    zip.addFile("LEEME_GUIA_RECOMENDACIONES.txt", Buffer.from(guideText, 'utf8'));
+
+    const zipBuffer = zip.toBuffer();
+    const candidateSlug = analysis.filename ? analysis.filename.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_") : "Cintia";
+    
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="Cintia_20_Fotos_LinkedIn_${candidateSlug}.zip"`,
+      'Content-Length': zipBuffer.length
+    });
+
+    res.send(zipBuffer);
+
+  } catch (err) {
+    console.error("Error in /api/headshots/download-zip:", err);
+    res.status(500).send("Error al generar el archivo .zip de retratos.");
+  }
+});
+
 // Analyze document
 app.post('/api/analyze', upload.single('cv'), async (req, res) => {
   try {
@@ -1379,6 +1691,14 @@ app.post('/api/payment/simulate', async (req, res) => {
         transactionId: `sim_cl_${Date.now()}`
       });
       res.json(result);
+    } else if (tier === 'headshots') {
+      const result = await processSuccessfulPayment({
+        analysisId,
+        tier: 'headshots',
+        paymentMethod: paymentMethod || 'simulate',
+        transactionId: `sim_hs_${Date.now()}`
+      });
+      res.json(result);
     } else {
       res.status(400).json({ error: "Tier de pago inválido." });
     }
@@ -1433,12 +1753,15 @@ app.get('/api/config', async (req, res) => {
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     optCoverLetterEnabled: config.hasOwnProperty('optCoverLetterEnabled') ? !!config.optCoverLetterEnabled : true,
+    optHeadshotsEnabled: config.hasOwnProperty('optHeadshotsEnabled') ? !!config.optHeadshotsEnabled : true,
     priceAi: config.priceAi || 1.0,
     priceExpert: config.priceExpert || 25.0,
     priceCoverLetter: config.priceCoverLetter || 2.0,
+    priceHeadshots: config.priceHeadshots || 5.0,
     priceAiClp: config.priceAiClp || 1000,
     priceExpertClp: config.priceExpertClp || 25000,
     priceCoverLetterClp: config.priceCoverLetterClp || 2000,
+    priceHeadshotsClp: config.priceHeadshotsClp || 5000,
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
     mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
@@ -1590,6 +1913,38 @@ async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mer
     await updateAnalysisDoc(analysisId, updatePayload);
     recordGeminiCall('optimizations');
     return { success: true, tier: 'cover_letter', coverLetterText };
+  } else if (tier === 'headshots') {
+    const config = await getConfigDoc();
+    let headshots = analysis.headshotImages;
+    if (!headshots || !Array.isArray(headshots) || headshots.length < 20) {
+      headshots = await generateHeadshotsPack(
+        analysis.filename,
+        analysis.originalText,
+        analysis.userPhotoData || null,
+        analysis.lang || 'es',
+        config
+      );
+    }
+    const updatePayload = {
+      hasHeadshotsPaid: true,
+      headshotsPaidAt: new Date().toISOString(),
+      headshotsOrderId: orderId || transactionId,
+      headshotsTransactionId: transactionId,
+      paymentMethod,
+      paidAt: new Date().toISOString(),
+      headshotImages: headshots
+    };
+    if (analysis.hasExpertPaid || analysis.paymentStatus === 'pending_expert' || analysis.expertContact) {
+      updatePayload.hasExpertPaid = true;
+      updatePayload.expertStatus = analysis.expertStatus || 'pending';
+      updatePayload.paymentStatus = updatePayload.expertStatus === 'completed' ? 'completed_expert' : 'pending_expert';
+    } else {
+      updatePayload.paymentStatus = 'completed_headshots';
+    }
+
+    await updateAnalysisDoc(analysisId, updatePayload);
+    recordGeminiCall('optimizations');
+    return { success: true, tier: 'headshots', headshots };
   } else {
     throw new Error('Tier de pago inválido.');
   }
@@ -1651,6 +2006,9 @@ app.post('/api/paypal/create-order', async (req, res) => {
     } else if (tier === 'cover_letter') {
       amount = (config.priceCoverLetter || 2.0).toFixed(2);
       description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
+    } else if (tier === 'headshots') {
+      amount = (config.priceHeadshots || 5.0).toFixed(2);
+      description = 'Cintia - Pack 20 Fotos de Estudio con IA para LinkedIn y CV';
     }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
@@ -1677,27 +2035,18 @@ app.post('/api/paypal/create-order', async (req, res) => {
     });
 
     if (!orderResponse.ok) {
-      const errBody = await orderResponse.text();
-      throw new Error(`PayPal create-order error: ${orderResponse.status} - ${errBody}`);
+      const errText = await orderResponse.text();
+      throw new Error(`PayPal create-order error: ${errText}`);
     }
 
     const orderData = await orderResponse.json();
+    paypalOrderCache.set(orderData.id, { analysisId, tier });
 
-    // Cache analysis in memory if available on this instance
-    const analysis = await getAnalysisDoc(analysisId);
-    if (analysis) {
-      paypalOrderCache.set(orderData.id, { analysisId, analysis });
-      if (paypalOrderCache.size > 200) {
-        const firstKey = paypalOrderCache.keys().next().value;
-        paypalOrderCache.delete(firstKey);
-      }
-    }
-
-    res.json({ orderID: orderData.id });
+    res.json({ id: orderData.id });
 
   } catch (err) {
     console.error('Error in /api/paypal/create-order:', err);
-    res.status(500).json({ error: err.message || 'Error al crear la orden de pago.' });
+    res.status(500).json({ error: err.message || 'Error al iniciar la orden con PayPal.' });
   }
 });
 
@@ -1705,8 +2054,16 @@ app.post('/api/paypal/create-order', async (req, res) => {
 app.post('/api/paypal/capture-order', async (req, res) => {
   try {
     const { orderID, analysisId, tier, contact } = req.body;
-    if (!orderID || !analysisId || !tier) {
-      return res.status(400).json({ error: 'Faltan datos: orderID, analysisId y tier son requeridos.' });
+    if (!orderID) {
+      return res.status(400).json({ error: 'Falta orderID para capturar el pago.' });
+    }
+
+    const cached = paypalOrderCache.get(orderID) || {};
+    const targetAnalysisId = analysisId || cached.analysisId;
+    const targetTier = tier || cached.tier || 'ai';
+
+    if (!targetAnalysisId) {
+      return res.status(400).json({ error: 'No se pudo identificar el análisis asociado a la orden.' });
     }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
@@ -1720,25 +2077,27 @@ app.post('/api/paypal/capture-order', async (req, res) => {
     });
 
     if (!captureResponse.ok) {
-      const errBody = await captureResponse.text();
-      throw new Error(`PayPal capture error: ${captureResponse.status} - ${errBody}`);
+      const errText = await captureResponse.text();
+      throw new Error(`PayPal capture error: ${errText}`);
     }
 
     const captureData = await captureResponse.json();
-    const captureStatus = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.status;
 
-    if (captureStatus !== 'COMPLETED') {
-      return res.status(402).json({ error: `Pago no completado. Estado PayPal: ${captureStatus}` });
+    if (captureData.status !== 'COMPLETED') {
+      return res.status(400).json({
+        error: `El estado del pago es '${captureData.status}'. El servicio solo se activa si el pago está COMPLETED.`
+      });
     }
 
-    const paypalTransactionId = captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
     paypalOrderCache.delete(orderID);
 
+    const transactionId = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id || orderID;
+
     const result = await processSuccessfulPayment({
-      analysisId,
-      tier,
+      analysisId: targetAnalysisId,
+      tier: targetTier,
       paymentMethod: 'paypal',
-      transactionId: paypalTransactionId,
+      transactionId,
       orderId: orderID,
       contact
     });
@@ -1747,7 +2106,7 @@ app.post('/api/paypal/capture-order', async (req, res) => {
 
   } catch (err) {
     console.error('Error in /api/paypal/capture-order:', err);
-    res.status(500).json({ error: err.message || 'Error al capturar el pago.' });
+    res.status(500).json({ error: err.message || 'Error al procesar el pago con PayPal.' });
   }
 });
 
@@ -1787,6 +2146,9 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
     } else if (tier === 'cover_letter') {
       amountClp = Number(config.priceCoverLetterClp || 2000);
       description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
+    } else if (tier === 'headshots') {
+      amountClp = Number(config.priceHeadshotsClp || 5000);
+      description = 'Cintia - Pack 20 Fotos de Estudio con IA para LinkedIn y CV';
     }
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
@@ -2115,12 +2477,15 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
     if (newSettings.hasOwnProperty('priceCoverLetter')) config.priceCoverLetter = parseFloat(newSettings.priceCoverLetter) || 2.0;
+    if (newSettings.hasOwnProperty('priceHeadshots')) config.priceHeadshots = parseFloat(newSettings.priceHeadshots) || 5.0;
     if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 1000;
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
+    if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 5000;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
     if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
     if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = !!newSettings.optCoverLetterEnabled;
+    if (newSettings.hasOwnProperty('optHeadshotsEnabled')) config.optHeadshotsEnabled = !!newSettings.optHeadshotsEnabled;
     if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = !!newSettings.captchaEnabled;
     if (newSettings.hasOwnProperty('rateLimitPerHour')) config.rateLimitPerHour = parseInt(newSettings.rateLimitPerHour, 10) || 5;
     if (newSettings.evaluationPrompt) config.evaluationPrompt = newSettings.evaluationPrompt;
@@ -2134,7 +2499,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   }
 });
 
-// Admin endpoint: get full analysis record (original text, AI optimized text, cover letter, contact, etc.)
+// Admin endpoint: get full analysis record (original text, AI optimized text, cover letter, headshots, contact, etc.)
 app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).json({ error: "Análisis no encontrado." });
@@ -2150,10 +2515,13 @@ app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => 
     paymentMethod: analysis.paymentMethod,
     hasAiPaid: Boolean(analysis.hasAiPaid),
     hasCoverLetterPaid: Boolean(analysis.hasCoverLetterPaid),
+    hasHeadshotsPaid: Boolean(analysis.hasHeadshotsPaid),
     hasExpertPaid: Boolean(analysis.hasExpertPaid),
     expertContact: analysis.expertContact,
     jobOfferText: analysis.jobOfferText || "",
     coverLetterText: analysis.coverLetterText || "",
+    userPhotoData: analysis.userPhotoData || null,
+    headshotImages: analysis.headshotImages || [],
     originalText: analysis.originalText || "",
     optimizedText: analysis.optimizedText || "",
     evaluation: analysis.evaluation
