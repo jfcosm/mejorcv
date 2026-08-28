@@ -208,7 +208,7 @@ async function deleteAnalysisDoc(analysisId) {
 }
 
 async function getAdminData(config) {
-  const priceAi = parseFloat(config?.priceAi) || 1.0;
+  const priceAi = parseFloat(config?.priceAi) || 2.0;
   const priceExpert = parseFloat(config?.priceExpert) || 25.0;
   const priceCoverLetter = parseFloat(config?.priceCoverLetter) || 2.0;
   const priceHeadshots = parseFloat(config?.priceHeadshots) || 5.0;
@@ -434,9 +434,9 @@ function readConfig() {
     inMemoryConfig = {
       adminPassword: "",
       geminiApiKey: "",
-      priceAi: 1.0,
+      priceAi: 2.0,
       priceExpert: 25.0,
-      priceAiClp: 1000,
+      priceAiClp: 2000,
       priceExpertClp: 25000,
       optAiEnabled: true,
       optExpertEnabled: true,
@@ -1754,11 +1754,11 @@ app.get('/api/config', async (req, res) => {
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     optCoverLetterEnabled: config.hasOwnProperty('optCoverLetterEnabled') ? !!config.optCoverLetterEnabled : true,
     optHeadshotsEnabled: config.hasOwnProperty('optHeadshotsEnabled') ? !!config.optHeadshotsEnabled : true,
-    priceAi: config.priceAi || 1.0,
+    priceAi: config.priceAi || 2.0,
     priceExpert: config.priceExpert || 25.0,
     priceCoverLetter: config.priceCoverLetter || 2.0,
     priceHeadshots: config.priceHeadshots || 5.0,
-    priceAiClp: config.priceAiClp || 1000,
+    priceAiClp: config.priceAiClp || 2000,
     priceExpertClp: config.priceExpertClp || 25000,
     priceCoverLetterClp: config.priceCoverLetterClp || 2000,
     priceHeadshotsClp: config.priceHeadshotsClp || 5000,
@@ -1997,7 +1997,7 @@ app.post('/api/paypal/create-order', async (req, res) => {
     }
 
     const config = await getConfigDoc();
-    let amount = (config.priceAi || 1.0).toFixed(2);
+    let amount = (config.priceAi || 2.0).toFixed(2);
     let description = 'Cintia - Optimización de CV con IA';
 
     if (tier === 'expert') {
@@ -2137,7 +2137,7 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
     }
 
     const config = await getConfigDoc();
-    let amountClp = Number(config.priceAiClp || 1000);
+    let amountClp = Number(config.priceAiClp || 2000);
     let description = 'Cintia - Optimización de CV con IA';
 
     if (tier === 'expert') {
@@ -2474,11 +2474,11 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
         config.geminiApiKey = cleanKey;
       }
     }
-    if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 1.0;
+    if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 2.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
     if (newSettings.hasOwnProperty('priceCoverLetter')) config.priceCoverLetter = parseFloat(newSettings.priceCoverLetter) || 2.0;
     if (newSettings.hasOwnProperty('priceHeadshots')) config.priceHeadshots = parseFloat(newSettings.priceHeadshots) || 5.0;
-    if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 1000;
+    if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 2000;
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
     if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 5000;

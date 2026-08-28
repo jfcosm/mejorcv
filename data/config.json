@@ -1,11 +1,11 @@
 {
   "adminPassword": "",
   "geminiApiKey": "",
-  "priceAi": 1,
+  "priceAi": 2,
   "priceExpert": 25,
   "priceCoverLetter": 2,
   "priceHeadshots": 5,
-  "priceAiClp": 1000,
+  "priceAiClp": 2000,
   "priceExpertClp": 25000,
   "priceCoverLetterClp": 2000,
   "priceHeadshotsClp": 5000,

@@ -1590,7 +1590,8 @@ dialog[open]::backdrop {
 /* Footer styling */
 footer {
   border-top: 1px solid var(--border-grey);
-  padding: 40px 0;
+  padding: 48px 0;
+  margin-top: 70px;
   text-align: center;
   color: var(--text-light);
   font-size: 13px;
@@ -2094,8 +2095,10 @@ footer {
 
 /* FAQ Section */
 .faq-section {
-  margin-top: 60px;
-  padding-top: 40px;
+  margin-top: 70px;
+  margin-bottom: 80px;
+  padding-top: 50px;
+  padding-bottom: 30px;
   border-top: 1px solid var(--border-grey);
 }
 

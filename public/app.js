@@ -101,8 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let appConfig = {
     optAiEnabled: true,
     optExpertEnabled: true,
-    priceAi: 1.0,
-    priceExpert: 25.0
+    optCoverLetterEnabled: true,
+    optHeadshotsEnabled: true,
+    priceAi: 2.0,
+    priceCoverLetter: 2.0,
+    priceHeadshots: 5.0,
+    priceExpert: 25.0,
+    priceAiClp: 2000,
+    priceCoverLetterClp: 2000,
+    priceHeadshotsClp: 5000,
+    priceExpertClp: 25000
   };
 
   const translations = {
@@ -174,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Tarjeta de Crédito / Débito",
       modalSuccessTitle: "¡Pago Completado!",
       modalSuccessMessage: "Tu pago ha sido procesado correctamente. Cintia está procesando el documento...",
-      footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Desarrollado y operado por <strong>MelodIA Lab SpA</strong> (La Serena, Chile). Tecnología basada en Google Gemini.",
+      footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología basada en Google Gemini.",
       footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Términos y Condiciones</a> Hecho con ❤️ y ⚡ por <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       heroBadgeText: "TU COACH DE BÚSQUEDA LABORAL CON IA",
       heroTitle: "Tu Coach de <span>Búsqueda Laboral</span> con IA que multiplica tus entrevistas",
@@ -189,22 +197,25 @@ document.addEventListener('DOMContentLoaded', () => {
       coachCardTag1: "100% GRATIS",
       coachCardTitle1: "Auditoría ATS & Diagnóstico en 7 Ejes",
       coachCardDesc1: "Supera los filtros invisibles de reclutamiento. Conoce al instante tu puntaje global, compatibilidad algorítmica y el balance de competencias de tu CV.",
-      coachCardTag2: "$1 USD / $1.000 CLP",
+      coachCardTag2: "$2 USD / $2.000 CLP",
       coachCardTitle2: "Reescritura de Perfil de Alto Impacto",
       coachCardDesc2: "Transforma tus responsabilidades en logros cuantificables con palabras clave estratégicas para destacar ante los ojos de los reclutadores.",
       coachCardTag3: "$2 USD / $2.000 CLP",
       coachCardTitle3: "Cartas de Presentación por Vacante",
       coachCardDesc3: "Pega la descripción de cualquier empleo de LinkedIn o portales de trabajo. Cintia redactará una carta formal y persuasiva alineada a los requisitos del puesto.",
-      coachCardTag4: "$25 USD / $25.000 CLP",
-      coachCardTitle4: "Mentoría 1 a 1 y Pulido Experto",
-      coachCardDesc4: "Sesión dedicada de 1.5 horas con un especialista senior en RRHH para preparar tus entrevistas laborales y recibir tu CV final en PDF y Word editable.",
+      coachCardTagHeadshots: "$5 USD / $5.000 CLP",
+      coachCardTitleHeadshots: "Pack 20 Fotos de Estudio para LinkedIn",
+      coachCardDescHeadshots: "Sube tu foto base y genera 20 retratos fotográficos de alta resolución con iluminación de estudio 85mm, vestimentas ejecutivas y fondos modernos.",
+      coachCardTagExpert: "$25 USD / $25.000 CLP",
+      coachCardTitleExpert: "Mentoría 1 a 1 y Pulido Experto",
+      coachCardDescExpert: "Sesión dedicada de 1.5 horas con un especialista senior en RRHH para preparar tus entrevistas laborales y recibir tu CV final en PDF y Word editable.",
       howItWorksTitle: "¿Cómo funciona Cintia?",
       step1Title: "1. Diagnóstico Gratuito",
       step1Desc: "Sube tu archivo (.pdf, .docx, .odt o .txt) de forma 100% segura para recibir tu nota y radar de competencias al instante.",
       step2Title: "2. Optimiza tu Perfil",
       step2Desc: "Mejora tu currículum al instante con nuestra IA o agenda una sesión de asesoría personalizada con un experto humano.",
-      step3Title: "3. Genera tu Carta a Medida",
-      step3Desc: "Copia y pega la oferta laboral a la que postulas para redactar una carta de presentación perfectamente alineada.",
+      step3Title: "3. Cartas & Fotos de Estudio",
+      step3Desc: "Genera tu carta a la medida de la oferta y obtén 20 fotos profesionales de estudio para potenciar tu presencia en LinkedIn.",
       step4Title: "4. Postula y Destaca",
       step4Desc: "Descarga tus documentos profesionales listos para enviar y multiplica tus llamados a entrevistas laborales.",
       faqTitle: "Preguntas Frecuentes",
@@ -217,8 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
       faqA3: "Los <em>Applicant Tracking Systems</em> (ATS) son sistemas automatizados que empresas y reclutadores utilizan para escanear y filtrar currículums antes de que un evaluador humano los revise. Si tu CV carece de las palabras clave adecuadas, tiene estructuras confusas o elementos gráficos incompatibles, el algoritmo lo descarta de forma automática. Cintia analiza tu documento bajo estos mismos estándares para garantizar que superes ese primer filtro invisible.",
       faqQ4: "¿El diagnóstico inicial es realmente 100% gratuito?",
       faqA4: "<strong>Sí, totalmente.</strong> Puedes subir tu archivo y obtener en segundos tu calificación en estrellas, el gráfico de balance de competencias en 7 ejes y la explicación detallada de fortalezas y aspectos a corregir, sin ingresar tarjetas de crédito ni pagar nada.",
-      faqQ5: "¿Qué diferencia hay entre la Optimización con IA ($1 USD) y la Asesoría con Experto ($25 USD)?",
-      faqA5: "La <strong>Optimización con IA ($1 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto plano. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.",
+      faqQ5: "¿Qué diferencia hay entre la Optimización con IA ($2 USD) y la Asesoría con Experto ($25 USD)?",
+      faqA5: "La <strong>Optimización con IA ($2 USD)</strong> es una reescritura inmediata de Cintia que inyecta palabras clave ATS, logros cuantificados y estructura profesional lista para descargar en texto plano. La <strong>Asesoría con Experto Humano ($25 USD)</strong> es un acompañamiento personalizado 1 a 1 de 1.5 horas con un especialista senior en RRHH para preparar entrevistas, pulir tu perfil y recibir la versión final de tu CV en formatos PDF y Word editable.",
       faqQ6: "¿Cómo funciona la Carta de Presentación adaptada a una oferta laboral ($2 USD)?",
       faqA6: "Tras analizar tu currículum, puedes copiar y pegar la descripción o requisitos del puesto al que deseas postular (desde LinkedIn, Indeed o cualquier portal web). Cintia cruzará tus competencias y experiencia con los requerimientos específicos de la empresa para redactar una <strong>Carta de Presentación personalizada, persuasiva y en texto plano limpio</strong> lista para enviar por solo $2 USD o $2.000 CLP.",
       faqQ7: "¿Qué tan seguros están mis datos personales y mi documento?",
@@ -323,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Credit / Debit Card",
       modalSuccessTitle: "Payment Completed!",
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
-      footerCopyright: "&copy; 2026 Cintia. All rights reserved. Developed and operated by <strong>MelodIA Lab SpA</strong> (La Serena, Chile). Powered by Google Gemini.",
+      footerCopyright: "&copy; 2026 Cintia. All rights reserved. Technology powered by Google Gemini.",
       footerCredits: "<a href=\"/terminos.html?lang=en\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Terms & Conditions</a> Made with ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       heroPill1: "Free ATS Audit",
       heroPill2: "AI Profile Upgrade",
@@ -335,22 +346,25 @@ document.addEventListener('DOMContentLoaded', () => {
       coachCardTag1: "100% FREE",
       coachCardTitle1: "7-Axis ATS Audit & Diagnostic",
       coachCardDesc1: "Overcome invisible screening filters. Instantly discover your overall score, ATS compatibility, and full competency breakdown.",
-      coachCardTag2: "$1 USD / $1,000 CLP",
+      coachCardTag2: "$2 USD / $2,000 CLP",
       coachCardTitle2: "High-Impact AI Profile Rewrite",
       coachCardDesc2: "Transform daily duties into quantifiable achievements with strategic ATS keywords to catch recruiters' attention.",
       coachCardTag3: "$2 USD / $2,000 CLP",
       coachCardTitle3: "Tailored Cover Letters by Job Opening",
       coachCardDesc3: "Paste any job posting from LinkedIn or career boards. Cintia crafts a persuasive, recruiter-ready letter aligned with role requirements.",
-      coachCardTag4: "$25 USD / $25,000 CLP",
-      coachCardTitle4: "1-on-1 Mentoring & Expert Polish",
-      coachCardDesc4: "Dedicated 1.5-hour session with a senior recruitment specialist to prepare interviews and finalize your CV in PDF and editable Word.",
+      coachCardTagHeadshots: "$5 USD / $5,000 CLP",
+      coachCardTitleHeadshots: "20 AI Studio Headshots for LinkedIn",
+      coachCardDescHeadshots: "Upload your photo and generate 20 studio-grade portraits with 85mm optical lighting, executive wardrobe, and modern backdrops.",
+      coachCardTagExpert: "$25 USD / $25,000 CLP",
+      coachCardTitleExpert: "1-on-1 Mentoring & Expert Polish",
+      coachCardDescExpert: "Dedicated 1.5-hour session with a senior recruitment specialist to prepare interviews and finalize your CV in PDF and editable Word.",
       howItWorksTitle: "How Cintia Works",
       step1Title: "1. Free Diagnostic",
       step1Desc: "Upload your resume (.pdf, .docx, .odt or .txt) 100% securely to get your instant rating and 7-axis radar chart.",
       step2Title: "2. Upgrade Your Profile",
       step2Desc: "Elevate your resume instantly with AI or book a personalized 1-on-1 mentoring session with a recruitment specialist.",
-      step3Title: "3. Tailor Your Cover Letter",
-      step3Desc: "Paste the job description you are targeting to generate a persuasive cover letter perfectly tailored to the role.",
+      step3Title: "3. Tailor Cover Letter & Headshots",
+      step3Desc: "Paste the job description for a tailored cover letter and generate 20 studio headshots for your LinkedIn profile.",
       step4Title: "4. Apply & Stand Out",
       step4Desc: "Download recruiter-ready documents and multiply your interview callbacks.",
       faqTitle: "Frequently Asked Questions",
@@ -363,8 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
       faqA3: "<em>Applicant Tracking Systems</em> (ATS) are automated screening tools that recruiters use to scan and filter resumes before human review. If your resume lacks required keywords or uses unreadable formatting, it gets rejected automatically. Cintia benchmarks your document against these exact standards so you pass the screen.",
       faqQ4: "Is the initial resume evaluation truly 100% free?",
       faqA4: "<strong>Yes, absolutely.</strong> You can upload your resume and instantly receive your star rating, 7-axis competency radar chart, and detailed strengths and improvement areas without entering credit card details or paying anything.",
-      faqQ5: "What is the difference between AI Optimization ($1 USD) and Expert Mentoring ($25 USD)?",
-      faqA5: "<strong>AI Optimization ($1 USD)</strong> delivers an instant rewrite powered by Cintia with ATS keyword injection, quantifiable achievements, and recruiter-ready layout downloadable in plain text. <strong>1-on-1 Expert Mentoring ($25 USD)</strong> is a comprehensive 1.5-hour session with an HR and recruitment senior specialist, interview prep, and delivery of your finalized resume in PDF and editable Word formats.",
+      faqQ5: "What is the difference between AI Optimization ($2 USD) and Expert Mentoring ($25 USD)?",
+      faqA5: "<strong>AI Optimization ($2 USD)</strong> delivers an instant rewrite powered by Cintia with ATS keyword injection, quantifiable achievements, and recruiter-ready layout downloadable in plain text. <strong>1-on-1 Expert Mentoring ($25 USD)</strong> is a comprehensive 1.5-hour session with an HR and recruitment senior specialist, interview prep, and delivery of your finalized resume in PDF and editable Word formats.",
       faqQ6: "How does the Tailored Cover Letter service work ($2 USD)?",
       faqA6: "After analyzing your resume, paste the job description or requirements of the vacancy you wish to apply for (from LinkedIn, Indeed, or career sites). Cintia matches your competencies with the company requirements to craft a <strong>customized, persuasive plain text Cover Letter</strong> ready to send for just $2 USD or $2,000 CLP.",
       faqQ7: "How secure is my personal data and uploaded document?",
@@ -510,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const coachSubEl = document.getElementById('coachShowcaseSubtitle');
     if (coachSubEl) coachSubEl.textContent = t.coachShowcaseSubtitle;
 
-    for (let c = 1; c <= 4; c++) {
+    for (let c = 1; c <= 3; c++) {
       const tagEl = document.getElementById(`coachCardTag${c}`);
       if (tagEl && t[`coachCardTag${c}`]) tagEl.textContent = t[`coachCardTag${c}`];
       const titleEl = document.getElementById(`coachCardTitle${c}`);
@@ -518,6 +532,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const descEl = document.getElementById(`coachCardDesc${c}`);
       if (descEl && t[`coachCardDesc${c}`]) descEl.textContent = t[`coachCardDesc${c}`];
     }
+
+    const tagHs = document.getElementById('coachCardTagHeadshots');
+    if (tagHs && t.coachCardTagHeadshots) tagHs.textContent = t.coachCardTagHeadshots;
+    const titleHs = document.getElementById('coachCardTitleHeadshots');
+    if (titleHs && t.coachCardTitleHeadshots) titleHs.textContent = t.coachCardTitleHeadshots;
+    const descHs = document.getElementById('coachCardDescHeadshots');
+    if (descHs && t.coachCardDescHeadshots) descHs.textContent = t.coachCardDescHeadshots;
+
+    const tagExp = document.getElementById('coachCardTagExpert');
+    if (tagExp && t.coachCardTagExpert) tagExp.textContent = t.coachCardTagExpert;
+    const titleExp = document.getElementById('coachCardTitleExpert');
+    if (titleExp && t.coachCardTitleExpert) titleExp.textContent = t.coachCardTitleExpert;
+    const descExp = document.getElementById('coachCardDescExpert');
+    if (descExp && t.coachCardDescExpert) descExp.textContent = t.coachCardDescExpert;
     
     // How it Works Section dynamic translations
     const howItWorksTitleEl = document.getElementById('howItWorksTitle');
@@ -747,11 +775,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Apply AI optimization pricing & visibility
     if (unlockCtaPrice) {
-      unlockCtaPrice.textContent = `$${appConfig.priceAi || 1}`;
+      unlockCtaPrice.textContent = `$${appConfig.priceAi || 2}`;
     }
     if (unlockActionBtnText) {
       const btnBase = currentLanguage === 'en' ? 'Unlock & Download Resume' : 'Desbloquear y Descargar CV';
-      unlockActionBtnText.textContent = `${btnBase} ($${appConfig.priceAi || 1} USD)`;
+      unlockActionBtnText.textContent = `${btnBase} ($${appConfig.priceAi || 2} USD)`;
     }
     if (aiPreviewSection) {
       aiPreviewSection.style.display = appConfig.optAiEnabled ? 'block' : 'none';
@@ -816,6 +844,16 @@ document.addEventListener('DOMContentLoaded', () => {
       generateHeadshotsBtnText.textContent = currentLanguage === 'en'
         ? `Generate 20 Studio Headshots ($${appConfig.priceHeadshots || 5} USD)`
         : `Generar Pack 20 Fotos de Estudio ($${appConfig.priceHeadshots || 5} USD)`;
+    }
+
+    // 5. Apply visibility to showcase cards based on configuration
+    const coachCardHeadshots = document.getElementById('coachCardHeadshots');
+    if (coachCardHeadshots) {
+      coachCardHeadshots.style.display = appConfig.optHeadshotsEnabled !== false ? 'flex' : 'none';
+    }
+    const coachCardExpert = document.getElementById('coachCardExpert');
+    if (coachCardExpert) {
+      coachCardExpert.style.display = appConfig.optExpertEnabled !== false ? 'flex' : 'none';
     }
 
     // 4. Update & start live rotating bulletin news ticker
@@ -1783,7 +1821,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutTotal.textContent = `$${priceStr} USD`;
 
     const priceClp = currentTier === 'ai'
-      ? (appConfig.priceAiClp || 1000)
+      ? (appConfig.priceAiClp || 2000)
       : currentTier === 'cover_letter'
       ? (appConfig.priceCoverLetterClp || 2000)
       : currentTier === 'headshots'

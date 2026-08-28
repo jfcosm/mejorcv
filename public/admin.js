@@ -1180,11 +1180,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       setGeminiKey.value = '';
 
-      setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 1.0;
+      setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 2.0;
       if (setPriceCoverLetter) setPriceCoverLetter.value = settings.priceCoverLetter !== undefined ? settings.priceCoverLetter : 2.0;
       if (setPriceHeadshots) setPriceHeadshots.value = settings.priceHeadshots !== undefined ? settings.priceHeadshots : 5.0;
       setPriceExpert.value = settings.priceExpert !== undefined ? settings.priceExpert : 25.0;
-      if (setPriceAiClp) setPriceAiClp.value = settings.priceAiClp !== undefined ? settings.priceAiClp : 1000;
+      if (setPriceAiClp) setPriceAiClp.value = settings.priceAiClp !== undefined ? settings.priceAiClp : 2000;
       if (setPriceCoverLetterClp) setPriceCoverLetterClp.value = settings.priceCoverLetterClp !== undefined ? settings.priceCoverLetterClp : 2000;
       if (setPriceHeadshotsClp) setPriceHeadshotsClp.value = settings.priceHeadshotsClp !== undefined ? settings.priceHeadshotsClp : 5000;
       if (setPriceExpertClp) setPriceExpertClp.value = settings.priceExpertClp !== undefined ? settings.priceExpertClp : 25000;
@@ -1230,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
       priceCoverLetter: setPriceCoverLetter ? parseFloat(setPriceCoverLetter.value) : 2.0,
       priceHeadshots: setPriceHeadshots ? parseFloat(setPriceHeadshots.value) : 5.0,
       priceExpert: parseFloat(setPriceExpert.value),
-      priceAiClp: setPriceAiClp ? parseInt(setPriceAiClp.value, 10) : 1000,
+      priceAiClp: setPriceAiClp ? parseInt(setPriceAiClp.value, 10) : 2000,
       priceCoverLetterClp: setPriceCoverLetterClp ? parseInt(setPriceCoverLetterClp.value, 10) : 2000,
       priceHeadshotsClp: setPriceHeadshotsClp ? parseInt(setPriceHeadshotsClp.value, 10) : 5000,
       priceExpertClp: setPriceExpertClp ? parseInt(setPriceExpertClp.value, 10) : 25000,
