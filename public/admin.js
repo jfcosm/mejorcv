@@ -617,10 +617,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     visibleLeads.forEach(row => {
       const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+      const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
       const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
       const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
-      if (isExpertDone || (isAiPaid && !row.hasExpertPaid)) {
+      if (isExpertDone || ((isAiPaid || isCoverLetterPaid) && !row.hasExpertPaid)) {
         doneList.push(row);
       } else {
         doingList.push(row);
@@ -644,6 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     list.forEach(row => {
       const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
+      const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
       const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
       const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
 
@@ -676,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </a>` : ''}
               </div>
             ` : `
-              <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : 'Evaluación gratuita realizada'}</div>
+              <div style="color: var(--text-medium); font-size: 11.5px;">${isAiPaid ? 'Optimización automática de CV procesada' : isCoverLetterPaid ? 'Carta de Presentación generada' : 'Evaluación gratuita realizada'}</div>
             `}
 
             <!-- Status Dots Indicators -->
