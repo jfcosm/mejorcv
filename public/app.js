@@ -861,16 +861,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getBulletinSlides(count, score) {
+    const totalCount = count || 0;
+    const ratingScore = score || "4.0";
     if (currentLanguage === 'en') {
       return [
-        `📊 Cintia has evaluated and analyzed <span class="bulletin-highlight">${count}+ resumes</span> with an average rating of <span class="bulletin-highlight">${score} / 5.0 ★</span>.`,
+        `📊 Cintia has evaluated and analyzed <span class="bulletin-highlight">${totalCount} resumes</span> with an average rating of <span class="bulletin-highlight">${ratingScore} stars (out of a maximum of 5) ★</span>.`,
         `⚡ <span class="bulletin-highlight">80% of resumes</span> contain invisible ATS keyword gaps that prevent recruiters from calling.`,
         `🚀 Elevate your professional profile with honest feedback, actionable guidance, and instant AI optimization!`
       ];
     }
     return [
-      `📊 Cintia ha evaluado y analizado <span class="bulletin-highlight">${count}+ CVs</span> con una nota promedio de <span class="bulletin-highlight">${score} / 5.0 ★</span>.`,
-      `⚡ El <span class="bulletin-highlight">80% de los CVs</span> presentan fallas en palabras clave ATS que impiden llegar a la entrevista laboral.`,
+      `📊 Cintia ha evaluado y analizado <span class="bulletin-highlight">${totalCount} currículums</span> con una nota promedio de <span class="bulletin-highlight">${ratingScore} estrellas (de un máximo de 5) ★</span>.`,
+      `⚡ El <span class="bulletin-highlight">80% de los currículums</span> presentan fallas en palabras clave ATS que impiden llegar a la entrevista laboral.`,
       `🚀 Lleva tu perfil profesional al siguiente nivel con retroalimentación honesta y optimización al instante.`
     ];
   }
@@ -895,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgEl = document.getElementById('bulletinMessage');
     if (!msgEl) return;
     
-    const count = (appConfig.publicStats && appConfig.publicStats.totalAnalyses) ? appConfig.publicStats.totalAnalyses : 84;
+    const count = (appConfig.publicStats && typeof appConfig.publicStats.totalAnalyses === 'number') ? appConfig.publicStats.totalAnalyses : 0;
     const score = (appConfig.publicStats && appConfig.publicStats.avgRating) ? appConfig.publicStats.avgRating : "4.0";
     const slides = getBulletinSlides(count, score);
 
@@ -926,7 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!msgEl) return;
 
-    const count = (appConfig.publicStats && appConfig.publicStats.totalAnalyses) ? appConfig.publicStats.totalAnalyses : 84;
+    const count = (appConfig.publicStats && typeof appConfig.publicStats.totalAnalyses === 'number') ? appConfig.publicStats.totalAnalyses : 0;
     const score = (appConfig.publicStats && appConfig.publicStats.avgRating) ? appConfig.publicStats.avgRating : "4.0";
     const slides = getBulletinSlides(count, score);
 
@@ -943,10 +945,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load configuration parameters then handle return callback
   fetchConfig().then(() => {
+    updateBulletinSlide();
     checkPaymentReturnFromUrl();
   }).catch(() => {
     checkPaymentReturnFromUrl();
   });
+
+  // Automatically refresh live statistics every 60 seconds
+  setInterval(() => {
+    fetchConfig().then(() => {
+      updateBulletinSlide();
+    }).catch(() => {});
+  }, 60000);
 
   // Handle return redirect from Mercado Pago Checkout Pro
   async function checkPaymentReturnFromUrl() {
@@ -1349,6 +1359,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Render Results
       currentAnalysisId = data.analysisId;
       
+      // Update real-time public stats in ticker immediately upon evaluation
+      if (data.publicStats) {
+        appConfig.publicStats = data.publicStats;
+        updateBulletinSlide();
+      }
+
       // Auto-apply resume's detected language to the entire app interface
       if (data.lang && data.lang !== currentLanguage) {
         localStorage.setItem('cvLang', data.lang);

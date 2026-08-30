@@ -1616,12 +1616,15 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     };
     await saveAnalysisDoc(logEntry);
 
+    const publicStats = await getPublicStats();
+
     res.json({
       success: true,
       analysisId: analysisId,
       evaluation: evaluation,
       lang: lang,
-      optimizedText: optimizedText
+      optimizedText: optimizedText,
+      publicStats: publicStats
     });
 
   } catch (err) {
@@ -1709,14 +1712,10 @@ app.post('/api/payment/simulate', async (req, res) => {
   }
 });
 
-// Public settings and live statistics endpoint
-app.get('/api/config', async (req, res) => {
-  const config = await getConfigDoc();
-
-  let totalAnalysesCount = 84;
-  let avgRatingScore = "4.0";
+// Compute exact public statistics for live ticker banner in real-time
+async function getPublicStats() {
+  const map = new Map();
   try {
-    const map = new Map();
     const localDb = readDb();
     if (localDb.analyses && Array.isArray(localDb.analyses)) {
       localDb.analyses.forEach(a => {
@@ -1734,20 +1733,35 @@ app.get('/api/config', async (req, res) => {
     }
 
     const consolidatedList = Array.from(map.values());
-    totalAnalysesCount = Math.max(consolidatedList.length, 84);
+    const totalCount = consolidatedList.length;
     let sum = 0;
-    let count = 0;
+    let validRatings = 0;
     consolidatedList.forEach(d => {
       const r = d.rating;
       if (typeof r === 'number' && r > 0) {
         sum += r;
-        count++;
+        validRatings++;
       }
     });
-    if (count > 0) avgRatingScore = (sum / count).toFixed(1);
+
+    const avgRatingScore = validRatings > 0 ? (sum / validRatings).toFixed(1) : "4.0";
+    return {
+      totalAnalyses: totalCount,
+      avgRating: avgRatingScore
+    };
   } catch (statsErr) {
     console.warn("Public stats compute fallback:", statsErr.message);
+    return {
+      totalAnalyses: 0,
+      avgRating: "4.0"
+    };
   }
+}
+
+// Public settings and live statistics endpoint
+app.get('/api/config', async (req, res) => {
+  const config = await getConfigDoc();
+  const publicStats = await getPublicStats();
 
   res.json({
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
@@ -1765,10 +1779,7 @@ app.get('/api/config', async (req, res) => {
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
     mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
-    publicStats: {
-      totalAnalyses: totalAnalysesCount,
-      avgRating: avgRatingScore
-    }
+    publicStats: publicStats
   });
 });
 
