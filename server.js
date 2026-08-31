@@ -1301,7 +1301,7 @@ CORE OBJECTIVES:
       generationConfig: {
         responseMimeType: "application/json"
       }
-    }no veo deplyments)
+    })
   });
 
   if (!response.ok) {
@@ -2746,6 +2746,10 @@ app.get('/terminos', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
