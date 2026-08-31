@@ -1001,9 +1001,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       cvModalDocTitle.textContent = `Currículum: ${data.filename}`;
       const contactInfo = data.expertContact 
-        ? ` | Contacto: ${data.expertContact.email || ''} ${data.expertContact.phone || ''}`
+        ? ` &nbsp;|&nbsp; 📞 <strong>Contacto:</strong> ${escapeHtml(data.expertContact.email || '')} ${escapeHtml(data.expertContact.phone || '')}`
         : '';
-      cvModalDocMeta.textContent = `Subido: ${formatDate(data.uploadedAt)} | Estado: ${data.paymentStatus}${contactInfo}`;
+      cvModalDocMeta.innerHTML = `📅 <strong>Subido:</strong> ${formatDatePlain(data.uploadedAt)} &nbsp;|&nbsp; 🏷️ <strong>Estado:</strong> ${getPaymentBadge(data.paymentStatus)}${contactInfo}`;
 
       // Render Evaluation Dashboard & Headshots
       renderAdminEvaluation(data.evaluation);
@@ -1650,6 +1650,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Helpers
+  function formatDatePlain(isoStr) {
+    if (!isoStr) return '-';
+    const date = new Date(isoStr);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} a las ${hours}:${mins}`;
+  }
+
   function formatDate(isoStr) {
     if (!isoStr) return '-';
     const date = new Date(isoStr);
