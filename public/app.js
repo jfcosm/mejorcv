@@ -846,10 +846,16 @@ document.addEventListener('DOMContentLoaded', () => {
         : `Generar Pack 20 Fotos de Estudio ($${appConfig.priceHeadshots || 6} USD)`;
     }
 
-    // 5. Apply visibility to showcase cards based on configuration
+    // 5. Apply visibility and pricing to showcase cards based on configuration
     const coachCardHeadshots = document.getElementById('coachCardHeadshots');
+    const coachCardTagHeadshots = document.getElementById('coachCardTagHeadshots');
     if (coachCardHeadshots) {
       coachCardHeadshots.style.display = appConfig.optHeadshotsEnabled !== false ? 'flex' : 'none';
+    }
+    if (coachCardTagHeadshots) {
+      coachCardTagHeadshots.textContent = currentLanguage === 'en'
+        ? `$${appConfig.priceHeadshots || 6} USD / $${(appConfig.priceHeadshotsClp || 6000).toLocaleString('en-US')} CLP`
+        : `$${appConfig.priceHeadshots || 6} USD / $${(appConfig.priceHeadshotsClp || 6000).toLocaleString('es-CL')} CLP`;
     }
     const coachCardExpert = document.getElementById('coachCardExpert');
     if (coachCardExpert) {
@@ -2639,13 +2645,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function generateAndDisplayHeadshots(preloadedHeadshots) {
+    const loadingNotice = document.getElementById('headshotsLoadingNotice');
+    const loadingStepText = document.getElementById('headshotsLoadingStepText');
+    let stepInterval = null;
+
     try {
       if (generateHeadshotsBtn) {
         generateHeadshotsBtn.disabled = true;
         generateHeadshotsBtn.innerHTML = `
           <svg class="btn-spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-          <span>${translations[currentLanguage]?.headshotsLoadingStatus || 'Generando retratos...'}</span>
+          <span>${translations[currentLanguage]?.headshotsLoadingStatus || 'Generando 20 retratos fotográficos...'}</span>
         `;
+      }
+
+      if (loadingNotice) {
+        loadingNotice.style.display = 'block';
+        loadingNotice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Dynamic step text rotation
+      if (loadingStepText) {
+        const steps = currentLanguage === 'en'
+          ? [
+              "Analyzing facial traits and 85mm optical composition...",
+              "Rendering corporate & leadership portraits with Google AI...",
+              "Rendering smart casual, tech and editorial Forbes/GQ styles...",
+              "Finalizing 20 high-resolution photorealistic portraits pack..."
+            ]
+          : [
+              "Analizando rasgos faciales y componiendo esquemas ópticos 85mm...",
+              "Renderizando retratos corporativos y ejecutivos con IA de Google...",
+              "Renderizando estilos smart casual, tech y editorial Forbes/GQ...",
+              "Finalizando paquete de 20 fotografías en alta resolución..."
+            ];
+        let stepIdx = 0;
+        loadingStepText.textContent = steps[0];
+        stepInterval = setInterval(() => {
+          stepIdx = (stepIdx + 1) % steps.length;
+          loadingStepText.textContent = steps[stepIdx];
+        }, 8000);
       }
 
       let headshots = preloadedHeadshots;
@@ -2674,6 +2712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const ctaBox = document.getElementById('headshotsCtaBox');
         if (ctaBox) ctaBox.style.display = 'none';
+        if (loadingNotice) loadingNotice.style.display = 'none';
         if (downloadAllZipBtn && currentAnalysisId) {
           downloadAllZipBtn.href = `/api/headshots/download-zip/${currentAnalysisId}`;
         }
@@ -2684,7 +2723,9 @@ document.addEventListener('DOMContentLoaded', () => {
         headshotsError.textContent = err.message || 'Error al generar los retratos.';
         headshotsError.style.display = 'block';
       }
+      if (loadingNotice) loadingNotice.style.display = 'none';
     } finally {
+      if (stepInterval) clearInterval(stepInterval);
       if (generateHeadshotsBtn) {
         generateHeadshotsBtn.disabled = false;
         generateHeadshotsBtn.innerHTML = `
@@ -2726,6 +2767,20 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       headshotsGrid.appendChild(card);
+    });
+  }
+
+  // ZIP download feedback spinner
+  if (downloadAllZipBtn) {
+    downloadAllZipBtn.addEventListener('click', () => {
+      const origHtml = downloadAllZipBtn.innerHTML;
+      downloadAllZipBtn.innerHTML = `
+        <svg class="btn-spinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+        <span>${currentLanguage === 'en' ? 'Preparing & Downloading .ZIP...' : 'Preparando y descargando .ZIP...'}</span>
+      `;
+      setTimeout(() => {
+        downloadAllZipBtn.innerHTML = origHtml;
+      }, 5000);
     });
   }
 

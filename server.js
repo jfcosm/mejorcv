@@ -450,7 +450,7 @@ function readConfig() {
   }
 }
 
-function writeConfig(data) {
+async function writeConfig(data) {
   inMemoryConfig = data;
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
@@ -459,9 +459,11 @@ function writeConfig(data) {
   }
   const dbFs = initFirebase();
   if (dbFs) {
-    dbFs.collection('app_config').doc('settings').set(data, { merge: true }).catch(err => {
+    try {
+      await dbFs.collection('app_config').doc('settings').set(data, { merge: true });
+    } catch (err) {
       console.error("Firestore writeConfig error:", err.message);
-    });
+    }
   }
 }
 
@@ -2674,7 +2676,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.optimizationPrompt) config.optimizationPrompt = newSettings.optimizationPrompt;
     if (newSettings.coverLetterPrompt) config.coverLetterPrompt = newSettings.coverLetterPrompt;
 
-    writeConfig(config);
+    await writeConfig(config);
     res.json({ success: true, message: "Parámetros guardados correctamente." });
   } catch (err) {
     res.status(500).json({ error: "Error al guardar parámetros." });

@@ -453,6 +453,21 @@
               </div>
             </div>
 
+            <!-- Headshots Generation In-Progress Banner (Spinners + Up to 1 min warning) -->
+            <div class="headshots-loading-notice" id="headshotsLoadingNotice" style="display: none; margin-top: 18px; padding: 22px; background: linear-gradient(135deg, rgba(2,132,199,0.06) 0%, rgba(14,165,233,0.12) 100%); border: 1.5px solid rgba(2,132,199,0.3); border-radius: var(--border-radius-md); text-align: center;">
+              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                <div class="spinner" style="width: 36px; height: 36px; border: 3.5px solid rgba(2,132,199,0.2); border-top-color: #0284c7; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+              </div>
+              <h3 id="headshotsLoadingTitle" style="font-size: 17px; font-weight: 700; color: #0369a1; margin-bottom: 8px;">Generando tus 20 Fotos de Estudio con Inteligencia Artificial...</h3>
+              <p id="headshotsLoadingDesc" style="font-size: 13.5px; color: var(--text); line-height: 1.55; max-width: 620px; margin: 0 auto 10px auto;">
+                El renderizado fotorrealista en alta definición toma <strong>aproximadamente hasta 1 minuto</strong>. Por favor, <strong>mantén esta ventana abierta y no cierres tu navegador</strong> mientras Cintia genera tus 20 retratos profesionales.
+              </p>
+              <div id="headshotsLoadingStep" style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #0284c7; background: #ffffff; padding: 6px 14px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <span class="pulse-dot" style="width: 8px; height: 8px; background: #0284c7; border-radius: 50%; display: inline-block;"></span>
+                <span id="headshotsLoadingStepText">Analizando rasgos faciales y componiendo retratos 85mm...</span>
+              </div>
+            </div>
+
             <!-- Error banner -->
             <div class="headshots-error" id="headshotsError" style="display: none;"></div>
 
