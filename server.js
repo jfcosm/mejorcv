@@ -211,7 +211,7 @@ async function getAdminData(config) {
   const priceAi = parseFloat(config?.priceAi) || 2.0;
   const priceExpert = parseFloat(config?.priceExpert) || 25.0;
   const priceCoverLetter = parseFloat(config?.priceCoverLetter) || 2.0;
-  const priceHeadshots = parseFloat(config?.priceHeadshots) || 5.0;
+  const priceHeadshots = parseFloat(config?.priceHeadshots) || 6.0;
   const geminiStats = await getGeminiStats(config);
 
   const dbFs = initFirebase();
@@ -1095,43 +1095,179 @@ app.post('/api/cover-letter/generate', async (req, res) => {
   }
 });
 
-// ─── AI Headshots Generator Helper & Endpoints ────────────────────────────
+// ─── AI Headshots Generator: Gemini Vision + Google Imagen 3 ─────────────
 
 const HEADSHOT_STYLES = [
-  { id: 1, es: "Ejecutivo Azul Marino", en: "Executive Classic Navy", cat: "Corporativo", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Traje Formal Azul", light: "Rembrandt 85mm" },
-  { id: 2, es: "Estudio Minimalista Carbón", en: "Studio Charcoal 85mm", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#94a3b8", outfit: "Blazer Gris Marengo", light: "Softbox Difusa" },
-  { id: 3, es: "Smart Casual Oxford", en: "Smart Casual Oxford", cat: "Smart Casual", bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", accent: "#0284c7", outfit: "Camisa Oxford & Blazer", light: "Luz Natural Loft" },
-  { id: 4, es: "Tech Innovation Coworking", en: "Tech Hub Coworking", cat: "Tech", bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", accent: "#818cf8", outfit: "Polo / Blazer Moderno", light: "Vidrio & Luz Diurna" },
-  { id: 5, es: "Estudio Blanco High-Key", en: "High-Key Pure White", cat: "Estudio", bg: "linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)", accent: "#64748b", outfit: "Camisa Blanca Impecable", light: "High-Key Sin Sombras" },
-  { id: 6, es: "Terraza Atardecer Dorado", en: "Golden Hour Terrace", cat: "Corporativo", bg: "linear-gradient(135deg, #78350f 0%, #451a03 100%)", accent: "#fbbf24", outfit: "Traje Ejecutivo & Corbata", light: "Contraluz Dorado" },
-  { id: 7, es: "Pizarra Editorial Moderna", en: "Slate Modern Minimalist", cat: "Estudio", bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", accent: "#38bdf8", outfit: "Blazer Negro Contemporáneo", light: "Luz de Contorno Fina" },
-  { id: 8, es: "Acento Cian Vanguardia", en: "Ambient Teal Edge Light", cat: "Tech", bg: "linear-gradient(135deg, #022c22 0%, #064e3b 100%)", accent: "#2dd4bf", outfit: "Blazer & Cuello Redondo", light: "Edge Light Cian 3-Puntos" },
-  { id: 9, es: "Primer Plano de Liderazgo", en: "Confident Leader Close-up", cat: "Editorial", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Vestimenta Ejecutiva", light: "Retrato Clásico 85mm f/1.4" },
-  { id: 10, es: "Arquitectura Corporativa", en: "Corporate Glass & Steel", cat: "Corporativo", bg: "linear-gradient(135deg, #0c4a6e 0%, #082f49 100%)", accent: "#38bdf8", outfit: "Traje Ejecutivo Moderno", light: "Arquitectura Desenfocada" },
-  { id: 11, es: "Cuello Alto Ejecutivo", en: "Smart Turtleneck Executive", cat: "Smart Casual", bg: "linear-gradient(135deg, #27272a 0%, #18181b 100%)", accent: "#a1a1aa", outfit: "Cuello Alto & Blazer", light: "Luz Direccional Cálida" },
-  { id: 12, es: "Estudio Clásico 3 Puntos", en: "Classic 3-Point Studio", cat: "Estudio", bg: "linear-gradient(135deg, #3f3f46 0%, #27272a 100%)", accent: "#e4e4e7", outfit: "Camisa Formal & Blazer", light: "Iluminación de Estudio" },
-  { id: 13, es: "Fondo Biblioteca & Madera", en: "Executive Library & Wood", cat: "Corporativo", bg: "linear-gradient(135deg, #451a03 0%, #292524 100%)", accent: "#d97706", outfit: "Traje Formal de Negocios", light: "Cálida & Ambiente Académico" },
-  { id: 14, es: "Atrio de Cristal Luminoso", en: "Daylight Glass Atrium", cat: "Tech", bg: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)", accent: "#0284c7", outfit: "Smart Casual Claro", light: "Luz Diurna Envolvente" },
-  { id: 15, es: "Monocromo Fino Editorial", en: "Fine Art Monochrome", cat: "Editorial", bg: "linear-gradient(135deg, #18181b 0%, #09090b 100%)", accent: "#f4f4f5", outfit: "Traje Contraste B/N", light: "Blanco & Negro Alto Contraste" },
-  { id: 16, es: "Estudio Pastel Contemporáneo", en: "Contemporary Pastel Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)", accent: "#0ea5e9", outfit: "Blazer Azul Claro & Camisa", light: "Luz Suave Beauty Dish" },
-  { id: 17, es: "Skyline Urbano al Anochecer", en: "Metropolitan Skyline Dusk", cat: "Corporativo", bg: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", accent: "#a5b4fc", outfit: "Traje Oscuro Elegante", light: "Luces de Ciudad Bokeh" },
-  { id: 18, es: "Ángulo Cercano Empático 45°", en: "Approachable 45° Angle", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#38bdf8", outfit: "Blazer Desestructurado", light: "Flash Suave Frontal" },
-  { id: 19, es: "Loft Creativo Ladrillo Visto", en: "Creative Brick Loft Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #292524 0%, #1c1917 100%)", accent: "#f97316", outfit: "Camisa de Lino & Blazer", light: "Luz Incandescente Suave" },
-  { id: 20, es: "Portada LinkedIn Premium", en: "LinkedIn Premium Editorial", cat: "Editorial", bg: "linear-gradient(135deg, #0f172a 0%, #0284c7 100%)", accent: "#38bdf8", outfit: "Traje a Medida de Gala", light: "Calidad Portada Revista" }
+  { id: 1, es: "Ejecutivo Azul Marino", en: "Executive Classic Navy", cat: "Corporativo", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Traje Formal Azul Marino con camisa blanca", light: "Iluminación de estudio 85mm Rembrandt" },
+  { id: 2, es: "Estudio Minimalista Carbón", en: "Studio Charcoal 85mm", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#94a3b8", outfit: "Blazer Gris Marengo estructurado", light: "Softbox difusa envolvente" },
+  { id: 3, es: "Smart Casual Oxford", en: "Smart Casual Oxford", cat: "Smart Casual", bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", accent: "#0284c7", outfit: "Camisa Oxford & Blazer de lino", light: "Luz natural de ventanal loft" },
+  { id: 4, es: "Tech Innovation Coworking", en: "Tech Hub Coworking", cat: "Tech", bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", accent: "#818cf8", outfit: "Polo ejecutivo / Blazer moderno", light: "Vidrio & luz diurna arquitectónica" },
+  { id: 5, es: "Estudio Blanco High-Key", en: "High-Key Pure White", cat: "Estudio", bg: "linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)", accent: "#64748b", outfit: "Camisa blanca impecable de diseño", light: "High-Key puro sin sombras duras" },
+  { id: 6, es: "Terraza Atardecer Dorado", en: "Golden Hour Terrace", cat: "Corporativo", bg: "linear-gradient(135deg, #78350f 0%, #451a03 100%)", accent: "#fbbf24", outfit: "Traje ejecutivo moderno y corbata elegante", light: "Contraluz cálido atardecer bokeh" },
+  { id: 7, es: "Pizarra Editorial Moderna", en: "Slate Modern Minimalist", cat: "Estudio", bg: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", accent: "#38bdf8", outfit: "Blazer negro contemporáneo", light: "Luz de contorno fina 85mm" },
+  { id: 8, es: "Acento Cian Vanguardia", en: "Ambient Teal Edge Light", cat: "Tech", bg: "linear-gradient(135deg, #022c22 0%, #064e3b 100%)", accent: "#2dd4bf", outfit: "Blazer & cuello redondo de seda", light: "Edge light sutil 3-puntos" },
+  { id: 9, es: "Primer Plano de Liderazgo", en: "Confident Leader Close-up", cat: "Editorial", bg: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", accent: "#38bdf8", outfit: "Vestimenta ejecutiva de alto impacto", light: "Retrato clásico 85mm f/1.4" },
+  { id: 10, es: "Arquitectura Corporativa", en: "Corporate Glass & Steel", cat: "Corporativo", bg: "linear-gradient(135deg, #0c4a6e 0%, #082f49 100%)", accent: "#38bdf8", outfit: "Traje ejecutivo a medida", light: "Fondo corporativo desenfocado" },
+  { id: 11, es: "Cuello Alto Ejecutivo", en: "Smart Turtleneck Executive", cat: "Smart Casual", bg: "linear-gradient(135deg, #27272a 0%, #18181b 100%)", accent: "#a1a1aa", outfit: "Cuello alto negro & blazer gris", light: "Luz direccional cálida de estudio" },
+  { id: 12, es: "Estudio Clásico 3 Puntos", en: "Classic 3-Point Studio", cat: "Estudio", bg: "linear-gradient(135deg, #3f3f46 0%, #27272a 100%)", accent: "#e4e4e7", outfit: "Camisa formal & blazer oscuro", light: "Iluminación clásica de estudio 3 puntos" },
+  { id: 13, es: "Fondo Biblioteca & Madera", en: "Executive Library & Wood", cat: "Corporativo", bg: "linear-gradient(135deg, #451a03 0%, #292524 100%)", accent: "#d97706", outfit: "Traje formal de negocios", light: "Luz cálida y ambiente ejecutivo" },
+  { id: 14, es: "Atrio de Cristal Luminoso", en: "Daylight Glass Atrium", cat: "Tech", bg: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)", accent: "#0284c7", outfit: "Smart casual claro contemporáneo", light: "Luz diurna envolvente suave" },
+  { id: 15, es: "Monocromo Fino Editorial", en: "Fine Art Monochrome", cat: "Editorial", bg: "linear-gradient(135deg, #18181b 0%, #09090b 100%)", accent: "#f4f4f5", outfit: "Traje contraste blanco y negro", light: "Blanco y negro alto contraste de revista" },
+  { id: 16, es: "Estudio Pastel Contemporáneo", en: "Contemporary Pastel Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)", accent: "#0ea5e9", outfit: "Blazer azul claro & camisa", light: "Luz suave Beauty Dish" },
+  { id: 17, es: "Skyline Urbano al Anochecer", en: "Metropolitan Skyline Dusk", cat: "Corporativo", bg: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", accent: "#a5b4fc", outfit: "Traje oscuro elegante", light: "Luces de ciudad bokeh al fondo" },
+  { id: 18, es: "Ángulo Cercano Empático 45°", en: "Approachable 45° Angle", cat: "Estudio", bg: "linear-gradient(135deg, #334155 0%, #1e293b 100%)", accent: "#38bdf8", outfit: "Blazer desestructurado", light: "Flash suave frontal difuso" },
+  { id: 19, es: "Loft Creativo Ladrillo Visto", en: "Creative Brick Loft Studio", cat: "Smart Casual", bg: "linear-gradient(135deg, #292524 0%, #1c1917 100%)", accent: "#f97316", outfit: "Camisa de lino & blazer café", light: "Luz incandescente suave y acogedora" },
+  { id: 20, es: "Portada LinkedIn Premium", en: "LinkedIn Premium Editorial", cat: "Editorial", bg: "linear-gradient(135deg, #0f172a 0%, #0284c7 100%)", accent: "#38bdf8", outfit: "Traje de gala ejecutiva", light: "Calidad de portada de revista Forbes/GQ" }
 ];
+
+// Call Google Imagen 3 API (imagen-3.0-generate-002:predict)
+async function callImagen3(apiKey, prompt) {
+  const key = apiKey || getGeminiApiKey();
+  if (!key) {
+    throw new Error("Falta la configuración de Gemini API Key en el servidor.");
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`;
+  const payload = {
+    instances: [
+      { prompt: prompt }
+    ],
+    parameters: {
+      sampleCount: 1,
+      aspectRatio: "1:1",
+      personGeneration: "ALLOW_ADULT",
+      safetySetting: "block_medium_and_above"
+    }
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.warn(`Imagen 3 API returned code ${response.status}:`, errorText);
+    throw new Error(`Imagen 3 API (${response.status}): ${errorText}`);
+  }
+
+  const data = await response.json();
+  if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
+    const mime = data.predictions[0].mimeType || 'image/png';
+    return `data:${mime};base64,${data.predictions[0].bytesBase64Encoded}`;
+  }
+
+  throw new Error("Respuesta sin predicción de imagen válida desde Imagen 3.");
+}
+
+// Multimodal Facial Extraction & Structured Prompt Generation using Gemini 2.5 Flash
+async function analyzeFaceAndGeneratePrompts(apiKey, userPhotoData, cvText, lang = 'es', config = {}) {
+  const key = apiKey || getGeminiApiKey();
+  if (!key) {
+    throw new Error("Falta la configuración de Gemini API Key.");
+  }
+
+  let base64Image = null;
+  let mimeType = 'image/jpeg';
+  if (userPhotoData && userPhotoData.startsWith('data:')) {
+    const parts = userPhotoData.split(',');
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    if (mimeMatch) mimeType = mimeMatch[1];
+    base64Image = parts[1];
+  }
+
+  const promptBuilderInstruction = `You are a world-renowned executive portrait photographer and LinkedIn personal branding director.
+Your task is to analyze the user's base photo and their CV context to create 20 distinct, photo-studio quality portrait prompts for Google Imagen 3.
+
+CORE OBJECTIVES:
+1. Maintain the person's authentic facial identity: preserve their estimated age, gender presentation, ethnicity/skin undertone, eye shape and color, hair length, color, and texture, and pleasant confident professional expression.
+2. Structure the 20 prompts into 4 categories (5 prompts each):
+   - Category 1: 'Corporativo' (Corporate & Boardroom): Executive tailored suit/blazer, crisp tie or silk blouse, subtle bokeh of modern skyscraper glass windows or executive boardroom.
+   - Category 2: 'Tech & Modern' (Tech Innovation Loft): Smart casual tailored blazer over minimalist knit or crisp collar, contemporary architectural coworking with natural soft daylight.
+   - Category 3: 'Smart Casual' (Smart Casual & Lifestyle): High-end linen/textured blazer, warm 85mm optical portrait lighting, clean studio textured neutral backdrop.
+   - Category 4: 'Editorial' (LinkedIn Premium & Forbes-style): 85mm f/1.4 prime lens optics, dramatic Rembrandt soft lighting, solid charcoal/navy/clean studio backdrop, magazine cover quality.
+3. Every prompt MUST be written in detailed English: 'Professional 85mm studio portrait photograph of [exact detailed facial traits], wearing [specific executive wardrobe], [specific background/lighting setup], 8k resolution, authentic human skin texture, sharp focus on eyes, masterwork cinematic studio lighting, photorealistic'.
+4. Return strictly a JSON object with this exact structure:
+{
+  "personSummary": "Detailed facial and physical features description",
+  "prompts": [
+    {
+      "id": 1,
+      "title": "Title in ${lang === 'en' ? 'English' : 'Spanish'}",
+      "category": "Corporativo | Tech | Smart Casual | Editorial",
+      "outfit": "Short outfit description",
+      "lighting": "Lighting description",
+      "prompt": "Full detailed English prompt for Imagen 3"
+    }
+  ]
+}`;
+
+  let contents = [];
+  if (base64Image) {
+    contents = [
+      {
+        parts: [
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Image
+            }
+          },
+          {
+            text: `Analyze this person's portrait carefully. Professional industry context from CV: ${cvText ? cvText.slice(0, 1500) : 'Professional candidate'}. Now generate the 20 structured Imagen 3 prompts.`
+          }
+        ]
+      }
+    ];
+  } else {
+    contents = [
+      {
+        parts: [
+          {
+            text: `Generate 20 executive portrait prompts for a professional with this CV: ${cvText ? cvText.slice(0, 1500) : 'Professional candidate'}.`
+          }
+        ]
+      }
+    ];
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: contents,
+      systemInstruction: {
+        parts: [{ text: promptBuilderInstruction }]
+      },
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.warn("Gemini Vision prompt builder error:", response.status, errText);
+    throw new Error(`Error en Gemini Vision (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const rawText = data.candidates[0].content.parts[0].text;
+  const parsed = JSON.parse(rawText);
+  return parsed.prompts || [];
+}
 
 function generateHeadshotSvg(style, photoDataUrl, candidateName, lang = 'es') {
   const isEn = lang === 'en';
   const title = isEn ? style.en : style.es;
   const initial = candidateName ? candidateName.charAt(0).toUpperCase() : 'C';
-  const textColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#0f172a' : '#ffffff';
-  const subtitleColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#475569' : 'rgba(255,255,255,0.75)';
+  const subtitleColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#0475569' : 'rgba(255,255,255,0.75)';
 
-  // If user provided photoDataUrl, use it inside an SVG image pattern or overlay
   const photoElement = photoDataUrl
     ? `<image href="${photoDataUrl}" x="120" y="110" width="240" height="240" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatarClip)" />`
     : `
-      <!-- Stylized Studio Portrait Silhouette -->
       <circle cx="240" cy="210" r="85" fill="${style.accent}" opacity="0.22" />
       <circle cx="240" cy="190" r="54" fill="${style.accent}" opacity="0.9" />
       <text x="240" y="206" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="44" font-weight="bold" fill="#ffffff">${initial}</text>
@@ -1155,30 +1291,16 @@ function generateHeadshotSvg(style, photoDataUrl, candidateName, lang = 'es') {
         </feMerge>
       </filter>
     </defs>
-
-    <!-- Background -->
     <rect width="480" height="480" fill="#0f172a" />
     <rect width="480" height="480" fill="url(#bgGrad_${style.id})" />
-
-    <!-- Ambient Studio Spotlight -->
     <circle cx="240" cy="180" r="170" fill="${style.accent}" opacity="0.15" filter="url(#softGlow)" />
-
-    <!-- Outer Decorative Ring -->
     <circle cx="240" cy="225" r="116" fill="none" stroke="${style.accent}" stroke-width="2.5" stroke-dasharray="8 6" opacity="0.5" />
     <circle cx="240" cy="225" r="111" fill="none" stroke="${style.accent}" stroke-width="2" opacity="0.9" />
-
-    <!-- Photo Content -->
     ${photoElement}
-
-    <!-- Header Badge -->
     <rect x="24" y="24" width="130" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="${style.accent}" stroke-width="1" />
     <text x="89" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="11" font-weight="700" fill="${style.accent}" letter-spacing="0.5">${style.cat.toUpperCase()}</text>
-
-    <!-- Top Right 85mm badge -->
     <rect x="360" y="24" width="96" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
     <text x="408" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#e2e8f0">85mm · f/1.4</text>
-
-    <!-- Bottom Metadata Panel -->
     <rect x="24" y="390" width="432" height="66" rx="12" fill="rgba(15,23,42,0.85)" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
     <text x="44" y="418" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="700" fill="#ffffff">${title}</text>
     <text x="44" y="440" font-family="-apple-system, system-ui, sans-serif" font-size="12" font-weight="500" fill="${subtitleColor}">Estilo: ${style.outfit} · Ilum: ${style.light}</text>
@@ -1187,22 +1309,71 @@ function generateHeadshotSvg(style, photoDataUrl, candidateName, lang = 'es') {
 }
 
 async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}) {
+  const apiKey = getGeminiApiKey();
   const candidateName = filename ? filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ") : "Candidato";
-  
-  const headshots = HEADSHOT_STYLES.map(style => {
-    const svgContent = generateHeadshotSvg(style, userPhotoData, candidateName, lang);
-    const base64Svg = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
-    
-    return {
-      id: style.id,
-      title: lang === 'en' ? style.en : style.es,
-      category: style.cat,
-      outfit: style.outfit,
-      lighting: style.light,
-      svgDataUrl: base64Svg,
-      rawSvg: svgContent
-    };
-  });
+
+  let generatedPrompts = [];
+  try {
+    if (apiKey) {
+      generatedPrompts = await analyzeFaceAndGeneratePrompts(apiKey, userPhotoData, cvText, lang, config);
+    }
+  } catch (promptErr) {
+    console.warn("Falling back to predefined styles for prompts:", promptErr.message);
+  }
+
+  if (!generatedPrompts || generatedPrompts.length === 0) {
+    generatedPrompts = HEADSHOT_STYLES.map(s => ({
+      id: s.id,
+      title: lang === 'en' ? s.en : s.es,
+      category: s.cat,
+      outfit: s.outfit,
+      lighting: s.light,
+      prompt: `Professional 85mm executive studio portrait photograph of a confident professional, wearing ${s.outfit}, in ${s.cat} modern backdrop with ${s.light}, 8k resolution, crisp focus, authentic skin textures, hyper-realistic studio lighting.`
+    }));
+  }
+
+  const headshots = [];
+  const BATCH_SIZE = 4;
+
+  for (let i = 0; i < generatedPrompts.length; i += BATCH_SIZE) {
+    const batch = generatedPrompts.slice(i, i + BATCH_SIZE);
+    const batchPromises = batch.map(async (item, idx) => {
+      const globalIndex = i + idx + 1;
+      try {
+        if (apiKey) {
+          const imageDataUrl = await callImagen3(apiKey, item.prompt);
+          return {
+            id: item.id || globalIndex,
+            title: item.title,
+            category: item.category,
+            outfit: item.outfit,
+            lighting: item.lighting,
+            imageUrl: imageDataUrl,
+            prompt: item.prompt
+          };
+        }
+      } catch (imgErr) {
+        console.warn(`Imagen 3 generation failed for item #${globalIndex}:`, imgErr.message);
+      }
+
+      const styleDef = HEADSHOT_STYLES[globalIndex - 1] || HEADSHOT_STYLES[0];
+      const svgContent = generateHeadshotSvg(styleDef, userPhotoData, candidateName, lang);
+      const base64Svg = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
+      return {
+        id: item.id || globalIndex,
+        title: item.title || (lang === 'en' ? styleDef.en : styleDef.es),
+        category: item.category || styleDef.cat,
+        outfit: item.outfit || styleDef.outfit,
+        lighting: item.lighting || styleDef.light,
+        imageUrl: base64Svg,
+        svgDataUrl: base64Svg,
+        rawSvg: svgContent
+      };
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    headshots.push(...batchResults);
+  }
 
   return headshots;
 }
@@ -1265,8 +1436,8 @@ app.post('/api/headshots/generate', async (req, res) => {
       return res.json({
         success: false,
         requiresPayment: true,
-        priceHeadshots: config.priceHeadshots || 5.0,
-        priceHeadshotsClp: config.priceHeadshotsClp || 5000
+        priceHeadshots: config.priceHeadshots || 6.0,
+        priceHeadshotsClp: config.priceHeadshotsClp || 6000
       });
     }
 
@@ -1326,19 +1497,29 @@ app.get('/api/headshots/download-zip/:analysisId', async (req, res) => {
 
     headshots.forEach((item, index) => {
       const num = index + 1 < 10 ? `0${index + 1}` : `${index + 1}`;
-      const safeTitle = item.title.replace(/[^a-zA-Z0-9_-]/g, "_");
-      const filename = `${num}_${safeTitle}.svg`;
-      const svgBuffer = Buffer.from(item.rawSvg || Buffer.from(item.svgDataUrl.split(',')[1], 'base64').toString('utf8'));
-      zip.addFile(filename, svgBuffer);
+      const safeTitle = (item.title || `Retrato_${num}`).replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      if (item.imageUrl && item.imageUrl.startsWith('data:image/')) {
+        const parts = item.imageUrl.split(',');
+        const mimeMatch = parts[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const ext = mime.includes('png') ? 'png' : (mime.includes('jpeg') || mime.includes('jpg')) ? 'jpg' : (mime.includes('svg') ? 'svg' : 'png');
+        const imgBuffer = Buffer.from(parts[1], 'base64');
+        const filename = `${num}_${safeTitle}.${ext}`;
+        zip.addFile(filename, imgBuffer);
+      } else if (item.rawSvg || (item.svgDataUrl && item.svgDataUrl.startsWith('data:image/svg+xml'))) {
+        const filename = `${num}_${safeTitle}.svg`;
+        const svgContent = item.rawSvg || Buffer.from(item.svgDataUrl.split(',')[1], 'base64').toString('utf8');
+        zip.addFile(filename, Buffer.from(svgContent, 'utf8'));
+      }
     });
 
-    // Add instructions and best practices text file
     const isEn = analysis.lang === 'en';
     const guideText = isEn
       ? `CINTIA.PRO - 20 AI LINKEDIN & RESUME HEADSHOTS PACK
 ==================================================
 
-Congratulations! Here are your 20 studio-grade professional portraits.
+Congratulations! Here are your 20 studio-grade professional portraits powered by Google Imagen 3 & Gemini.
 
 RECOMMENDED SIZES & PLATFORM GUIDELINES:
 1. LinkedIn Profile Picture:
@@ -1358,7 +1539,7 @@ Website: https://cintia.pro`
       : `CINTIA.PRO - PACK DE 20 FOTOS DE ESTUDIO PARA LINKEDIN Y CV
 ============================================================
 
-¡Felicitaciones! Aquí tienes tu pack de 20 retratos fotográficos profesionales de estudio.
+¡Felicitaciones! Aquí tienes tu pack de 20 retratos fotográficos profesionales de estudio generados con Google Imagen 3 & Gemini.
 
 GUÍA DE USO Y RECOMENDACIONES DE PLATAFORMAS:
 1. Foto de Perfil en LinkedIn:
@@ -1378,19 +1559,13 @@ Sitio web: https://cintia.pro`;
     zip.addFile("LEEME_GUIA_RECOMENDACIONES.txt", Buffer.from(guideText, 'utf8'));
 
     const zipBuffer = zip.toBuffer();
-    const candidateSlug = analysis.filename ? analysis.filename.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_") : "Cintia";
-    
-    res.set({
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="Cintia_20_Fotos_LinkedIn_${candidateSlug}.zip"`,
-      'Content-Length': zipBuffer.length
-    });
-
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="Cintia_Pack_20_Headshots_${analysisId.slice(0,8)}.zip"`);
     res.send(zipBuffer);
 
   } catch (err) {
     console.error("Error in /api/headshots/download-zip:", err);
-    res.status(500).send("Error al generar el archivo .zip de retratos.");
+    res.status(500).send("Error al generar archivo .ZIP");
   }
 });
 
@@ -1771,11 +1946,11 @@ app.get('/api/config', async (req, res) => {
     priceAi: config.priceAi || 2.0,
     priceExpert: config.priceExpert || 25.0,
     priceCoverLetter: config.priceCoverLetter || 2.0,
-    priceHeadshots: config.priceHeadshots || 5.0,
+    priceHeadshots: config.priceHeadshots || 6.0,
     priceAiClp: config.priceAiClp || 2000,
     priceExpertClp: config.priceExpertClp || 25000,
     priceCoverLetterClp: config.priceCoverLetterClp || 2000,
-    priceHeadshotsClp: config.priceHeadshotsClp || 5000,
+    priceHeadshotsClp: config.priceHeadshotsClp || 6000,
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
     mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
@@ -2018,8 +2193,8 @@ app.post('/api/paypal/create-order', async (req, res) => {
       amount = (config.priceCoverLetter || 2.0).toFixed(2);
       description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
     } else if (tier === 'headshots') {
-      amount = (config.priceHeadshots || 5.0).toFixed(2);
-      description = 'Cintia - Pack 20 Fotos de Estudio con IA para LinkedIn y CV';
+      amount = (config.priceHeadshots || 6.0).toFixed(2);
+      description = 'Cintia - Pack 20 Fotos de Estudio para LinkedIn';
     }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
@@ -2158,8 +2333,8 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
       amountClp = Number(config.priceCoverLetterClp || 2000);
       description = 'Cintia - Carta de Presentación a Medida (Cover Letter)';
     } else if (tier === 'headshots') {
-      amountClp = Number(config.priceHeadshotsClp || 5000);
-      description = 'Cintia - Pack 20 Fotos de Estudio con IA para LinkedIn y CV';
+      amountClp = Number(config.priceHeadshotsClp || 6000);
+      description = 'Cintia - Pack 20 Fotos de Estudio para LinkedIn';
     }
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
@@ -2488,11 +2663,11 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.hasOwnProperty('priceAi')) config.priceAi = parseFloat(newSettings.priceAi) || 2.0;
     if (newSettings.hasOwnProperty('priceExpert')) config.priceExpert = parseFloat(newSettings.priceExpert) || 25.0;
     if (newSettings.hasOwnProperty('priceCoverLetter')) config.priceCoverLetter = parseFloat(newSettings.priceCoverLetter) || 2.0;
-    if (newSettings.hasOwnProperty('priceHeadshots')) config.priceHeadshots = parseFloat(newSettings.priceHeadshots) || 5.0;
+    if (newSettings.hasOwnProperty('priceHeadshots')) config.priceHeadshots = parseFloat(newSettings.priceHeadshots) || 6.0;
     if (newSettings.hasOwnProperty('priceAiClp')) config.priceAiClp = parseInt(newSettings.priceAiClp, 10) || 2000;
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
-    if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 5000;
+    if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 6000;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
     if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
     if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = !!newSettings.optCoverLetterEnabled;

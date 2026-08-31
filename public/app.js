@@ -105,11 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     optHeadshotsEnabled: true,
     priceAi: 2.0,
     priceCoverLetter: 2.0,
-    priceHeadshots: 5.0,
+    priceHeadshots: 6.0,
     priceExpert: 25.0,
     priceAiClp: 2000,
     priceCoverLetterClp: 2000,
-    priceHeadshotsClp: 5000,
+    priceHeadshotsClp: 6000,
     priceExpertClp: 25000
   };
 
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
       coachCardTag3: "$2 USD / $2.000 CLP",
       coachCardTitle3: "Cartas de Presentación por Vacante",
       coachCardDesc3: "Pega la descripción de cualquier empleo de LinkedIn o portales de trabajo. Cintia redactará una carta formal y persuasiva alineada a los requisitos del puesto.",
-      coachCardTagHeadshots: "$5 USD / $5.000 CLP",
+      coachCardTagHeadshots: "$6 USD / $6.000 CLP",
       coachCardTitleHeadshots: "Pack 20 Fotos de Estudio para LinkedIn",
       coachCardDescHeadshots: "Sube tu foto base y genera 20 retratos fotográficos de alta resolución con iluminación de estudio 85mm, vestimentas ejecutivas y fondos modernos.",
       coachCardTagExpert: "$25 USD / $25.000 CLP",
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
       coachCardTag3: "$2 USD / $2,000 CLP",
       coachCardTitle3: "Tailored Cover Letters by Job Opening",
       coachCardDesc3: "Paste any job posting from LinkedIn or career boards. Cintia crafts a persuasive, recruiter-ready letter aligned with role requirements.",
-      coachCardTagHeadshots: "$5 USD / $5,000 CLP",
+      coachCardTagHeadshots: "$6 USD / $6,000 CLP",
       coachCardTitleHeadshots: "20 AI Studio Headshots for LinkedIn",
       coachCardDescHeadshots: "Upload your photo and generate 20 studio-grade portraits with 85mm optical lighting, executive wardrobe, and modern backdrops.",
       coachCardTagExpert: "$25 USD / $25,000 CLP",
@@ -833,17 +833,17 @@ document.addEventListener('DOMContentLoaded', () => {
       headshotsSection.style.display = appConfig.optHeadshotsEnabled !== false ? 'block' : 'none';
     }
     if (headshotsPriceDisplay) {
-      headshotsPriceDisplay.textContent = `$${appConfig.priceHeadshots || 5} USD`;
+      headshotsPriceDisplay.textContent = `$${appConfig.priceHeadshots || 6} USD`;
     }
     if (headshotsPricePeriod) {
       headshotsPricePeriod.textContent = currentLanguage === 'en'
-        ? `/ $${(appConfig.priceHeadshots || 5).toFixed(2)} USD · 20 HD Portraits`
-        : `/ $${(appConfig.priceHeadshotsClp || 5000).toLocaleString('es-CL')} CLP · 20 Retratos HD`;
+        ? `/ $${(appConfig.priceHeadshots || 6).toFixed(2)} USD · 20 Studio Portraits`
+        : `/ $${(appConfig.priceHeadshotsClp || 6000).toLocaleString('es-CL')} CLP · 20 Retratos HD`;
     }
     if (generateHeadshotsBtnText) {
       generateHeadshotsBtnText.textContent = currentLanguage === 'en'
-        ? `Generate 20 Studio Headshots ($${appConfig.priceHeadshots || 5} USD)`
-        : `Generar Pack 20 Fotos de Estudio ($${appConfig.priceHeadshots || 5} USD)`;
+        ? `Generate 20 Studio Headshots ($${appConfig.priceHeadshots || 6} USD)`
+        : `Generar Pack 20 Fotos de Estudio ($${appConfig.priceHeadshots || 6} USD)`;
     }
 
     // 5. Apply visibility to showcase cards based on configuration
@@ -1841,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : currentTier === 'cover_letter'
       ? (appConfig.priceCoverLetterClp || 2000)
       : currentTier === 'headshots'
-      ? (appConfig.priceHeadshotsClp || 5000)
+      ? (appConfig.priceHeadshotsClp || 6000)
       : (appConfig.priceExpertClp || 25000);
     if (checkoutTotalClp) {
       checkoutTotalClp.textContent = `(~ $${priceClp.toLocaleString('es-CL')} CLP)`;
@@ -2597,7 +2597,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingExpertContact = null;
       openCheckout(
         currentLanguage === 'en' ? '20 AI Studio Headshots Pack' : 'Pack 20 Fotos de Estudio con IA',
-        (appConfig.priceHeadshots || 5).toFixed(2)
+        (appConfig.priceHeadshots || 6).toFixed(2)
       );
     });
   }
@@ -2653,7 +2653,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generateHeadshotsBtn.disabled = false;
         generateHeadshotsBtn.innerHTML = `
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
-          <span id="generateHeadshotsBtnText">${translations[currentLanguage]?.generateHeadshotsBtnText || 'Generar Pack 20 Fotos de Estudio ($5 USD)'}</span>
+          <span id="generateHeadshotsBtnText">${translations[currentLanguage]?.generateHeadshotsBtnText || 'Generar Pack 20 Fotos de Estudio ($6 USD)'}</span>
         `;
       }
     }
@@ -2667,13 +2667,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'headshot-item-card';
 
-      const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${item.title.replace(/\s+/g, '_')}.svg`;
+      const imageSrc = item.imageUrl || item.svgDataUrl;
+      const isPng = imageSrc && imageSrc.startsWith('data:image/png');
+      const isJpg = imageSrc && (imageSrc.startsWith('data:image/jpeg') || imageSrc.startsWith('data:image/jpg'));
+      const ext = isPng ? 'png' : isJpg ? 'jpg' : 'svg';
+      const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${item.title.replace(/\s+/g, '_')}.${ext}`;
 
       card.innerHTML = `
         <div class="headshot-item-img-wrap">
-          <img src="${item.svgDataUrl}" alt="${item.title}" class="headshot-item-img" loading="lazy">
+          <img src="${imageSrc}" alt="${item.title}" class="headshot-item-img" loading="lazy">
           <div class="headshot-item-overlay">
-            <a href="${item.svgDataUrl}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
+            <a href="${imageSrc}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               <span>Descargar</span>
             </a>
