@@ -152,7 +152,8 @@
         <div class="spinner"></div>
         <h3 id="loadingStatus">Analizando tu Currículum...</h3>
         <ul class="loading-steps" id="loadingSteps">
-          <li id="step0" class="active">Detectando el idioma del currículum...</li>
+          <li id="stepValidity" class="active">Verificando validez del Currículum...</li>
+          <li id="step0">Detectando el idioma del currículum...</li>
           <li id="step1">Extrayendo texto del documento...</li>
           <li id="step2">Evaluando estructura bajo estándares ATS...</li>
           <li id="step3">Analizando claridad de capacidades y certificaciones...</li>
@@ -895,6 +896,27 @@
   </footer>
 
   <script src="app.js?v=2.4"></script>
+  <!-- Friendly Non-CV Document Detected Notice Dialog -->
+  <dialog id="notCvModal" style="padding: 0; border: none; border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,0.22); max-width: 520px; width: 92%; background: #ffffff; margin: auto;">
+    <div style="padding: 30px 24px; text-align: center;">
+      <div style="width: 58px; height: 58px; border-radius: 50%; background: #f0f9ff; border: 1.5px solid rgba(2,132,199,0.25); color: #0284c7; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px;">
+        📄✨
+      </div>
+      <h3 id="notCvModalTitle" style="font-size: 19px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">
+        ¡Hola! Parece que este archivo no es un Currículum
+      </h3>
+      <div id="notCvModalReason" style="font-size: 13.5px; color: #334155; line-height: 1.6; margin-bottom: 16px; background: #f8fafc; padding: 14px 16px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: left;">
+        <!-- Injected dynamically -->
+      </div>
+      <p id="notCvModalHint" style="font-size: 13px; color: var(--text-light); line-height: 1.5; margin-bottom: 22px;">
+        Te invitamos a revisar tus carpetas y seleccionar el archivo de tu <strong>Currículum Vitae</strong> para que Cintia pueda auditar tus fortalezas laborales y ayudarte a superar los filtros ATS.
+      </p>
+      <button type="button" class="btn" id="notCvModalCloseBtn" style="width: 100%; margin-top: 0; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 10px; background: var(--color-mint); color: #ffffff; cursor: pointer; border: none; box-shadow: 0 4px 14px rgba(16,185,129,0.28);">
+        Entendido, seleccionar mi Currículum
+      </button>
+    </div>
+  </dialog>
+
   <!-- Contact Validation Dialog for Expert Tier -->
   <dialog id="expertAlertModal" style="padding: 0; border: none; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 440px; width: 90%; background: #ffffff; margin: auto;">
     <div style="padding: 26px 22px; text-align: center;">

@@ -129,12 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
       termsConsentText: "Acepto los <a href=\"/terminos.html\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">términos y condiciones</a> de uso de Cintia.pro.",
       submitBtn: "Analizar CV Gratis",
       loadingStatus: "Cintia está analizando tu Currículum...",
+      stepValidity: "Cintia está verificando la validez del currículum...",
       step0: "Cintia está detectando el idioma del currículum...",
       step1: "Cintia está extrayendo el texto del documento...",
       step2: "Cintia está evaluando la estructura bajo estándares ATS...",
       step3: "Cintia está analizando la claridad de capacidades y certificaciones...",
       step4: "Cintia está verificando la extensión de páginas...",
       step5: "Cintia está generando el informe de calidad...",
+      notCvModalTitle: "¡Hola! Parece que este archivo no es un Currículum",
+      notCvModalHint: "Te invitamos a revisar tus carpetas y seleccionar el archivo de tu <strong>Currículum Vitae</strong> para que Cintia pueda auditar tus fortalezas laborales y ayudarte a superar los filtros ATS.",
+      notCvModalCloseBtn: "Entendido, seleccionar mi Currículum",
       resultsTitle: "Evaluación de Cintia",
       scoreCardTitle: "Puntaje General del CV",
       radarCardTitle: "Equilibrio de Competencias (7 Ejes)",
@@ -281,12 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
       termsConsentText: "I accept the <a href=\"/terminos.html?lang=en\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: var(--color-mint); text-decoration: underline; font-weight: 600;\">terms and conditions</a> of Cintia.pro.",
       submitBtn: "Analyze Resume for Free",
       loadingStatus: "Cintia is analyzing your Resume...",
+      stepValidity: "Cintia is verifying resume validity...",
       step0: "Cintia is detecting the language of your resume...",
       step1: "Cintia is extracting text from the document...",
       step2: "Cintia is evaluating structure against ATS standards...",
       step3: "Cintia is analyzing skills and certifications clarity...",
       step4: "Cintia is checking page length...",
       step5: "Cintia is generating the quality report...",
+      notCvModalTitle: "Hello! This document doesn't seem to be a Resume",
+      notCvModalHint: "We invite you to check your folders and select your <strong>Resume / CV</strong> file so Cintia can audit your strengths and help you pass ATS filters.",
+      notCvModalCloseBtn: "Got it, select my Resume",
       resultsTitle: "Cintia's Evaluation",
       scoreCardTitle: "Overall Resume Score",
       radarCardTitle: "Competency Balance (7 Axes)",
@@ -458,11 +466,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const termsConsentTextEl = document.getElementById('termsConsentText');
     if (termsConsentTextEl) termsConsentTextEl.innerHTML = t.termsConsentText;
     
-    const submitBtnEl = document.getElementById('submitBtn');
-    if (submitBtnEl) submitBtnEl.textContent = t.submitBtn;
-    
     const loadingStatusEl = document.getElementById('loadingStatus');
     if (loadingStatusEl) loadingStatusEl.textContent = t.loadingStatus;
+    const stepValidityEl = document.getElementById('stepValidity');
+    if (stepValidityEl) stepValidityEl.textContent = t.stepValidity;
+    const step0El = document.getElementById('step0');
+    if (step0El) step0El.textContent = t.step0;
+    const step1El = document.getElementById('step1');
+    if (step1El) step1El.textContent = t.step1;
+    const step2El = document.getElementById('step2');
+    if (step2El) step2El.textContent = t.step2;
+    const step3El = document.getElementById('step3');
+    if (step3El) step3El.textContent = t.step3;
+    const step4El = document.getElementById('step4');
+    if (step4El) step4El.textContent = t.step4;
+    const step5El = document.getElementById('step5');
+    if (step5El) step5El.textContent = t.step5;
+
+    const notCvModalTitleEl = document.getElementById('notCvModalTitle');
+    if (notCvModalTitleEl) notCvModalTitleEl.textContent = t.notCvModalTitle;
+    const notCvModalHintEl = document.getElementById('notCvModalHint');
+    if (notCvModalHintEl) notCvModalHintEl.innerHTML = t.notCvModalHint;
+    const notCvModalCloseBtnEl = document.getElementById('notCvModalCloseBtn');
+    if (notCvModalCloseBtnEl) notCvModalCloseBtnEl.textContent = t.notCvModalCloseBtn;
+    
+    const submitBtnEl = document.getElementById('submitBtn');
+    if (submitBtnEl) submitBtnEl.textContent = t.submitBtn;
     
     // Evaluation Results Screen Labels
     const resultsTitleEl = document.getElementById('resultsTitle');
@@ -1358,6 +1387,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       clearInterval(progressInterval);
 
+      if (data.notCv) {
+        loadingWrapper.style.display = 'none';
+        uploadWrapper.style.display = 'block';
+        loadCaptcha();
+        const langContainer = document.querySelector('.lang-selector-container');
+        if (langContainer) langContainer.style.display = 'block';
+        showNotCvFriendlyModal(data.reason);
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(data.error || (currentLanguage === 'en' ? 'Error parsing analysis.' : 'Error al procesar el análisis.'));
       }
@@ -1403,6 +1442,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Friendly Non-CV Document Detection Modal Display
+  function showNotCvFriendlyModal(reasonText) {
+    const notCvModal = document.getElementById('notCvModal');
+    const notCvModalReason = document.getElementById('notCvModalReason');
+    const notCvModalCloseBtn = document.getElementById('notCvModalCloseBtn');
+
+    if (notCvModalReason) {
+      notCvModalReason.innerHTML = parseFeedbackMarkdown(reasonText || (currentLanguage === 'en'
+        ? "The uploaded file does not appear to be a personal resume or CV. Please verify your selected folder and upload your actual resume."
+        : "El documento que subiste parece ser un artículo académico o documento no laboral y no un currículum vitae personal. Te invitamos a revisar tus archivos y seleccionar tu CV para que Cintia pueda auditarlo."));
+    }
+
+    if (notCvModal) {
+      notCvModal.showModal();
+    }
+
+    if (notCvModalCloseBtn) {
+      notCvModalCloseBtn.onclick = () => {
+        if (notCvModal) notCvModal.close();
+        // Reset file selection
+        activeFile = null;
+        if (cvFileInput) cvFileInput.value = '';
+        if (selectedFileContainer) selectedFileContainer.style.display = 'none';
+        if (dropZone) dropZone.style.display = 'block';
+        updateSubmitBtnState();
+      };
+    }
+  }
 
   // 5. Radar Heptagon SVG Generator
   function renderRadarChart(evalData) {

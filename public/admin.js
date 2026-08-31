@@ -109,18 +109,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewTextModal = document.getElementById('viewTextModal');
   const cvModalDocTitle = document.getElementById('cvModalDocTitle');
   const cvModalDocMeta = document.getElementById('cvModalDocMeta');
+  const tabBtnEvaluation = document.getElementById('tabBtnEvaluation');
   const tabBtnOriginal = document.getElementById('tabBtnOriginal');
   const tabBtnOptimized = document.getElementById('tabBtnOptimized');
   const tabBtnCoverLetter = document.getElementById('tabBtnCoverLetter');
+  const tabBtnHeadshots = document.getElementById('tabBtnHeadshots');
+  const cvEvaluationContainer = document.getElementById('cvEvaluationContainer');
+  const cvTextContainer = document.getElementById('cvTextContainer');
+  const cvHeadshotsContainer = document.getElementById('cvHeadshotsContainer');
   const cvTextContentBox = document.getElementById('cvTextContentBox');
   const copyModalTextBtn = document.getElementById('copyModalTextBtn');
   const downloadModalOriginalBtn = document.getElementById('downloadModalOriginalBtn');
   const downloadModalOptimizedBtn = document.getElementById('downloadModalOptimizedBtn');
   const downloadModalCoverLetterBtn = document.getElementById('downloadModalCoverLetterBtn');
+  const adminHeadshotsGrid = document.getElementById('adminHeadshotsGrid');
+  const adminHeadshotsEmpty = document.getElementById('adminHeadshotsEmpty');
+  const adminHeadshotsContent = document.getElementById('adminHeadshotsContent');
+  const adminDownloadZipBtn = document.getElementById('adminDownloadZipBtn');
   const closeTextModalBtn = document.getElementById('closeTextModalBtn');
 
   let currentInspectionDoc = null;
-  let currentInspectionTab = 'original';
+  let currentInspectionTab = 'evaluation';
 
   // Admin Session Token
   let adminToken = localStorage.getItem('adminToken');
@@ -975,12 +984,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 6. CV Inspection & Session Workspace Modal
+  // 6. CV Inspection & Full Diagnostic Modal
   async function showCvText(analysisId) {
     try {
-      cvTextContentBox.textContent = 'Cargando información del currículum...';
       cvModalDocTitle.textContent = 'Inspección de Currículum';
-      cvModalDocMeta.textContent = '';
+      cvModalDocMeta.textContent = 'Cargando información...';
+      if (cvTextContentBox) cvTextContentBox.textContent = 'Cargando contenido...';
       viewTextModal.showModal();
 
       const response = await fetch(`/api/admin/analysis-detail/${analysisId}`, {
@@ -996,19 +1005,27 @@ document.addEventListener('DOMContentLoaded', () => {
         : '';
       cvModalDocMeta.textContent = `Subido: ${formatDate(data.uploadedAt)} | Estado: ${data.paymentStatus}${contactInfo}`;
 
+      // Render Evaluation Dashboard & Headshots
+      renderAdminEvaluation(data.evaluation);
+      renderAdminHeadshots(data);
+
       // Set download links with auth headers handled by click
-      downloadModalOriginalBtn.onclick = (e) => {
-        e.preventDefault();
-        downloadCvFile(`/api/admin/download-text/${data.id}`, `cv_original_${data.filename}.txt`);
-      };
+      if (downloadModalOriginalBtn) {
+        downloadModalOriginalBtn.onclick = (e) => {
+          e.preventDefault();
+          downloadCvFile(`/api/admin/download-text/${data.id}`, `cv_original_${data.filename}.txt`);
+        };
+      }
 
-      downloadModalOptimizedBtn.onclick = (e) => {
-        e.preventDefault();
-        downloadCvFile(`/api/admin/download-optimized/${data.id}`, `cv_optimizado_cintia_${data.filename}.txt`);
-      };
+      if (downloadModalOptimizedBtn) {
+        downloadModalOptimizedBtn.onclick = (e) => {
+          e.preventDefault();
+          downloadCvFile(`/api/admin/download-optimized/${data.id}`, `cv_optimizado_cintia_${data.filename}.txt`);
+        };
+      }
 
-      // Default to original or optimized if only one is available
-      setInspectionTab('original');
+      // Default to full evaluation tab
+      setInspectionTab('evaluation');
 
     } catch (err) {
       alert(err.message);
@@ -1020,64 +1037,49 @@ document.addEventListener('DOMContentLoaded', () => {
     currentInspectionTab = tab;
     if (!currentInspectionDoc) return;
 
-    if (tab === 'original') {
-      tabBtnOriginal.style.background = 'var(--color-mint-light)';
-      tabBtnOriginal.style.color = 'var(--color-mint-hover)';
-      tabBtnOriginal.style.borderColor = 'rgba(16,185,129,0.3)';
+    // Reset button styles
+    const allTabs = [
+      { id: 'evaluation', btn: tabBtnEvaluation, cont: cvEvaluationContainer },
+      { id: 'original', btn: tabBtnOriginal, cont: cvTextContainer },
+      { id: 'optimized', btn: tabBtnOptimized, cont: cvTextContainer },
+      { id: 'cover_letter', btn: tabBtnCoverLetter, cont: cvTextContainer },
+      { id: 'headshots', btn: tabBtnHeadshots, cont: cvHeadshotsContainer }
+    ];
 
-      tabBtnOptimized.style.background = '#ffffff';
-      tabBtnOptimized.style.color = 'var(--text)';
-      tabBtnOptimized.style.borderColor = 'var(--border-grey)';
-
-      if (tabBtnCoverLetter) {
-        tabBtnCoverLetter.style.background = '#ffffff';
-        tabBtnCoverLetter.style.color = 'var(--text)';
-        tabBtnCoverLetter.style.borderColor = 'var(--border-grey)';
+    allTabs.forEach(t => {
+      if (t.btn) {
+        if (t.id === tab) {
+          t.btn.style.background = 'var(--color-mint-light)';
+          t.btn.style.color = 'var(--color-mint-hover)';
+          t.btn.style.borderColor = 'rgba(16,185,129,0.3)';
+          t.btn.style.fontWeight = '700';
+        } else {
+          t.btn.style.background = '#ffffff';
+          t.btn.style.color = 'var(--text)';
+          t.btn.style.borderColor = 'var(--border-grey)';
+          t.btn.style.fontWeight = '600';
+        }
       }
+    });
 
-      if (downloadModalCoverLetterBtn) downloadModalCoverLetterBtn.style.display = 'none';
+    if (cvEvaluationContainer) cvEvaluationContainer.style.display = tab === 'evaluation' ? 'block' : 'none';
+    if (cvTextContainer) cvTextContainer.style.display = (tab === 'original' || tab === 'optimized' || tab === 'cover_letter') ? 'block' : 'none';
+    if (cvHeadshotsContainer) cvHeadshotsContainer.style.display = tab === 'headshots' ? 'block' : 'none';
 
+    if (downloadModalCoverLetterBtn) {
+      downloadModalCoverLetterBtn.style.display = tab === 'cover_letter' ? 'inline-flex' : 'none';
+    }
+
+    if (tab === 'original') {
       cvTextContentBox.textContent = currentInspectionDoc.originalText || '(Texto original no disponible)';
     } else if (tab === 'optimized') {
-      tabBtnOptimized.style.background = 'var(--color-mint-light)';
-      tabBtnOptimized.style.color = 'var(--color-mint-hover)';
-      tabBtnOptimized.style.borderColor = 'rgba(16,185,129,0.3)';
-
-      tabBtnOriginal.style.background = '#ffffff';
-      tabBtnOriginal.style.color = 'var(--text)';
-      tabBtnOriginal.style.borderColor = 'var(--border-grey)';
-
-      if (tabBtnCoverLetter) {
-        tabBtnCoverLetter.style.background = '#ffffff';
-        tabBtnCoverLetter.style.color = 'var(--text)';
-        tabBtnCoverLetter.style.borderColor = 'var(--border-grey)';
-      }
-
-      if (downloadModalCoverLetterBtn) downloadModalCoverLetterBtn.style.display = 'none';
-
       cvTextContentBox.textContent = currentInspectionDoc.optimizedText || '(Optimización de IA no disponible)';
     } else if (tab === 'cover_letter') {
-      if (tabBtnCoverLetter) {
-        tabBtnCoverLetter.style.background = '#ede9fe';
-        tabBtnCoverLetter.style.color = '#6d28d9';
-        tabBtnCoverLetter.style.borderColor = 'rgba(109, 40, 217, 0.3)';
-      }
-
-      tabBtnOriginal.style.background = '#ffffff';
-      tabBtnOriginal.style.color = 'var(--text)';
-      tabBtnOriginal.style.borderColor = 'var(--border-grey)';
-
-      tabBtnOptimized.style.background = '#ffffff';
-      tabBtnOptimized.style.color = 'var(--text)';
-      tabBtnOptimized.style.borderColor = 'var(--border-grey)';
-
       const jobOffer = currentInspectionDoc.jobOfferText || '(Sin descripción de oferta laboral ingresada)';
       const coverLetter = currentInspectionDoc.coverLetterText || '(Carta de presentación aún no generada)';
-      
       cvTextContentBox.textContent = `============================================================\nDESCRIPCIÓN DE LA OFERTA LABORAL (INGRESADA POR EL USUARIO)\n============================================================\n${jobOffer}\n\n============================================================\nCARTA DE PRESENTACIÓN GENERADA POR CINTIA\n============================================================\n${coverLetter}`;
 
       if (downloadModalCoverLetterBtn) {
-        downloadModalCoverLetterBtn.style.display = 'inline-flex';
         downloadModalCoverLetterBtn.onclick = (e) => {
           e.preventDefault();
           downloadCvFile(`/api/admin/download-cover-letter/${currentInspectionDoc.id}`, `carta_presentacion_${currentInspectionDoc.filename}.txt`);
@@ -1086,9 +1088,361 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  if (tabBtnEvaluation) tabBtnEvaluation.addEventListener('click', () => setInspectionTab('evaluation'));
   if (tabBtnOriginal) tabBtnOriginal.addEventListener('click', () => setInspectionTab('original'));
   if (tabBtnOptimized) tabBtnOptimized.addEventListener('click', () => setInspectionTab('optimized'));
   if (tabBtnCoverLetter) tabBtnCoverLetter.addEventListener('click', () => setInspectionTab('cover_letter'));
+  if (tabBtnHeadshots) tabBtnHeadshots.addEventListener('click', () => setInspectionTab('headshots'));
+
+  // Render full evaluation dashboard inside Admin inspection modal
+  function renderAdminEvaluation(evalData) {
+    const summaryEl = document.getElementById('adminResultsSummary');
+    if (!evalData) {
+      if (summaryEl) summaryEl.textContent = 'Evaluación no disponible para este documento.';
+      return;
+    }
+
+    if (summaryEl) {
+      summaryEl.innerHTML = parseFeedbackMarkdown(evalData.summary || 'Diagnóstico de Calidad de Cintia');
+    }
+
+    renderAdminScoreGaugeAndKpis(evalData);
+    renderAdminRadarChart(evalData);
+    renderAdminCritiqueGrid(evalData);
+
+    const explanationEl = document.getElementById('adminDetailedExplanationText');
+    if (explanationEl) {
+      explanationEl.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation || '(Sin explicación adicional)');
+    }
+  }
+
+  function renderAdminRadarChart(evalData) {
+    const container = document.getElementById('adminRadarChartContainer');
+    if (!container) return;
+
+    const axes = [
+      { key: 'atsCompatibility', label: 'Filtro ATS' },
+      { key: 'skillsClarity', label: 'Talentos' },
+      { key: 'lengthCheck', label: 'Extensión' },
+      { key: 'quantifiableMetrics', label: 'Métricas' },
+      { key: 'actionVerbs', label: 'Verbos' },
+      { key: 'contactLinks', label: 'Contacto' },
+      { key: 'grammarSpelling', label: 'Gramática' }
+    ];
+
+    const cx = 200;
+    const cy = 175;
+    const maxRadius = 105;
+    const numAxes = axes.length;
+    const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
+
+    let gridPolygonsHtml = '';
+    levels.forEach((level, idx) => {
+      const pts = [];
+      for (let i = 0; i < numAxes; i++) {
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+        const x = cx + level * maxRadius * Math.cos(angle);
+        const y = cy + level * maxRadius * Math.sin(angle);
+        pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      }
+      const isOuter = idx === levels.length - 1;
+      gridPolygonsHtml += `<polygon points="${pts.join(' ')}" class="${isOuter ? 'radar-grid-outer' : 'radar-grid-polygon'}" />`;
+    });
+
+    let axisLinesHtml = '';
+    let labelsHtml = '';
+    const dataPoints = [];
+
+    axes.forEach((axis, i) => {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+      const endX = cx + maxRadius * Math.cos(angle);
+      const endY = cy + maxRadius * Math.sin(angle);
+      axisLinesHtml += `<line x1="${cx}" y1="${cy}" x2="${endX.toFixed(1)}" y2="${endY.toFixed(1)}" class="radar-axis-line" />`;
+
+      const scoreObj = evalData[axis.key];
+      const starsVal = scoreObj ? (scoreObj.stars || 3) : 3;
+      const valRatio = Math.max(0.12, Math.min(1.0, starsVal / 5));
+      const dataX = cx + valRatio * maxRadius * Math.cos(angle);
+      const dataY = cy + valRatio * maxRadius * Math.sin(angle);
+      dataPoints.push({ x: dataX, y: dataY, score: starsVal, label: axis.label });
+
+      const labelRadius = maxRadius + 24;
+      const labelX = cx + labelRadius * Math.cos(angle);
+      const labelY = cy + labelRadius * Math.sin(angle);
+      
+      let textAnchor = 'middle';
+      const cosA = Math.cos(angle);
+      if (cosA > 0.22) textAnchor = 'start';
+      else if (cosA < -0.22) textAnchor = 'end';
+
+      labelsHtml += `
+        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${textAnchor}" class="radar-axis-label" dominant-baseline="central">
+          ${axis.label}
+          <tspan class="radar-axis-score" dx="3">(${starsVal}/5)</tspan>
+        </text>
+      `;
+    });
+
+    const dataPolygonPoints = dataPoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    let vertexPointsHtml = '';
+    dataPoints.forEach(p => {
+      vertexPointsHtml += `
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" class="radar-vertex-point">
+          <title>${p.label}: ${p.score} / 5</title>
+        </circle>
+      `;
+    });
+
+    container.innerHTML = `
+      <svg class="radar-svg" viewBox="0 0 400 350">
+        <defs>
+          <linearGradient id="adminRadarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.45" />
+            <stop offset="100%" stop-color="#059669" stop-opacity="0.15" />
+          </linearGradient>
+        </defs>
+        ${gridPolygonsHtml}
+        ${axisLinesHtml}
+        <polygon points="${dataPolygonPoints}" class="radar-data-polygon" fill="url(#adminRadarGradient)" />
+        ${vertexPointsHtml}
+        ${labelsHtml}
+      </svg>
+    `;
+  }
+
+  function renderAdminScoreGaugeAndKpis(evalData) {
+    const gaugeValueEl = document.getElementById('adminGaugeScoreValue');
+    const gaugeCircle = document.getElementById('adminGaugeProgressCircle');
+    const badgeEl = document.getElementById('adminGaugeStatusBadge');
+    const kpiAtsVal = document.getElementById('adminKpiAtsVal');
+    const kpiStrengthsVal = document.getElementById('adminKpiStrengthsVal');
+    const kpiFixesVal = document.getElementById('adminKpiFixesVal');
+
+    const keys = ['atsCompatibility', 'skillsClarity', 'lengthCheck', 'quantifiableMetrics', 'actionVerbs', 'contactLinks', 'grammarSpelling'];
+    let totalStars = 0;
+    let counted = 0;
+    let strengthsCount = 0;
+    let fixesCount = 0;
+    let atsStars = 3;
+
+    keys.forEach(k => {
+      if (evalData[k] && typeof evalData[k].stars === 'number') {
+        const s = evalData[k].stars;
+        totalStars += s;
+        counted++;
+        if (k === 'atsCompatibility') atsStars = s;
+        if (s >= 4) strengthsCount++;
+        else if (s <= 2) fixesCount++;
+      }
+    });
+
+    const avgScore = counted > 0 ? (totalStars / (counted * 5)) * 100 : 70;
+    const finalScore = Math.round(avgScore);
+
+    if (gaugeValueEl) gaugeValueEl.textContent = finalScore;
+
+    if (gaugeCircle) {
+      const circumference = 2 * Math.PI * 64; // ~402.12
+      const offset = circumference - (finalScore / 100) * circumference;
+      gaugeCircle.style.strokeDasharray = `${circumference}`;
+      gaugeCircle.style.strokeDashoffset = `${offset}`;
+      
+      if (finalScore >= 80) gaugeCircle.style.stroke = 'var(--color-mint)';
+      else if (finalScore >= 60) gaugeCircle.style.stroke = '#f59e0b';
+      else gaugeCircle.style.stroke = 'var(--color-red)';
+    }
+
+    if (badgeEl) {
+      if (finalScore >= 85) {
+        badgeEl.textContent = '🌟 Nivel Sobresaliente';
+        badgeEl.style.background = 'rgba(16,185,129,0.12)';
+        badgeEl.style.color = '#065f46';
+      } else if (finalScore >= 70) {
+        badgeEl.textContent = '⚡ Buen Perfil con Ajustes';
+        badgeEl.style.background = 'rgba(2,132,199,0.12)';
+        badgeEl.style.color = '#0369a1';
+      } else if (finalScore >= 50) {
+        badgeEl.textContent = '⚠️ Requiere Optimización';
+        badgeEl.style.background = 'rgba(245,158,11,0.12)';
+        badgeEl.style.color = '#92400e';
+      } else {
+        badgeEl.textContent = '🚨 Formato Crítico ATS';
+        badgeEl.style.background = 'rgba(239,68,68,0.12)';
+        badgeEl.style.color = '#991b1b';
+      }
+    }
+
+    if (kpiAtsVal) {
+      const atsPct = Math.round((atsStars / 5) * 100);
+      kpiAtsVal.textContent = `${atsPct}%`;
+      kpiAtsVal.style.color = atsStars >= 4 ? 'var(--color-mint)' : (atsStars === 3 ? '#f59e0b' : 'var(--color-red)');
+    }
+    if (kpiStrengthsVal) {
+      kpiStrengthsVal.textContent = `${strengthsCount} / 7`;
+      kpiStrengthsVal.style.color = 'var(--color-mint)';
+    }
+    if (kpiFixesVal) {
+      kpiFixesVal.textContent = `${fixesCount} puntos`;
+      kpiFixesVal.style.color = fixesCount > 0 ? 'var(--color-red)' : 'var(--color-mint)';
+    }
+  }
+
+  function renderAdminCritiqueGrid(evalData) {
+    const targetGrid = document.getElementById('adminCritiqueGrid');
+    if (!targetGrid) return;
+    targetGrid.innerHTML = '';
+
+    const criteriaMapping = {
+      atsCompatibility: { 
+        title: 'Compatibilidad ATS',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+      },
+      skillsClarity: { 
+        title: 'Claridad de Talentos',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+      },
+      lengthCheck: { 
+        title: 'Extensión (<= 2 pág)',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+      },
+      quantifiableMetrics: { 
+        title: 'Métricas Cuantificables',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
+      },
+      actionVerbs: { 
+        title: 'Verbos de Acción',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+      },
+      contactLinks: { 
+        title: 'Contacto y Enlaces',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+      },
+      grammarSpelling: { 
+        title: 'Ortografía y Gramática',
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`
+      }
+    };
+
+    for (const [key, cfg] of Object.entries(criteriaMapping)) {
+      const data = evalData[key];
+      if (!data) continue;
+      
+      const starsValue = data.stars || 3;
+      const pct = (starsValue / 5) * 100;
+      
+      let badgeClass = 'badge-3';
+      let badgeText = 'Aceptable';
+      let fillClass = 'fill-warn';
+
+      if (starsValue >= 4) {
+        badgeClass = 'badge-5';
+        badgeText = starsValue === 5 ? 'Excelente' : 'Muy Bueno';
+        fillClass = 'fill-mint';
+      } else if (starsValue <= 2) {
+        badgeClass = 'badge-1';
+        badgeText = starsValue === 1 ? 'Crítico' : 'Por Mejorar';
+        fillClass = 'fill-danger';
+      }
+
+      const card = document.createElement('div');
+      card.className = 'critique-card';
+      card.innerHTML = `
+        <div class="critique-card-header">
+          <div class="critique-card-title-wrap">
+            <div class="critique-card-icon">${cfg.icon}</div>
+            <span class="critique-card-title">${cfg.title}</span>
+          </div>
+          <span class="critique-badge ${badgeClass}">${badgeText}</span>
+        </div>
+
+        <div class="critique-score-row">
+          <div class="critique-stars">
+            ${getStarsHtml(starsValue)}
+          </div>
+          <span class="critique-score-numeric">${starsValue} / 5</span>
+        </div>
+
+        <div class="critique-progress-bar">
+          <div class="critique-progress-fill ${fillClass}" style="width: ${pct}%"></div>
+        </div>
+
+        <div class="critique-feedback">
+          ${parseFeedbackMarkdown(data.feedback || '')}
+        </div>
+      `;
+
+      targetGrid.appendChild(card);
+    }
+  }
+
+  function getStarsHtml(stars) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= stars) {
+        html += '<span style="color: #fbbf24; font-size: 15px;">★</span>';
+      } else {
+        html += '<span style="color: #cbd5e1; font-size: 15px;">☆</span>';
+      }
+    }
+    return html;
+  }
+
+  function parseFeedbackMarkdown(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      .replace(/_([^_\n]+)_/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function renderAdminHeadshots(doc) {
+    if (!adminHeadshotsGrid || !adminHeadshotsEmpty || !adminHeadshotsContent) return;
+    const hasHeadshots = doc.headshotImages && Array.isArray(doc.headshotImages) && doc.headshotImages.length > 0;
+    
+    if (!hasHeadshots) {
+      adminHeadshotsEmpty.style.display = 'block';
+      adminHeadshotsContent.style.display = 'none';
+      return;
+    }
+
+    adminHeadshotsEmpty.style.display = 'none';
+    adminHeadshotsContent.style.display = 'block';
+    adminHeadshotsGrid.innerHTML = '';
+
+    if (adminDownloadZipBtn) {
+      adminDownloadZipBtn.href = `/api/headshots/download-zip/${doc.id}`;
+    }
+
+    doc.headshotImages.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'headshot-item-card';
+      const imageSrc = item.imageUrl || item.svgDataUrl;
+      const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${item.title.replace(/\s+/g, '_')}.png`;
+
+      card.innerHTML = `
+        <div class="headshot-item-img-wrap">
+          <img src="${imageSrc}" alt="${item.title}" class="headshot-item-img" loading="lazy">
+          <div class="headshot-item-overlay">
+            <a href="${imageSrc}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Descargar</span>
+            </a>
+          </div>
+        </div>
+        <div class="headshot-item-meta">
+          <div class="headshot-item-title">${item.title}</div>
+          <span class="headshot-item-cat">${item.category}</span>
+        </div>
+      `;
+      adminHeadshotsGrid.appendChild(card);
+    });
+  }
 
   if (copyModalTextBtn) {
     copyModalTextBtn.addEventListener('click', () => {
@@ -1096,6 +1450,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let textToCopy = currentInspectionDoc.originalText;
       if (currentInspectionTab === 'optimized') textToCopy = currentInspectionDoc.optimizedText;
       if (currentInspectionTab === 'cover_letter') textToCopy = currentInspectionDoc.coverLetterText || currentInspectionDoc.jobOfferText;
+      if (currentInspectionTab === 'evaluation') {
+        textToCopy = JSON.stringify(currentInspectionDoc.evaluation, null, 2);
+      }
       
       navigator.clipboard.writeText(textToCopy).then(() => {
         const orig = copyModalTextBtn.textContent;

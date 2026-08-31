@@ -1751,6 +1751,18 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       }
     }
 
+    // Check if document was identified as not a personal CV
+    if (evaluation && evaluation.isCv === false) {
+      return res.json({
+        success: false,
+        notCv: true,
+        reason: evaluation.notCvReason || (lang === 'en'
+          ? "The uploaded document does not appear to be a personal resume or CV. Please verify your selected folder and upload your actual resume so Cintia can analyze your career background."
+          : "El documento que subiste no corresponde a un currículum vitae o perfil profesional. Por favor revisa tu carpeta y selecciona tu CV para que Cintia pueda analizar tu trayectoria y ayudarte a destacar ante los reclutadores."),
+        documentType: evaluation.documentType || (lang === 'en' ? "non-resume document" : "documento no laboral")
+      });
+    }
+
     // 6. Generate AI Optimization preview simultaneously (if enabled)
     let optimizedText = "";
     if (config.optAiEnabled !== false) {

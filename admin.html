@@ -988,36 +988,144 @@
   </main>
 
   <!-- View CV Text & Inspection Workspace Modal -->
-  <dialog id="viewTextModal">
-    <div class="modal-content" style="max-width: 760px; width: 100%;">
+  <dialog id="viewTextModal" style="border: none; border-radius: var(--border-radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 0; max-width: 980px; width: 95%; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 100%; width: 100%; padding: 24px;">
       <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-grey); padding-bottom:12px; margin-bottom:14px;">
         <div>
-          <h3 class="modal-title" id="cvModalDocTitle" style="margin:0; font-size:17px;">Inspección de Currículum</h3>
-          <p id="cvModalDocMeta" style="margin:4px 0 0 0; font-size:12px; color:var(--text-light);"></p>
+          <h3 class="modal-title" id="cvModalDocTitle" style="margin:0; font-size:18px; font-weight: 700; color: #0f172a;">Inspección de Currículum</h3>
+          <p id="cvModalDocMeta" style="margin:4px 0 0 0; font-size:12.5px; color:var(--text-medium);"></p>
         </div>
-        <button class="modal-close" id="closeTextModalBtn" type="button" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-light);">&times;</button>
+        <button class="modal-close" id="closeTextModalBtn" type="button" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light); line-height: 1;">&times;</button>
       </div>
 
       <!-- Tab Switcher inside Modal -->
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-grey); padding-bottom: 8px; flex-wrap: wrap;">
-        <button type="button" id="tabBtnOriginal" class="btn-secondary btn-sm" style="font-weight: 600; padding: 6px 14px;">
-          📄 CV Original Subido
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-grey); padding-bottom: 10px; flex-wrap: wrap;">
+        <button type="button" id="tabBtnEvaluation" class="btn-secondary btn-sm" style="font-weight: 700; padding: 7px 16px;">
+          📊 Evaluación de Cintia
         </button>
-        <button type="button" id="tabBtnOptimized" class="btn-secondary btn-sm" style="font-weight: 600; padding: 6px 14px;">
-          ✨ CV Optimizado por IA
+        <button type="button" id="tabBtnOriginal" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+          📄 CV Original
         </button>
-        <button type="button" id="tabBtnCoverLetter" class="btn-secondary btn-sm" style="font-weight: 600; padding: 6px 14px;">
-          ✉️ Oferta Laboral & Carta
+        <button type="button" id="tabBtnOptimized" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+          ✨ CV Optimizado (IA)
+        </button>
+        <button type="button" id="tabBtnCoverLetter" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+          ✉️ Oferta & Carta
+        </button>
+        <button type="button" id="tabBtnHeadshots" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+          📸 Retratos de Estudio
         </button>
       </div>
 
-      <!-- Content Box -->
-      <div class="optimized-content-box" id="cvTextContentBox" style="font-family: monospace; font-size: 12.5px; white-space: pre-wrap; max-height: 420px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--border-grey); padding: 14px; border-radius: 8px; line-height: 1.5;">
-        <!-- Injected dynamically -->
+      <!-- TAB 1: Evaluation View (Identical to User Experience) -->
+      <div id="cvEvaluationContainer" style="display: block;">
+        <div style="background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(5,150,105,0.1) 100%); border: 1px solid rgba(16,185,129,0.25); border-radius: var(--border-radius-sm); padding: 14px 18px; margin-bottom: 18px;">
+          <h4 id="adminResultsSummary" style="margin: 0; font-size: 15px; font-weight: 700; color: #065f46;">
+            <!-- Summary -->
+          </h4>
+        </div>
+
+        <!-- Visual Dashboard: Gauge + KPIs (Left) & Radar Heptagon (Right) -->
+        <div class="dashboard-visual-grid" style="margin-bottom: 24px;">
+          <!-- Left Column: Score Gauge & KPI Highlights -->
+          <div class="dashboard-score-card">
+            <h3 class="dashboard-card-title">Puntaje General del CV</h3>
+            <div class="gauge-container">
+              <svg class="score-gauge-svg" viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="64" />
+                <circle class="gauge-progress" id="adminGaugeProgressCircle" cx="80" cy="80" r="64" />
+              </svg>
+              <div class="gauge-center-content">
+                <span class="gauge-score-value" id="adminGaugeScoreValue">0</span>
+                <span class="gauge-score-max">/ 100</span>
+              </div>
+            </div>
+            <div class="gauge-status-badge" id="adminGaugeStatusBadge">Calculando...</div>
+
+            <!-- KPI Highlights Grid -->
+            <div class="kpi-mini-grid">
+              <div class="kpi-mini-card">
+                <div class="kpi-icon-wrap ats-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="kpi-data">
+                  <span class="kpi-value" id="adminKpiAtsVal">-</span>
+                  <span class="kpi-label">Filtro ATS</span>
+                </div>
+              </div>
+              <div class="kpi-mini-card">
+                <div class="kpi-icon-wrap strength-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="kpi-data">
+                  <span class="kpi-value" id="adminKpiStrengthsVal">-</span>
+                  <span class="kpi-label">Fortalezas</span>
+                </div>
+              </div>
+              <div class="kpi-mini-card">
+                <div class="kpi-icon-wrap warning-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="kpi-data">
+                  <span class="kpi-value" id="adminKpiFixesVal">-</span>
+                  <span class="kpi-label">Por Mejorar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Heptagon Radar Spiderweb Chart -->
+          <div class="dashboard-radar-card">
+            <div class="radar-card-header">
+              <h3 class="dashboard-card-title">Equilibrio de Competencias (7 Ejes)</h3>
+              <span class="radar-subtitle">Visualización integral de los 7 estándares de contratación</span>
+            </div>
+            <div class="radar-chart-container" id="adminRadarChartContainer">
+              <!-- Dynamically generated SVG Radar Heptagon -->
+            </div>
+          </div>
+        </div>
+
+        <h3 class="breakdown-section-title" style="font-size: 16px; margin-bottom: 14px;">Desglose Detallado por Criterio (7 Ejes)</h3>
+        <div class="critique-grid" id="adminCritiqueGrid" style="margin-bottom: 20px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="detailed-explanation" style="margin-bottom: 14px;">
+          <h3 style="font-size: 15px;">Explicación del Diagnóstico y Recomendaciones</h3>
+          <p id="adminDetailedExplanationText"></p>
+        </div>
+      </div>
+
+      <!-- TAB 2, 3, 4: Text Content Box (Original, Optimized, Cover Letter) -->
+      <div id="cvTextContainer" style="display: none;">
+        <div class="optimized-content-box" id="cvTextContentBox" style="font-family: monospace; font-size: 12.5px; white-space: pre-wrap; max-height: 440px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--border-grey); padding: 16px; border-radius: 8px; line-height: 1.55;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 5: Headshots Preview View -->
+      <div id="cvHeadshotsContainer" style="display: none;">
+        <div id="adminHeadshotsEmpty" style="display: none; padding: 30px; text-align: center; color: var(--text-light); font-size: 13.5px; background: #f8fafc; border: 1px dashed var(--border-grey); border-radius: 8px;">
+          Este usuario aún no ha generado retratos de estudio o no ha subido fotografía base.
+        </div>
+        <div id="adminHeadshotsContent" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div style="font-weight: 700; font-size: 14px; color: #0284c7;">
+              📸 Pack de Retratos Generados con IA (20 Fotos)
+            </div>
+            <a id="adminDownloadZipBtn" href="#" class="btn btn-sm" style="background: #0284c7; color: #ffffff; text-decoration: none;">
+              ⬇️ Descargar Todas (.ZIP)
+            </a>
+          </div>
+          <div class="headshots-grid" id="adminHeadshotsGrid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
       </div>
 
       <!-- Actions Bar in Modal -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; border-top: 1px solid var(--border-grey); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
         <button type="button" id="copyModalTextBtn" class="btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
           📋 Copiar Texto
         </button>
