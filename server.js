@@ -1,3 +1,4 @@
+// Cintia Backend Server - Feature Branch: feature/gemini-headshots-generator (Google AI Studio Image Gen Engine)
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -47,7 +48,7 @@ function initFirebase() {
   try {
     let serviceAccount;
     let rawStr = typeof raw === 'string' ? raw.trim() : JSON.stringify(raw);
-    
+
     // Check if it's base64 encoded
     if (rawStr.startsWith('ey') || (!rawStr.startsWith('{') && !rawStr.startsWith('"') && !rawStr.startsWith("'"))) {
       try {
@@ -55,9 +56,9 @@ function initFirebase() {
         if (decoded.trim().startsWith('{')) {
           rawStr = decoded.trim();
         }
-      } catch (e) {}
+      } catch (e) { }
     }
-    
+
     // Remove outer quotes if accidentally wrapped by environment variable editor
     if ((rawStr.startsWith("'") && rawStr.endsWith("'")) || (rawStr.startsWith('"') && rawStr.endsWith('"'))) {
       if (!rawStr.includes('{\\n') && !rawStr.includes('{\n')) {
@@ -139,7 +140,7 @@ async function saveAnalysisDoc(logEntry) {
   const db = readDb();
   db.analyses.push(logEntry);
   writeDb(db);
-  
+
   const dbFs = initFirebase();
   if (dbFs) {
     try {
@@ -161,7 +162,7 @@ async function updateAnalysisDoc(analysisId, updateData) {
     db.analyses.push({ id: analysisId, ...updateData });
     writeDb(db);
   }
-  
+
   const dbFs = initFirebase();
   if (dbFs) {
     try {
@@ -196,7 +197,7 @@ async function deleteAnalysisDoc(analysisId) {
     db.analyses.splice(idx, 1);
     writeDb(db);
   }
-  
+
   const dbFs = initFirebase();
   if (dbFs) {
     try {
@@ -488,7 +489,7 @@ function verifyAdminToken(token) {
 
     const payload = `${email}:${expiresAtStr}`;
     const expectedHmac = crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('hex');
-    
+
     if (crypto.timingSafeEqual(Buffer.from(receivedHmac, 'hex'), Buffer.from(expectedHmac, 'hex'))) {
       const expectedEmail = process.env.ADMIN_EMAIL || 'admin@cintia.net';
       return email === expectedEmail;
@@ -533,7 +534,7 @@ function generateCaptcha() {
   const operation = operations[Math.floor(Math.random() * operations.length)];
   let answer;
   let text;
-  
+
   if (operation === '+') {
     answer = num1 + num2;
     text = `${num1} + ${num2} = ?`;
@@ -546,7 +547,7 @@ function generateCaptcha() {
     answer = num1 * num2;
     text = `${num1} × ${num2} = ?`;
   }
-  
+
   const width = 180;
   const height = 50;
   let noise = '';
@@ -565,7 +566,7 @@ function generateCaptcha() {
     const r = Math.floor(Math.random() * 2) + 0.5;
     noise += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#9ca3af" opacity="0.4" />`;
   }
-  
+
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
     <rect width="100%" height="100%" fill="#f9fafb" rx="6" stroke="#e5e7eb" stroke-width="1"/>
     ${noise}
@@ -576,13 +577,13 @@ function generateCaptcha() {
 
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 min window
   const payload = JSON.stringify({ answer: String(answer), expiresAt });
-  
+
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-cbc', CAPTCHA_KEY, iv);
   let encrypted = cipher.update(payload, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   const token = iv.toString('hex') + ':' + encrypted;
-  
+
   return { svg, token };
 }
 
@@ -591,15 +592,15 @@ function verifyCaptcha(token, userInput) {
     if (!token || typeof token !== 'string') return false;
     const parts = token.split(':');
     if (parts.length !== 2) return false;
-    
+
     const iv = Buffer.from(parts[0], 'hex');
     const encryptedText = parts[1];
-    
+
     const decipher = crypto.createDecipheriv('aes-256-cbc', CAPTCHA_KEY, iv);
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     const parsed = JSON.parse(decrypted);
-    
+
     if (Date.now() > parsed.expiresAt) {
       return false; // Expired
     }
@@ -615,17 +616,17 @@ const ipRequests = {};
 function isRateLimited(ip, limit) {
   const now = Date.now();
   const oneHourAgo = now - 60 * 60 * 1000;
-  
+
   if (!ipRequests[ip]) {
     ipRequests[ip] = [];
   } else {
     ipRequests[ip] = ipRequests[ip].filter(ts => ts > oneHourAgo);
   }
-  
+
   if (ipRequests[ip].length >= limit) {
     return true;
   }
-  
+
   ipRequests[ip].push(now);
   return false;
 }
@@ -695,14 +696,14 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
   if (!key) {
     throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
-  
+
   const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
   let lastError = null;
 
   for (const model of models) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      
+
       const payload = {
         contents: [
           {
@@ -712,7 +713,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
           }
         ]
       };
-      
+
       if (systemInstruction) {
         payload.systemInstruction = {
           parts: [
@@ -720,13 +721,13 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
           ]
         };
       }
-      
+
       if (responseJson) {
         payload.generationConfig = {
           responseMimeType: "application/json"
         };
       }
-      
+
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -734,14 +735,14 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
         },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.warn(`Gemini model ${model} returned code ${response.status}:`, errorText);
         lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
         continue;
       }
-      
+
       const responseData = await response.json();
       if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
         await recordGeminiCall(responseJson ? "evaluations" : "optimizations", model);
@@ -803,23 +804,23 @@ app.get('/api/captcha', (req, res) => {
 function detectLanguage(text) {
   const englishWords = ['experience', 'education', 'skills', 'developer', 'engineer', 'manager', 'software', 'project', 'present', 'about', 'summary', 'languages'];
   const spanishWords = ['experiencia', 'educación', 'habilidades', 'desarrollador', 'ingeniero', 'gerente', 'software', 'proyecto', 'actualidad', 'presente', 'sobre', 'resumen', 'idiomas'];
-  
+
   const lowerText = text.toLowerCase();
   let enCount = 0;
   let esCount = 0;
-  
+
   englishWords.forEach(word => {
     const regex = new RegExp('\\b' + word + '\\b', 'g');
     const matches = lowerText.match(regex);
     if (matches) enCount += matches.length;
   });
-  
+
   spanishWords.forEach(word => {
     const regex = new RegExp('\\b' + word + '\\b', 'g');
     const matches = lowerText.match(regex);
     if (matches) esCount += matches.length;
   });
-  
+
   return enCount > esCount ? 'en' : 'es';
 }
 
@@ -914,7 +915,7 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
     `${dateHeader}\n\n${lang === 'en' ? 'RESUME TO OPTIMIZE:' : 'CURRÍCULUM A OPTIMIZAR:'}\n\n${extractedText}`,
     false // Expect markdown/text
   );
-  
+
   let cleanedResult = (rawResult || "").trim();
   if (cleanedResult.startsWith('```markdown')) {
     cleanedResult = cleanedResult.replace(/^```markdown\s*/i, '').replace(/\s*```$/, '');
@@ -1300,7 +1301,7 @@ CORE OBJECTIVES:
       generationConfig: {
         responseMimeType: "application/json"
       }
-    })
+    }no veo deplyments)
   });
 
   if (!response.ok) {
@@ -1548,7 +1549,7 @@ Sitio web: https://cintia.pro`;
 
     const zipBuffer = zip.toBuffer();
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="Cintia_Pack_20_Headshots_${analysisId.slice(0,8)}.zip"`);
+    res.setHeader('Content-Disposition', `attachment; filename="Cintia_Pack_20_Headshots_${analysisId.slice(0, 8)}.zip"`);
     res.send(zipBuffer);
 
   } catch (err) {
@@ -1636,7 +1637,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     // 5. Evaluate CV Quality
     let evaluation = null;
     const geminiApiKey = getGeminiApiKey(config);
-    
+
     if (!geminiApiKey) {
       console.log("No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language:", lang);
       const isEnglish = lang === 'en';
@@ -1644,7 +1645,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       const hasNumbers = /\d+/.test(extractedText);
       const hasLinks = /linkedin|http|github|@|www/i.test(extractedText);
       const stars = 4;
-      
+
       if (isEnglish) {
         evaluation = {
           stars: stars,
@@ -1699,13 +1700,13 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
           },
           lengthCheck: {
             stars: wordCount > 800 ? 3 : 5,
-            feedback: wordCount > 800 
+            feedback: wordCount > 800
               ? "Ligeramente extenso. Se recomienda resumir a un **máximo estricto de 2 páginas**."
               : "Extensión óptima (**menos de 2 páginas**) para lectura rápida de reclutadores."
           },
           quantifiableMetrics: {
             stars: hasNumbers ? 4 : 2,
-            feedback: hasNumbers 
+            feedback: hasNumbers
               ? "Buen uso de **métricas y datos numéricos** que sustentan tus logros laborales."
               : "Poco énfasis en métricas. Intenta incluir **porcentajes, ahorros o alcance cuantificable**."
           },
@@ -1730,7 +1731,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       const currentDateFormatted = lang === 'en'
         ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
         : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-      
+
       const languagePrompt = lang === 'en'
         ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The resume is in English. You MUST write ALL JSON fields (summary, feedback, detailedExplanation) strictly and exclusively in ENGLISH. Do not include any Spanish words or phrases.\n2. DATES & TIMELINE: Today's reference date is ${currentDateFormatted} (Year ${new Date().getFullYear()}). Dates like 2024, 2025, 2026, or 'Present' are completely valid and normal for current roles or recent certifications. Do NOT penalize or flag recent or current experiences as future dates. Never quote internal system terms or variable names.`
         : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en español. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
@@ -1821,7 +1822,7 @@ app.post('/api/payment/simulate', async (req, res) => {
         paymentMethod: paymentMethod || 'paypal',
         optimizedText: optimizedText
       });
-      
+
       res.json({
         success: true,
         tier: 'ai',
@@ -1831,7 +1832,7 @@ app.post('/api/payment/simulate', async (req, res) => {
       if (!contact || !contact.email || !contact.phone) {
         return res.status(400).json({ error: "Para optimización manual, debes dejar correo y celular." });
       }
-      
+
       await updateAnalysisDoc(analysisId, {
         paymentStatus: 'pending_expert',
         paymentMethod: paymentMethod || 'paypal',
@@ -1956,17 +1957,17 @@ app.post('/api/expert-request', async (req, res) => {
     if (!email && !phone) {
       return res.status(400).json({ error: "Debe proporcionar correo o teléfono de contacto." });
     }
-    
+
     const analysis = await getAnalysisDoc(analysisId);
     if (!analysis) {
       return res.status(404).json({ error: "Análisis no encontrado." });
     }
-    
+
     await updateAnalysisDoc(analysisId, {
       paymentStatus: 'pending_expert',
       expertContact: { email, phone, requestedAt: new Date().toISOString() }
     });
-    
+
     res.json({
       success: true,
       message: "Solicitud registrada con éxito. Un experto se contactará a la brevedad."
@@ -2403,7 +2404,7 @@ app.post('/api/mercadopago/check-status', async (req, res) => {
       if (paymentData.external_reference) {
         extData = JSON.parse(paymentData.external_reference);
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const targetAnalysisId = analysisId || extData.analysisId;
     const targetTier = tier || extData.tier || 'ai';
@@ -2454,7 +2455,7 @@ app.post('/api/mercadopago/webhook', async (req, res) => {
             if (paymentData.external_reference) {
               extData = JSON.parse(paymentData.external_reference);
             }
-          } catch (e) {}
+          } catch (e) { }
 
           if (extData.analysisId && extData.tier) {
             await processSuccessfulPayment({
@@ -2509,7 +2510,7 @@ function requireAdminAuth(req, res, next) {
 // Admin login
 app.post('/api/admin/login', (req, res) => {
   const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
-  
+
   // Rate limiting check
   const rateLimitStatus = checkAdminLoginRateLimit(clientIp);
   if (rateLimitStatus.limited) {
@@ -2517,11 +2518,11 @@ app.post('/api/admin/login', (req, res) => {
   }
 
   const { email, password } = req.body;
-  
+
   // Get credentials from environment variables with safe fallbacks
   const expectedEmail = process.env.ADMIN_EMAIL || 'admin@cintia.net';
   const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
-  
+
   if (email === expectedEmail && password === expectedPassword) {
     registerAdminLoginAttempt(clientIp, true);
     const token = generateAdminToken(email);
@@ -2550,9 +2551,9 @@ app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
     const config = await getConfigDoc();
     const key = getGeminiApiKey(config);
     if (!key) {
-      return res.status(400).json({ 
-        success: false, 
-        error: "No se encontró Gemini API Key configurada ni en el panel ni en variables de entorno (GEMINI_API_KEY)." 
+      return res.status(400).json({
+        success: false,
+        error: "No se encontró Gemini API Key configurada ni en el panel ni en variables de entorno (GEMINI_API_KEY)."
       });
     }
 
@@ -2578,13 +2579,13 @@ app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
 app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
   const { analysisId } = req.body;
   if (!analysisId) return res.status(400).json({ error: "ID faltante" });
-  
+
   await updateAnalysisDoc(analysisId, {
     expertStatus: 'completed',
     expertCompletedAt: new Date().toISOString(),
     paymentStatus: 'completed_expert'
   });
-  
+
   res.json({ success: true });
 });
 
@@ -2592,13 +2593,13 @@ app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
 app.post('/api/admin/leads/archive', requireAdminAuth, async (req, res) => {
   const { analysisId, archived } = req.body;
   if (!analysisId) return res.status(400).json({ error: "ID faltante" });
-  
+
   const isArchived = Boolean(archived);
   await updateAnalysisDoc(analysisId, {
     archived: isArchived,
     archivedAt: isArchived ? new Date().toISOString() : null
   });
-  
+
   res.json({ success: true, archived: isArchived });
 });
 
@@ -2606,7 +2607,7 @@ app.post('/api/admin/leads/archive', requireAdminAuth, async (req, res) => {
 app.post('/api/admin/leads/delete', requireAdminAuth, async (req, res) => {
   const { analysisId } = req.body;
   if (!analysisId) return res.status(400).json({ error: "ID faltante" });
-  
+
   await deleteAnalysisDoc(analysisId);
   res.json({ success: true, message: "Registro eliminado correctamente." });
 });
@@ -2615,7 +2616,7 @@ app.post('/api/admin/leads/delete', requireAdminAuth, async (req, res) => {
 app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   const config = await getConfigDoc();
   const secureConfig = { ...config };
-  
+
   // Mask the API Key to protect it from exposure (checking both config doc and env vars)
   const activeKey = getGeminiApiKey(config);
   if (activeKey) {
@@ -2623,15 +2624,15 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   } else {
     secureConfig.geminiApiKey = '';
   }
-  
+
   // Omit password from responses for safety
   delete secureConfig.adminPassword;
-  
+
   const isConnected = Boolean(initFirebase());
   secureConfig.firestoreConnected = isConnected;
   secureConfig.firestoreError = lastFirebaseError;
   secureConfig.firestoreProjectId = firebaseProjectId;
-  
+
   res.json(secureConfig);
 });
 
@@ -2640,7 +2641,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   try {
     const newSettings = req.body;
     const config = await getConfigDoc();
-    
+
     // Validate and update fields
     if (newSettings.hasOwnProperty('geminiApiKey')) {
       const cleanKey = newSettings.geminiApiKey.trim();
@@ -2672,7 +2673,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.evaluationPrompt) config.evaluationPrompt = newSettings.evaluationPrompt;
     if (newSettings.optimizationPrompt) config.optimizationPrompt = newSettings.optimizationPrompt;
     if (newSettings.coverLetterPrompt) config.coverLetterPrompt = newSettings.coverLetterPrompt;
-    
+
     writeConfig(config);
     res.json({ success: true, message: "Parámetros guardados correctamente." });
   } catch (err) {
@@ -2684,7 +2685,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
 app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).json({ error: "Análisis no encontrado." });
-  
+
   res.json({
     id: analysis.id,
     filename: analysis.filename,
@@ -2713,7 +2714,7 @@ app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => 
 app.get('/api/admin/download-cover-letter/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).send("No encontrado");
-  
+
   res.setHeader('Content-disposition', `attachment; filename=carta_presentacion_${analysis.filename}.txt`);
   res.setHeader('Content-type', 'text/plain; charset=utf-8');
   res.send(analysis.coverLetterText || "");
@@ -2723,7 +2724,7 @@ app.get('/api/admin/download-cover-letter/:id', requireAdminAuth, async (req, re
 app.get('/api/admin/download-text/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).send("No encontrado");
-  
+
   res.setHeader('Content-disposition', `attachment; filename=cv_original_${analysis.filename}.txt`);
   res.setHeader('Content-type', 'text/plain; charset=utf-8');
   res.send(analysis.originalText || "");
@@ -2733,7 +2734,7 @@ app.get('/api/admin/download-text/:id', requireAdminAuth, async (req, res) => {
 app.get('/api/admin/download-optimized/:id', requireAdminAuth, async (req, res) => {
   const analysis = await getAnalysisDoc(req.params.id);
   if (!analysis) return res.status(404).send("No encontrado");
-  
+
   res.setHeader('Content-disposition', `attachment; filename=cv_optimizado_cintia_${analysis.filename}.txt`);
   res.setHeader('Content-type', 'text/plain; charset=utf-8');
   res.send(analysis.optimizedText || "");
