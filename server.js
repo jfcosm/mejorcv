@@ -1120,45 +1120,101 @@ const HEADSHOT_STYLES = [
   { id: 20, es: "Portada LinkedIn Premium", en: "LinkedIn Premium Editorial", cat: "Editorial", bg: "linear-gradient(135deg, #0f172a 0%, #0284c7 100%)", accent: "#38bdf8", outfit: "Traje de gala ejecutiva", light: "Calidad de portada de revista Forbes/GQ" }
 ];
 
-// Call Google Imagen 3 API (imagen-3.0-generate-002:predict)
-async function callImagen3(apiKey, prompt) {
+// Call Google Generative Image API (supports gemini-2.5-flash-image "Nano Banana" & imagen-3.0)
+async function callGoogleImageGen(apiKey, prompt, userPhotoData) {
   const key = apiKey || getGeminiApiKey();
   if (!key) {
     throw new Error("Falta la configuración de Gemini API Key en el servidor.");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${key}`;
-  const payload = {
-    instances: [
-      { prompt: prompt }
-    ],
-    parameters: {
-      sampleCount: 1,
-      aspectRatio: "1:1",
-      personGeneration: "ALLOW_ADULT",
-      safetySetting: "block_medium_and_above"
+  let lastError = null;
+
+  // 1. Native Gemini Image Generation: gemini-2.5-flash-image (Nano Banana)
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`;
+    const parts = [];
+
+    if (userPhotoData && typeof userPhotoData === 'string' && userPhotoData.startsWith('data:')) {
+      const p = userPhotoData.split(',');
+      const mimeMatch = p[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      parts.push({
+        inlineData: {
+          mimeType: mime,
+          data: p[1]
+        }
+      });
     }
-  };
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    parts.push({
+      text: `Generate a hyper-realistic 85mm executive studio portrait of the person in the reference photo, maintaining their exact facial features, bone structure, and identity. Style and atmosphere: ${prompt}. High-end studio lighting, sharp focus on eyes, 8k resolution, authentic skin texture.`
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.warn(`Imagen 3 API returned code ${response.status}:`, errorText);
-    throw new Error(`Imagen 3 API (${response.status}): ${errorText}`);
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts }] })
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.candidates && data.candidates[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+          if (part.inlineData?.data) {
+            const mime = part.inlineData.mimeType || 'image/png';
+            return `data:${mime};base64,${part.inlineData.data}`;
+          }
+        }
+      }
+    } else {
+      const errText = await resp.text();
+      lastError = `gemini-2.5-flash-image (${resp.status}): ${errText}`;
+      console.warn("gemini-2.5-flash-image status:", resp.status, errText);
+    }
+  } catch (gErr) {
+    lastError = `gemini-2.5-flash-image error: ${gErr.message}`;
+    console.warn("gemini-2.5-flash-image catch:", gErr.message);
   }
 
-  const data = await response.json();
-  if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
-    const mime = data.predictions[0].mimeType || 'image/png';
-    return `data:${mime};base64,${data.predictions[0].bytesBase64Encoded}`;
+  // 2. Fallback: imagen-3.0 models via :predict
+  const imagenModels = [
+    'imagen-3.0-generate-002',
+    'imagen-3.0-generate-001',
+    'imagen-3.0-fast-generate-001'
+  ];
+
+  for (const model of imagenModels) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${key}`;
+      const payload = {
+        instances: [{ prompt: prompt }],
+        parameters: { sampleCount: 1, aspectRatio: "1:1", personGeneration: "ALLOW_ADULT" }
+      };
+
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.predictions?.[0]?.bytesBase64Encoded) {
+          const mime = data.predictions[0].mimeType || 'image/png';
+          return `data:${mime};base64,${data.predictions[0].bytesBase64Encoded}`;
+        }
+      } else {
+        const errText = await resp.text();
+        lastError = `${model} (${resp.status}): ${errText}`;
+        console.warn(`Imagen model ${model} status:`, resp.status, errText);
+      }
+    } catch (iErr) {
+      lastError = `${model} error: ${iErr.message}`;
+      console.warn(`Error calling ${model}:`, iErr.message);
+    }
   }
 
-  throw new Error("Respuesta sin predicción de imagen válida desde Imagen 3.");
+  throw new Error(`Error en API de Imagen de Google: ${lastError || "No se pudo generar la imagen fotográfica con los modelos de Google."}`);
 }
 
 // Multimodal Facial Extraction & Structured Prompt Generation using Gemini 2.5 Flash
@@ -1291,7 +1347,7 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
     const batch = generatedPrompts.slice(i, i + BATCH_SIZE);
     const batchPromises = batch.map(async (item, idx) => {
       const globalIndex = i + idx + 1;
-      const imageDataUrl = await callImagen3(apiKey, item.prompt);
+      const imageDataUrl = await callGoogleImageGen(apiKey, item.prompt, userPhotoData);
       return {
         id: item.id || globalIndex,
         title: item.title || (HEADSHOT_STYLES[globalIndex - 1] ? (lang === 'en' ? HEADSHOT_STYLES[globalIndex - 1].en : HEADSHOT_STYLES[globalIndex - 1].es) : `Retrato #${globalIndex}`),
