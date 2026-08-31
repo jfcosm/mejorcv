@@ -1259,66 +1259,18 @@ CORE OBJECTIVES:
   return parsed.prompts || [];
 }
 
-function generateHeadshotSvg(style, photoDataUrl, candidateName, lang = 'es') {
-  const isEn = lang === 'en';
-  const title = isEn ? style.en : style.es;
-  const initial = candidateName ? candidateName.charAt(0).toUpperCase() : 'C';
-  const subtitleColor = style.bg.includes('#ffffff') || style.bg.includes('#f8fafc') || style.bg.includes('#e0f2fe') ? '#0475569' : 'rgba(255,255,255,0.75)';
-
-  const photoElement = photoDataUrl
-    ? `<image href="${photoDataUrl}" x="120" y="110" width="240" height="240" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatarClip)" />`
-    : `
-      <circle cx="240" cy="210" r="85" fill="${style.accent}" opacity="0.22" />
-      <circle cx="240" cy="190" r="54" fill="${style.accent}" opacity="0.9" />
-      <text x="240" y="206" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="44" font-weight="bold" fill="#ffffff">${initial}</text>
-      <path d="M140 370 C 140 280, 340 280, 340 370 Z" fill="${style.accent}" opacity="0.75" />
-    `;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480">
-    <defs>
-      <linearGradient id="bgGrad_${style.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="${style.accent}" stop-opacity="0.18" />
-        <stop offset="100%" stop-color="#0f172a" stop-opacity="0.98" />
-      </linearGradient>
-      <clipPath id="avatarClip">
-        <circle cx="240" cy="225" r="110" />
-      </clipPath>
-      <filter id="softGlow">
-        <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    <rect width="480" height="480" fill="#0f172a" />
-    <rect width="480" height="480" fill="url(#bgGrad_${style.id})" />
-    <circle cx="240" cy="180" r="170" fill="${style.accent}" opacity="0.15" filter="url(#softGlow)" />
-    <circle cx="240" cy="225" r="116" fill="none" stroke="${style.accent}" stroke-width="2.5" stroke-dasharray="8 6" opacity="0.5" />
-    <circle cx="240" cy="225" r="111" fill="none" stroke="${style.accent}" stroke-width="2" opacity="0.9" />
-    ${photoElement}
-    <rect x="24" y="24" width="130" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="${style.accent}" stroke-width="1" />
-    <text x="89" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="11" font-weight="700" fill="${style.accent}" letter-spacing="0.5">${style.cat.toUpperCase()}</text>
-    <rect x="360" y="24" width="96" height="28" rx="14" fill="rgba(15,23,42,0.75)" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
-    <text x="408" y="42" text-anchor="middle" dominant-baseline="middle" font-family="-apple-system, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#e2e8f0">85mm · f/1.4</text>
-    <rect x="24" y="390" width="432" height="66" rx="12" fill="rgba(15,23,42,0.85)" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
-    <text x="44" y="418" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="700" fill="#ffffff">${title}</text>
-    <text x="44" y="440" font-family="-apple-system, system-ui, sans-serif" font-size="12" font-weight="500" fill="${subtitleColor}">Estilo: ${style.outfit} · Ilum: ${style.light}</text>
-    <text x="436" y="429" text-anchor="end" font-family="-apple-system, system-ui, sans-serif" font-size="13" font-weight="800" fill="${style.accent}">#${style.id < 10 ? '0' + style.id : style.id}</text>
-  </svg>`;
-}
-
 async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}) {
-  const apiKey = getGeminiApiKey();
+  const apiKey = getGeminiApiKey(config);
+  if (!apiKey) {
+    throw new Error("Falta configurar la Gemini / Google Imagen API Key en el servidor para generar los retratos fotorrealistas con IA.");
+  }
   const candidateName = filename ? filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ") : "Candidato";
 
   let generatedPrompts = [];
   try {
-    if (apiKey) {
-      generatedPrompts = await analyzeFaceAndGeneratePrompts(apiKey, userPhotoData, cvText, lang, config);
-    }
+    generatedPrompts = await analyzeFaceAndGeneratePrompts(apiKey, userPhotoData, cvText, lang, config);
   } catch (promptErr) {
-    console.warn("Falling back to predefined styles for prompts:", promptErr.message);
+    console.warn("Fallo en extracción facial multimodal con Gemini Vision, usando estilos predefinidos:", promptErr.message);
   }
 
   if (!generatedPrompts || generatedPrompts.length === 0) {
@@ -1328,7 +1280,7 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
       category: s.cat,
       outfit: s.outfit,
       lighting: s.light,
-      prompt: `Professional 85mm executive studio portrait photograph of a confident professional, wearing ${s.outfit}, in ${s.cat} modern backdrop with ${s.light}, 8k resolution, crisp focus, authentic skin textures, hyper-realistic studio lighting.`
+      prompt: `Ultra-photorealistic 85mm executive studio portrait photography of a confident professional, wearing ${s.outfit}, set in a modern ${s.cat} atmosphere with ${s.light}, 8k resolution, photorealistic, cinematic studio lighting, sharp focus on eyes, authentic skin texture.`
     }));
   }
 
@@ -1339,35 +1291,15 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
     const batch = generatedPrompts.slice(i, i + BATCH_SIZE);
     const batchPromises = batch.map(async (item, idx) => {
       const globalIndex = i + idx + 1;
-      try {
-        if (apiKey) {
-          const imageDataUrl = await callImagen3(apiKey, item.prompt);
-          return {
-            id: item.id || globalIndex,
-            title: item.title,
-            category: item.category,
-            outfit: item.outfit,
-            lighting: item.lighting,
-            imageUrl: imageDataUrl,
-            prompt: item.prompt
-          };
-        }
-      } catch (imgErr) {
-        console.warn(`Imagen 3 generation failed for item #${globalIndex}:`, imgErr.message);
-      }
-
-      const styleDef = HEADSHOT_STYLES[globalIndex - 1] || HEADSHOT_STYLES[0];
-      const svgContent = generateHeadshotSvg(styleDef, userPhotoData, candidateName, lang);
-      const base64Svg = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
+      const imageDataUrl = await callImagen3(apiKey, item.prompt);
       return {
         id: item.id || globalIndex,
-        title: item.title || (lang === 'en' ? styleDef.en : styleDef.es),
-        category: item.category || styleDef.cat,
-        outfit: item.outfit || styleDef.outfit,
-        lighting: item.lighting || styleDef.light,
-        imageUrl: base64Svg,
-        svgDataUrl: base64Svg,
-        rawSvg: svgContent
+        title: item.title || (HEADSHOT_STYLES[globalIndex - 1] ? (lang === 'en' ? HEADSHOT_STYLES[globalIndex - 1].en : HEADSHOT_STYLES[globalIndex - 1].es) : `Retrato #${globalIndex}`),
+        category: item.category || (HEADSHOT_STYLES[globalIndex - 1] ? HEADSHOT_STYLES[globalIndex - 1].cat : 'Studio'),
+        outfit: item.outfit || (HEADSHOT_STYLES[globalIndex - 1] ? HEADSHOT_STYLES[globalIndex - 1].outfit : 'Ejecutivo'),
+        lighting: item.lighting || (HEADSHOT_STYLES[globalIndex - 1] ? HEADSHOT_STYLES[globalIndex - 1].light : 'Estudio 85mm'),
+        imageUrl: imageDataUrl,
+        prompt: item.prompt
       };
     });
 
