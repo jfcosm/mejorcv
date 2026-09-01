@@ -1848,16 +1848,21 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     if (evaluation && typeof evaluation === 'object') {
       if (evaluation.detailedExplanation && typeof evaluation.detailedExplanation === 'string') {
         let text = evaluation.detailedExplanation;
-        // Cut off any section that begins with recommendation headers (e.g. "Recomendaciones Clave para Mejorar:", etc.)
-        const recHeaderRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:Recomendaciones\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Sugerencias\s*(?:para\s*(?:mejorar|optimizar))?|Consejos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Pasos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Key\s*Recommendations|How\s*to\s*Improve|Actionable\s*Recommendations|Suggested\s*Improvements)[:\s*#_-]*[\s\S]*/i;
-        text = text.replace(recHeaderRegex, '').trim();
+        
+        // 1. Cut off at any phrase introducing recommendations, suggestions or advice
+        const cutoffRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:(?:Mis|Nuestras|Las|Algunas|Principales|A\s+continuación|Aquí)\s+)?(?:recomendaciones?|sugerencias?|consejos?|pasos?|puntos?\s+clave|aspectos?\s+a\s+mejorar|claves?\s+para\s+(?:mejorar|optimizar)|key\s*recommendations?|how\s*to\s*improve|actionable\s*recommendations?|suggested\s*improvements?)[\s\S]*/i;
+        text = text.replace(cutoffRegex, '').trim();
 
-        // Also filter out any numbered recommendation action bullets
+        // 2. Cut off if there is any numbered list starting with 1. (e.g. 1. Reestructuración...)
+        const numberedListCutoff = /(?:\n\s*|\n|^)\s*1[\.\)]\s+[\s\S]*/i;
+        text = text.replace(numberedListCutoff, '').trim();
+
+        // 3. Filter out any remaining lines that look like bullet advice
         const lines = text.split('\n');
         const filteredLines = [];
         for (const line of lines) {
           const trimmed = line.trim();
-          if (/^(?:\d+[\.\)]|\*|-)\s*(?:\*\*)?(?:Reestructuración|Optimización|Concisión|Cuantificación|Verbos de acción|Añadir|Revisión|Action|Optimize|Rewrite|Add|Format|Use)/i.test(trimmed) && (trimmed.includes(':') || trimmed.includes('-'))) {
+          if (/^(?:\d+[\.\)]|[\*\-•])\s+/i.test(trimmed)) {
             continue;
           }
           filteredLines.push(line);

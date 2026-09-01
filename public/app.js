@@ -1769,22 +1769,31 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="critique-feedback">${parseFeedbackMarkdown(data.feedback)}</div>
-            ${starsValue <= 3 ? `
-              <div class="critique-action-hint" style="margin-top: 9px; font-size: 11.5px; color: #0284c7; background: rgba(2,132,199,0.06); border: 1px solid rgba(2,132,199,0.18); border-radius: 4px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
-                <span>💡</span>
-                <span>${isEn ? 'Action plan & rewrites included in AI Optimization' : 'Plan de acción y reescritura en Optimización IA'}</span>
-              </div>
-            ` : ''}
           </div>
         `;
       }
     }
     
-    // Parse detailed explanation markdown to clean HTML bold tags (with defense-in-depth sanitization)
+    // Parse detailed explanation markdown to clean HTML bold tags (strictly diagnostic only)
     if (detailedExplanationText) {
       let cleanExplanation = evalData.detailedExplanation || '';
-      const recHeaderRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:Recomendaciones\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Sugerencias\s*(?:para\s*(?:mejorar|optimizar))?|Consejos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Pasos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Key\s*Recommendations|How\s*to\s*Improve|Actionable\s*Recommendations|Suggested\s*Improvements)[:\s*#_-]*[\s\S]*/i;
-      cleanExplanation = cleanExplanation.replace(recHeaderRegex, '').trim();
+      const cutoffRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:(?:Mis|Nuestras|Las|Algunas|Principales|A\s+continuación|Aquí)\s+)?(?:recomendaciones?|sugerencias?|consejos?|pasos?|puntos?\s+clave|aspectos?\s+a\s+mejorar|claves?\s+para\s+(?:mejorar|optimizar)|key\s*recommendations?|how\s*to\s*improve|actionable\s*recommendations?|suggested\s*improvements?)[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(cutoffRegex, '').trim();
+
+      const numberedListCutoff = /(?:\n\s*|\n|^)\s*1[\.\)]\s+[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(numberedListCutoff, '').trim();
+
+      const lines = cleanExplanation.split('\n');
+      const filteredLines = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^(?:\d+[\.\)]|[\*\-•])\s+/i.test(trimmed)) {
+          continue;
+        }
+        filteredLines.push(line);
+      }
+      cleanExplanation = filteredLines.join('\n').trim();
+
       detailedExplanationText.innerHTML = parseFeedbackMarkdown(cleanExplanation);
     }
   }
