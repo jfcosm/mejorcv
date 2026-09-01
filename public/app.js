@@ -147,15 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiAtsLabel: "Filtro ATS",
       kpiStrengthsLabel: "Fortalezas",
       kpiFixesLabel: "Por Mejorar",
-      critiqueExplanationTitle: "Explicación del Puntaje",
-      previewPillText: "CV Optimizado por Cintia Listo",
-      previewSectionTitle: "Reescritura Profesional de Alto Impacto",
-      previewSectionSubtitle: "Cintia ha reestructurado tu currículum inyectando palabras clave ATS, logros cuantificados y formato profesional listo para postular.",
-      unlockCtaHeading: "Desbloquea tu Currículum Optimizado",
-      unlockCtaDescription: "Accede a la versión completa optimizada por Cintia, con redacción persuasiva, palabras clave ATS y lista para enviar a reclutadores.",
+      critiqueExplanationTitle: "Explicación del Diagnóstico",
+      diagnosticBannerTitle: "¿Quieres solucionar estas brechas y obtener tu CV reescrito?",
+      diagnosticBannerSubtitle: "El informe de Optimización por IA incluye tu Currículum reescrito para ATS y el Plan de Acción Táctico de Cintia.",
+      diagnosticBannerBtnText: "Ver Optimización de IA",
+      previewPillText: "CURRÍCULUM OPTIMIZADO + PLAN DE ACCIÓN",
+      previewSectionTitle: "Currículum Optimizado + Plan de Acción Táctico",
+      previewSectionSubtitle: "Reescritura completa con formato ATS y consultoría personalizada con palabras clave estratégicas y fórmulas de logros.",
+      unlockCtaHeading: "Desbloquea tu Currículum Optimizado y Plan de Acción",
+      unlockCtaDescription: "Descarga tu CV reescrito por Cintia para superar filtros ATS junto con la guía estratégica de palabras clave y redacción de logros.",
       unlockCtaPeriod: "USD / pago único",
       unlockActionBtnText: "Desbloquear y Descargar CV",
-      unlockedStatusText: "¡Currículum Desbloqueado con Éxito!",
+      unlockedStatusText: "¡Currículum y Plan de Acción Desbloqueados!",
       unlockedCopyBtnText: "Copiar Texto",
       unlockedDownloadBtnText: "Descargar .txt",
       pricingTitle: "¿Prefieres la asesoría y optimización de un Experto Humano?",
@@ -303,15 +306,18 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiAtsLabel: "ATS Filter",
       kpiStrengthsLabel: "Strengths",
       kpiFixesLabel: "To Improve",
-      critiqueExplanationTitle: "Score Explanation",
-      previewPillText: "Cintia-Optimized Resume Ready",
-      previewSectionTitle: "High-Impact Professional Rewrite",
-      previewSectionSubtitle: "Cintia has restructured your resume injecting ATS keywords, quantified achievements, and recruiter-ready layout.",
-      unlockCtaHeading: "Unlock Your Optimized Resume",
-      unlockCtaDescription: "Access the full version optimized by Cintia, with persuasive copywriting, ATS keywords, and ready to send to recruiters.",
+      critiqueExplanationTitle: "Diagnostic Explanation",
+      diagnosticBannerTitle: "Want to solve these gaps and get your rewritten resume?",
+      diagnosticBannerSubtitle: "The AI Optimization tier includes your ATS-rewritten resume plus Cintia's Tactical Action Plan.",
+      diagnosticBannerBtnText: "View AI Optimization",
+      previewPillText: "OPTIMIZED RESUME + ACTION PLAN",
+      previewSectionTitle: "Optimized Resume + Tactical Action Plan",
+      previewSectionSubtitle: "Full ATS rewrite and personalized consulting guide with strategic keywords and impact formulas.",
+      unlockCtaHeading: "Unlock Your Optimized Resume and Action Plan",
+      unlockCtaDescription: "Download your Cintia-rewritten resume for ATS filters along with the strategic keyword and achievement wording guide.",
       unlockCtaPeriod: "USD / one-time payment",
       unlockActionBtnText: "Unlock and Download Resume",
-      unlockedStatusText: "Resume Successfully Unlocked!",
+      unlockedStatusText: "Resume & Tactical Action Plan Unlocked!",
       unlockedCopyBtnText: "Copy Text",
       unlockedDownloadBtnText: "Download .txt",
       pricingTitle: "Prefer Guidance and Optimization from a Human Expert?",
@@ -512,6 +518,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kpiFixesLabelEl) kpiFixesLabelEl.textContent = t.kpiFixesLabel;
     const critiqueExplanationTitleEl = document.getElementById('critiqueExplanationTitle');
     if (critiqueExplanationTitleEl) critiqueExplanationTitleEl.textContent = t.critiqueExplanationTitle;
+    const diagnosticBannerTitleEl = document.getElementById('diagnosticBannerTitle');
+    if (diagnosticBannerTitleEl) diagnosticBannerTitleEl.textContent = t.diagnosticBannerTitle;
+    const diagnosticBannerSubtitleEl = document.getElementById('diagnosticBannerSubtitle');
+    if (diagnosticBannerSubtitleEl) diagnosticBannerSubtitleEl.textContent = t.diagnosticBannerSubtitle;
+    const diagnosticBannerBtnTextEl = document.getElementById('diagnosticBannerBtnText');
+    if (diagnosticBannerBtnTextEl) diagnosticBannerBtnTextEl.textContent = t.diagnosticBannerBtnText;
     
     // Modern AI Preview Section (Blurred UI)
     const previewPillTextEl = document.getElementById('previewPillText');
@@ -1757,6 +1769,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="critique-feedback">${parseFeedbackMarkdown(data.feedback)}</div>
+            ${starsValue <= 3 ? `
+              <div class="critique-action-hint" style="margin-top: 9px; font-size: 11.5px; color: #0284c7; background: rgba(2,132,199,0.06); border: 1px solid rgba(2,132,199,0.18); border-radius: 4px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
+                <span>💡</span>
+                <span>${isEn ? 'Action plan & rewrites included in AI Optimization' : 'Plan de acción y reescritura en Optimización IA'}</span>
+              </div>
+            ` : ''}
           </div>
         `;
       }
