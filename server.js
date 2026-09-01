@@ -1298,7 +1298,7 @@ Respond ONLY with a valid JSON array of 20 objects:
   return [];
 }
 
-async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}) {
+async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}, onBatchProgress = null) {
   const apiKey = getGeminiApiKey(config);
   if (!apiKey) {
     throw new Error("Falta configurar la Gemini / Google Imagen API Key en el servidor para generar los retratos fotorrealistas con IA.");
@@ -1323,7 +1323,7 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
   }
 
   const headshots = [];
-  const BATCH_SIZE = 2; // Controlled concurrency to respect Google API rate quotas
+  const BATCH_SIZE = 4; // Optimized concurrency for fast generation (5 parallel rounds)
 
   for (let i = 0; i < generatedPrompts.length; i += BATCH_SIZE) {
     const batch = generatedPrompts.slice(i, i + BATCH_SIZE);
@@ -1358,9 +1358,18 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
     const batchResults = await Promise.all(batchPromises);
     headshots.push(...batchResults);
 
+    // If progress callback is provided (e.g. for real-time SSE streaming), notify client immediately
+    if (typeof onBatchProgress === 'function') {
+      try {
+        await onBatchProgress(batchResults, headshots.length, generatedPrompts.length);
+      } catch (cbErr) {
+        console.warn("Error in onBatchProgress callback:", cbErr.message);
+      }
+    }
+
     // Brief inter-batch pause to prevent burst rate limiting
     if (i + BATCH_SIZE < generatedPrompts.length) {
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 400));
     }
   }
 
@@ -1399,11 +1408,85 @@ app.post('/api/headshots/upload-photo', upload.single('photo'), async (req, res)
 
   } catch (err) {
     console.error("Error in /api/headshots/upload-photo:", err);
-    res.status(500).json({ error: err.message || "Error al subir la fotografía." });
+    res.status(500).json({ error: "Error al subir la foto del usuario." });
   }
 });
 
-// 2. Generate 20 AI Headshots Pack
+// 2. Real-time Progressive Streaming Endpoint (Server-Sent Events)
+app.get('/api/headshots/stream/:analysisId', async (req, res) => {
+  try {
+    const { analysisId } = req.params;
+    const { lang } = req.query;
+
+    if (!analysisId) {
+      return res.status(400).send("ID de análisis requerido.");
+    }
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).send("Análisis no encontrado.");
+    }
+
+    const isPaid = Boolean(analysis.hasHeadshotsPaid || analysis.paymentStatus === 'completed_headshots');
+    if (!isPaid) {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+      });
+      res.write(`data: ${JSON.stringify({ type: 'error', requiresPayment: true, message: 'Pago requerido para generar retratos.' })}\n\n`);
+      return res.end();
+    }
+
+    // Set streaming headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no'
+    });
+
+    // If already generated, stream all immediately
+    let headshots = analysis.headshotImages;
+    if (headshots && Array.isArray(headshots) && headshots.length >= 20) {
+      res.write(`data: ${JSON.stringify({ type: 'batch', items: headshots, currentCount: headshots.length, totalCount: 20 })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'done', headshots, totalCount: headshots.length })}\n\n`);
+      return res.end();
+    }
+
+    const config = await getConfigDoc();
+    const effectiveLang = lang || analysis.lang || 'es';
+
+    headshots = await generateHeadshotsPack(
+      analysis.filename,
+      analysis.originalText,
+      analysis.userPhotoData || null,
+      effectiveLang,
+      config,
+      async (batchResults, currentCount, totalCount) => {
+        res.write(`data: ${JSON.stringify({ type: 'batch', items: batchResults, currentCount, totalCount })}\n\n`);
+      }
+    );
+
+    await updateAnalysisDoc(analysisId, {
+      headshotImages: headshots
+    });
+    recordGeminiCall('optimizations');
+
+    res.write(`data: ${JSON.stringify({ type: 'done', headshots, totalCount: headshots.length })}\n\n`);
+    res.end();
+
+  } catch (err) {
+    console.error("Error in /api/headshots/stream:", err);
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: err.message || 'Error al generar retratos.' })}\n\n`);
+      res.end();
+    } catch (_) {}
+  }
+});
+
+// 3. Generate 20 AI Headshots Pack
 app.post('/api/headshots/generate', async (req, res) => {
   try {
     const { analysisId, lang } = req.body;
@@ -1457,7 +1540,7 @@ app.post('/api/headshots/generate', async (req, res) => {
   }
 });
 
-// 3. Download All 20 Headshots as .ZIP
+// 4. Download All 20 Headshots as .ZIP
 app.get('/api/headshots/download-zip/:analysisId', async (req, res) => {
   try {
     const { analysisId } = req.params;
@@ -1548,8 +1631,14 @@ Sitio web: https://cintia.pro`;
     zip.addFile("LEEME_GUIA_RECOMENDACIONES.txt", Buffer.from(guideText, 'utf8'));
 
     const zipBuffer = zip.toBuffer();
+    
+    // Strict Anti-Cache Headers to ensure freshest ZIP is always served
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="Cintia_Pack_20_Headshots_${analysisId.slice(0, 8)}.zip"`);
+    res.setHeader('Content-Disposition', `attachment; filename="Cintia_Pack_20_Headshots_${analysisId.slice(0, 8)}_${Date.now()}.zip"`);
     res.send(zipBuffer);
 
   } catch (err) {

@@ -1416,7 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     adminHeadshotsGrid.innerHTML = '';
 
     if (adminDownloadZipBtn) {
-      adminDownloadZipBtn.href = `/api/headshots/download-zip/${doc.id}`;
+      adminDownloadZipBtn.href = `/api/headshots/download-zip/${doc.id}?t=${Date.now()}`;
     }
 
     doc.headshotImages.forEach(item => {

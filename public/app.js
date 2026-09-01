@@ -2780,40 +2780,74 @@ document.addEventListener('DOMContentLoaded', () => {
         stepInterval = setInterval(() => {
           stepIdx = (stepIdx + 1) % steps.length;
           loadingStepText.textContent = steps[stepIdx];
-        }, 8000);
+        }, 6000);
       }
 
-      let headshots = preloadedHeadshots;
-      if (!headshots || !Array.isArray(headshots) || headshots.length < 20) {
-        const resp = await fetch('/api/headshots/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysisId: currentAnalysisId,
-            lang: currentLanguage
-          })
+      // 1. If preloaded full headshots exist, render immediately
+      if (preloadedHeadshots && Array.isArray(preloadedHeadshots) && preloadedHeadshots.length >= 20) {
+        renderHeadshotsGallery(preloadedHeadshots);
+        finalizeHeadshotsView();
+        return;
+      }
+
+      // 2. Real-time Progressive Streaming via SSE (Server-Sent Events)
+      let accumulatedHeadshots = [];
+      if (headshotsGrid) headshotsGrid.innerHTML = '';
+
+      if (window.EventSource) {
+        await new Promise((resolve) => {
+          const sseUrl = `/api/headshots/stream/${currentAnalysisId}?lang=${currentLanguage}&t=${Date.now()}`;
+          const evtSource = new EventSource(sseUrl);
+
+          evtSource.onmessage = (e) => {
+            try {
+              const data = JSON.parse(e.data);
+              if (data.type === 'batch' && Array.isArray(data.items)) {
+                accumulatedHeadshots.push(...data.items);
+                appendHeadshotsCards(data.items);
+
+                if (headshotsGalleryBox) {
+                  headshotsGalleryBox.style.display = 'block';
+                }
+                const ctaBox = document.getElementById('headshotsCtaBox');
+                if (ctaBox) ctaBox.style.display = 'none';
+
+                if (loadingStepText) {
+                  loadingStepText.textContent = currentLanguage === 'en'
+                    ? `✨ ${accumulatedHeadshots.length} of 20 studio portraits ready in your gallery...`
+                    : `✨ ${accumulatedHeadshots.length} de 20 retratos listos en tu galería...`;
+                }
+              } else if (data.type === 'done') {
+                evtSource.close();
+                if (data.headshots && data.headshots.length > 0) {
+                  accumulatedHeadshots = data.headshots;
+                  renderHeadshotsGallery(data.headshots);
+                }
+                finalizeHeadshotsView();
+                resolve();
+              } else if (data.type === 'error') {
+                evtSource.close();
+                fallbackStandardGenerate().then(resolve);
+              }
+            } catch (parseErr) {
+              console.warn("SSE parse error:", parseErr);
+            }
+          };
+
+          evtSource.onerror = () => {
+            evtSource.close();
+            if (accumulatedHeadshots.length < 20) {
+              fallbackStandardGenerate().then(resolve);
+            } else {
+              finalizeHeadshotsView();
+              resolve();
+            }
+          };
         });
-        const data = await resp.json();
-        if (data.success && data.headshots) {
-          headshots = data.headshots;
-        } else if (data.error) {
-          throw new Error(data.error);
-        }
+      } else {
+        await fallbackStandardGenerate();
       }
 
-      if (headshots && Array.isArray(headshots) && headshots.length > 0) {
-        renderHeadshotsGallery(headshots);
-        if (headshotsGalleryBox) {
-          headshotsGalleryBox.style.display = 'block';
-          headshotsGalleryBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        const ctaBox = document.getElementById('headshotsCtaBox');
-        if (ctaBox) ctaBox.style.display = 'none';
-        if (loadingNotice) loadingNotice.style.display = 'none';
-        if (downloadAllZipBtn && currentAnalysisId) {
-          downloadAllZipBtn.href = `/api/headshots/download-zip/${currentAnalysisId}`;
-        }
-      }
     } catch (err) {
       console.error('Error generating headshots:', err);
       if (headshotsError) {
@@ -2831,45 +2865,101 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
     }
+
+    async function fallbackStandardGenerate() {
+      const resp = await fetch('/api/headshots/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId: currentAnalysisId,
+          lang: currentLanguage
+        })
+      });
+      const data = await resp.json();
+      if (data.success && data.headshots) {
+        renderHeadshotsGallery(data.headshots);
+        finalizeHeadshotsView();
+      } else if (data.error) {
+        throw new Error(data.error);
+      }
+    }
+
+    function finalizeHeadshotsView() {
+      if (headshotsGalleryBox) {
+        headshotsGalleryBox.style.display = 'block';
+        headshotsGalleryBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      const ctaBox = document.getElementById('headshotsCtaBox');
+      if (ctaBox) ctaBox.style.display = 'none';
+      if (loadingNotice) loadingNotice.style.display = 'none';
+      if (downloadAllZipBtn && currentAnalysisId) {
+        downloadAllZipBtn.href = `/api/headshots/download-zip/${currentAnalysisId}?t=${Date.now()}`;
+      }
+    }
+  }
+
+  function appendHeadshotsCards(items) {
+    if (!headshotsGrid || !Array.isArray(items)) return;
+    items.forEach((item) => {
+      // Avoid duplicate card if already present
+      if (document.getElementById(`headshot-card-${item.id}`)) return;
+
+      const card = createHeadshotCardElement(item);
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(12px)';
+      card.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      headshotsGrid.appendChild(card);
+      requestAnimationFrame(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      });
+    });
   }
 
   function renderHeadshotsGallery(headshots) {
     if (!headshotsGrid) return;
     headshotsGrid.innerHTML = '';
-
     headshots.forEach((item) => {
-      const card = document.createElement('div');
-      card.className = 'headshot-item-card';
-
-      const imageSrc = item.imageUrl || item.svgDataUrl;
-      const isPng = imageSrc && imageSrc.startsWith('data:image/png');
-      const isJpg = imageSrc && (imageSrc.startsWith('data:image/jpeg') || imageSrc.startsWith('data:image/jpg'));
-      const ext = isPng ? 'png' : isJpg ? 'jpg' : 'svg';
-      const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${item.title.replace(/\s+/g, '_')}.${ext}`;
-
-      card.innerHTML = `
-        <div class="headshot-item-img-wrap">
-          <img src="${imageSrc}" alt="${item.title}" class="headshot-item-img" loading="lazy">
-          <div class="headshot-item-overlay">
-            <a href="${imageSrc}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Descargar</span>
-            </a>
-          </div>
-        </div>
-        <div class="headshot-item-meta">
-          <div class="headshot-item-title">${item.title}</div>
-          <span class="headshot-item-cat">${item.category}</span>
-        </div>
-      `;
-
+      const card = createHeadshotCardElement(item);
       headshotsGrid.appendChild(card);
     });
   }
 
-  // ZIP download feedback spinner
+  function createHeadshotCardElement(item) {
+    const card = document.createElement('div');
+    card.className = 'headshot-item-card';
+    card.id = `headshot-card-${item.id}`;
+
+    const imageSrc = item.imageUrl || item.svgDataUrl;
+    const isPng = imageSrc && imageSrc.startsWith('data:image/png');
+    const isJpg = imageSrc && (imageSrc.startsWith('data:image/jpeg') || imageSrc.startsWith('data:image/jpg'));
+    const ext = isPng ? 'png' : isJpg ? 'jpg' : 'svg';
+    const downloadTitle = `Foto_${item.id < 10 ? '0' + item.id : item.id}_${(item.title || 'Retrato').replace(/\s+/g, '_')}.${ext}`;
+
+    card.innerHTML = `
+      <div class="headshot-item-img-wrap">
+        <img src="${imageSrc}" alt="${item.title}" class="headshot-item-img" loading="lazy">
+        <div class="headshot-item-overlay">
+          <a href="${imageSrc}" download="${downloadTitle}" class="headshot-download-btn" title="Descargar esta foto">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Descargar</span>
+          </a>
+        </div>
+      </div>
+      <div class="headshot-item-meta">
+        <div class="headshot-item-title">${item.title}</div>
+        <span class="headshot-item-cat">${item.category}</span>
+      </div>
+    `;
+    return card;
+  }
+
+  // ZIP download feedback spinner with dynamic cache-busting timestamp
   if (downloadAllZipBtn) {
     downloadAllZipBtn.addEventListener('click', () => {
+      if (currentAnalysisId) {
+        downloadAllZipBtn.href = `/api/headshots/download-zip/${currentAnalysisId}?t=${Date.now()}`;
+      }
       const origHtml = downloadAllZipBtn.innerHTML;
       downloadAllZipBtn.innerHTML = `
         <svg class="btn-spinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
@@ -2877,7 +2967,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       setTimeout(() => {
         downloadAllZipBtn.innerHTML = origHtml;
-      }, 5000);
+      }, 4000);
     });
   }
 
