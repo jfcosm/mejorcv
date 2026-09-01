@@ -2670,20 +2670,22 @@ footer {
 
 .headshots-cta-box {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  text-align: center;
   gap: 16px;
   background: #ffffff;
   border: 1px solid rgba(14, 165, 233, 0.25);
   border-radius: var(--border-radius-sm);
-  padding: 18px 22px;
-  flex-wrap: wrap;
+  padding: 22px 24px;
 }
 
 .headshots-price-info {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
 }
 
 .headshots-price {
@@ -2920,7 +2922,8 @@ footer {
   }
   .headshots-cta-box {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
   .headshots-btn {
     width: 100%;
