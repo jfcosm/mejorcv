@@ -675,6 +675,9 @@ header .nav {
   margin-top: 32px;
   border-top: none;
   padding-top: 10px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .results-header {
@@ -693,7 +696,7 @@ header .nav {
   font-size: 16px;
   font-weight: 500;
   color: var(--text-medium);
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
   line-height: 1.5;
 }
@@ -1172,7 +1175,7 @@ header .nav {
 
 .plans-grid {
   display: block;
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
   width: 100%;
 }
@@ -1285,6 +1288,16 @@ header .nav {
 .plan-input:focus {
   border-color: #ea580c;
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.plan-contact-hint {
+  font-size: 11.5px;
+  color: var(--text-light);
+  line-height: 1.45;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  font-style: italic;
+  text-align: center;
 }
 
 #optimizeExpertBtn {
@@ -1620,10 +1633,16 @@ footer {
   margin-bottom: 14px;
 }
 
+.coach-showcase-section {
+  max-width: 1260px;
+  margin: 4.5rem auto;
+  padding: 0 24px;
+}
+
 .coach-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
   margin-top: 2.5rem;
 }
 
@@ -1631,7 +1650,7 @@ footer {
   background: #ffffff;
   border: 1px solid var(--border-grey);
   border-radius: var(--border-radius-md);
-  padding: 2rem 1.6rem;
+  padding: 1.6rem 1.15rem;
   position: relative;
   transition: var(--transition-smooth);
   box-shadow: var(--shadow-sm);
@@ -1659,13 +1678,13 @@ footer {
 }
 
 .coach-card-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .coach-card-icon-wrap.mint-icon {
@@ -1685,13 +1704,13 @@ footer {
 
 .coach-card-tag {
   display: inline-block;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 6px;
-  margin-bottom: 0.85rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+  margin-bottom: 0.75rem;
 }
 
 .coach-card-tag.mint-tag {
@@ -1710,18 +1729,37 @@ footer {
 }
 
 .coach-card-title {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
   line-height: 1.35;
 }
 
 .coach-card-desc {
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   color: var(--text-medium);
-  line-height: 1.55;
+  line-height: 1.5;
   margin: 0;
+}
+
+@media (max-width: 1160px) {
+  .coach-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .coach-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .coach-cards-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* How it Works Section */
@@ -1842,7 +1880,7 @@ footer {
   color: var(--text-medium);
   font-size: 15px;
   line-height: 1.6;
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
@@ -1895,7 +1933,7 @@ footer {
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.06);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 380px;
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -2237,7 +2275,7 @@ footer {
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
   position: relative;
   overflow: hidden;
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -2538,7 +2576,7 @@ footer {
   box-shadow: 0 4px 20px rgba(14, 165, 233, 0.06);
   position: relative;
   overflow: hidden;
-  max-width: 680px;
+  max-width: 860px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
