@@ -149,8 +149,17 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiFixesLabel: "Por Mejorar",
       critiqueExplanationTitle: "Explicación del Diagnóstico",
       diagnosticBannerTitle: "¿Quieres solucionar estas brechas y obtener tu CV reescrito?",
-      diagnosticBannerSubtitle: "El informe de Optimización por IA incluye tu Currículum reescrito para ATS y el Plan de Acción Táctico de Cintia.",
-      diagnosticBannerBtnText: "Ver Optimización de IA",
+      diagnosticBannerSubtitle: "Reescritura completa en formato ATS con palabras clave y el Plan de Acción Táctico de Cintia.",
+      diagnosticBannerBtnText: "Ver Optimización con IA",
+      diagnosticCtaCoverLetterTitle: "¿Postulas a un puesto específico? Crea tu Carta de Presentación",
+      diagnosticCtaCoverLetterSubtitle: "Cintia redacta una carta personalizada y persuasiva alineada 100% con los requisitos de tu vacante.",
+      diagnosticCtaCoverLetterBtnText: "Crear Carta de Presentación",
+      diagnosticCtaHeadshotsTitle: "¿Necesitas una fotografía profesional de estudio para tu LinkedIn y CV?",
+      diagnosticCtaHeadshotsSubtitle: "Genera 20 retratos fotográficos de alta resolución con esquemas ópticos 85mm y estilos corporativos.",
+      diagnosticCtaHeadshotsBtnText: "Generar Fotos de Estudio",
+      diagnosticCtaExpertTitle: "¿Prefieres asesoría 1 a 1 y simulación de entrevista con un Experto Humano?",
+      diagnosticCtaExpertSubtitle: "Sesión de 90 minutos con un especialista senior en RRHH y reclutamiento para potenciar tu carrera.",
+      diagnosticCtaExpertBtnText: "Solicitar Asesoría con Experto",
       previewPillText: "CURRÍCULUM OPTIMIZADO + PLAN DE ACCIÓN",
       previewSectionTitle: "Currículum Optimizado + Plan de Acción Táctico",
       previewSectionSubtitle: "Reescritura completa con formato ATS y consultoría personalizada con palabras clave estratégicas y fórmulas de logros.",
@@ -308,8 +317,17 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiFixesLabel: "To Improve",
       critiqueExplanationTitle: "Diagnostic Explanation",
       diagnosticBannerTitle: "Want to solve these gaps and get your rewritten resume?",
-      diagnosticBannerSubtitle: "The AI Optimization tier includes your ATS-rewritten resume plus Cintia's Tactical Action Plan.",
+      diagnosticBannerSubtitle: "Full ATS rewrite with keywords plus Cintia's Tactical Action Plan.",
       diagnosticBannerBtnText: "View AI Optimization",
+      diagnosticCtaCoverLetterTitle: "Applying for a specific job? Create your tailored Cover Letter",
+      diagnosticCtaCoverLetterSubtitle: "Cintia writes a persuasive and tailored cover letter aligned 100% with your job opening requirements.",
+      diagnosticCtaCoverLetterBtnText: "Create Cover Letter",
+      diagnosticCtaHeadshotsTitle: "Need a professional studio photo for your LinkedIn and Resume?",
+      diagnosticCtaHeadshotsSubtitle: "Generate 20 high-definition portraits with 85mm optical lighting and corporate styles.",
+      diagnosticCtaHeadshotsBtnText: "Generate Studio Photos",
+      diagnosticCtaExpertTitle: "Prefer 1-on-1 advisory and interview prep with a Human Expert?",
+      diagnosticCtaExpertSubtitle: "90-minute session with a senior HR and recruitment specialist to boost your career.",
+      diagnosticCtaExpertBtnText: "Request Human Expert Advisory",
       previewPillText: "OPTIMIZED RESUME + ACTION PLAN",
       previewSectionTitle: "Optimized Resume + Tactical Action Plan",
       previewSectionSubtitle: "Full ATS rewrite and personalized consulting guide with strategic keywords and impact formulas.",
@@ -524,6 +542,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (diagnosticBannerSubtitleEl) diagnosticBannerSubtitleEl.textContent = t.diagnosticBannerSubtitle;
     const diagnosticBannerBtnTextEl = document.getElementById('diagnosticBannerBtnText');
     if (diagnosticBannerBtnTextEl) diagnosticBannerBtnTextEl.textContent = t.diagnosticBannerBtnText;
+
+    const diagnosticCtaCoverLetterTitleEl = document.getElementById('diagnosticCtaCoverLetterTitle');
+    if (diagnosticCtaCoverLetterTitleEl) diagnosticCtaCoverLetterTitleEl.textContent = t.diagnosticCtaCoverLetterTitle;
+    const diagnosticCtaCoverLetterSubtitleEl = document.getElementById('diagnosticCtaCoverLetterSubtitle');
+    if (diagnosticCtaCoverLetterSubtitleEl) diagnosticCtaCoverLetterSubtitleEl.textContent = t.diagnosticCtaCoverLetterSubtitle;
+    const diagnosticCtaCoverLetterBtnTextEl = document.getElementById('diagnosticCtaCoverLetterBtnText');
+    if (diagnosticCtaCoverLetterBtnTextEl) diagnosticCtaCoverLetterBtnTextEl.textContent = t.diagnosticCtaCoverLetterBtnText;
+
+    const diagnosticCtaHeadshotsTitleEl = document.getElementById('diagnosticCtaHeadshotsTitle');
+    if (diagnosticCtaHeadshotsTitleEl) diagnosticCtaHeadshotsTitleEl.textContent = t.diagnosticCtaHeadshotsTitle;
+    const diagnosticCtaHeadshotsSubtitleEl = document.getElementById('diagnosticCtaHeadshotsSubtitle');
+    if (diagnosticCtaHeadshotsSubtitleEl) diagnosticCtaHeadshotsSubtitleEl.textContent = t.diagnosticCtaHeadshotsSubtitle;
+    const diagnosticCtaHeadshotsBtnTextEl = document.getElementById('diagnosticCtaHeadshotsBtnText');
+    if (diagnosticCtaHeadshotsBtnTextEl) diagnosticCtaHeadshotsBtnTextEl.textContent = t.diagnosticCtaHeadshotsBtnText;
+
+    const diagnosticCtaExpertTitleEl = document.getElementById('diagnosticCtaExpertTitle');
+    if (diagnosticCtaExpertTitleEl) diagnosticCtaExpertTitleEl.textContent = t.diagnosticCtaExpertTitle;
+    const diagnosticCtaExpertSubtitleEl = document.getElementById('diagnosticCtaExpertSubtitle');
+    if (diagnosticCtaExpertSubtitleEl) diagnosticCtaExpertSubtitleEl.textContent = t.diagnosticCtaExpertSubtitle;
+    const diagnosticCtaExpertBtnTextEl = document.getElementById('diagnosticCtaExpertBtnText');
+    if (diagnosticCtaExpertBtnTextEl) diagnosticCtaExpertBtnTextEl.textContent = t.diagnosticCtaExpertBtnText;
     
     // Modern AI Preview Section (Blurred UI)
     const previewPillTextEl = document.getElementById('previewPillText');

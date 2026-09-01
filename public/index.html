@@ -238,18 +238,70 @@
         <div class="detailed-explanation">
           <h3 id="critiqueExplanationTitle">Explicación del Diagnóstico</h3>
           <p id="detailedExplanationText"></p>
-          <div class="diagnostic-upgrade-banner" id="diagnosticUpgradeBanner" style="margin-top: 16px; padding: 14px 18px; background: rgba(16,185,129,0.06); border: 1.5px dashed rgba(16,185,129,0.35); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">💡</span>
-              <div>
-                <strong style="color: #065f46; font-size: 13.5px; display: block;" id="diagnosticBannerTitle">¿Quieres solucionar estas brechas y obtener tu CV reescrito?</strong>
-                <span style="color: var(--text-medium); font-size: 12.5px;" id="diagnosticBannerSubtitle">El informe de Optimización por IA incluye tu Currículum reescrito para ATS y el Plan de Acción Táctico de Cintia.</span>
+          
+          <!-- 4 Upgrades Suite CTAs (Consistent format and color matching each destination service) -->
+          <div class="diagnostic-ctas-container" id="diagnosticCtasContainer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+            
+            <!-- CTA 1: AI CV Optimization (Mint Green) -->
+            <div class="diagnostic-upgrade-banner cta-mint" id="diagnosticCtaAi" style="padding: 14px 18px; background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(5,150,105,0.02) 100%); border: 1.5px solid rgba(16,185,129,0.3); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1 1 300px;">
+                <span style="font-size: 22px; line-height: 1;">✨</span>
+                <div>
+                  <strong style="color: #065f46; font-size: 13.5px; display: block;" id="diagnosticBannerTitle">¿Quieres solucionar estas brechas y obtener tu CV reescrito?</strong>
+                  <span style="color: var(--text-medium); font-size: 12px; line-height: 1.4; display: block;" id="diagnosticBannerSubtitle">Reescritura completa en formato ATS con palabras clave y el Plan de Acción Táctico de Cintia.</span>
+                </div>
               </div>
+              <a href="#aiPreviewSection" class="btn btn-sm" style="background: var(--color-mint); color: #ffffff; font-weight: 700; font-size: 12px; padding: 9px 15px; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" id="diagnosticBannerBtn">
+                <span id="diagnosticBannerBtnText">Ver Optimización con IA</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
             </div>
-            <a href="#aiPreviewSection" class="btn btn-sm" style="background: var(--color-mint); color: #ffffff; font-weight: 700; font-size: 12.5px; padding: 8px 14px; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px;" id="diagnosticBannerBtn">
-              <span id="diagnosticBannerBtnText">Ver Optimización de IA</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
+
+            <!-- CTA 2: Cover Letter Generator (Purple) -->
+            <div class="diagnostic-upgrade-banner cta-purple" id="diagnosticCtaCoverLetter" style="padding: 14px 18px; background: linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(139,92,246,0.02) 100%); border: 1.5px solid rgba(124,58,237,0.3); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1 1 300px;">
+                <span style="font-size: 22px; line-height: 1;">✉️</span>
+                <div>
+                  <strong style="color: #5b21b6; font-size: 13.5px; display: block;" id="diagnosticCtaCoverLetterTitle">¿Postulas a un puesto específico? Crea tu Carta de Presentación</strong>
+                  <span style="color: var(--text-medium); font-size: 12px; line-height: 1.4; display: block;" id="diagnosticCtaCoverLetterSubtitle">Cintia redacta una carta personalizada y persuasiva alineada 100% con los requisitos de tu vacante.</span>
+                </div>
+              </div>
+              <a href="#coverLetterSection" class="btn btn-sm" style="background: #7c3aed; color: #ffffff; font-weight: 700; font-size: 12px; padding: 9px 15px; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" id="diagnosticCtaCoverLetterBtn">
+                <span id="diagnosticCtaCoverLetterBtnText">Crear Carta de Presentación</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <!-- CTA 3: Headshots Studio Book (Sky Blue) -->
+            <div class="diagnostic-upgrade-banner cta-blue" id="diagnosticCtaHeadshots" style="padding: 14px 18px; background: linear-gradient(135deg, rgba(2,132,199,0.06) 0%, rgba(14,165,233,0.02) 100%); border: 1.5px solid rgba(2,132,199,0.3); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1 1 300px;">
+                <span style="font-size: 22px; line-height: 1;">📸</span>
+                <div>
+                  <strong style="color: #0369a1; font-size: 13.5px; display: block;" id="diagnosticCtaHeadshotsTitle">¿Necesitas una fotografía profesional de estudio para tu LinkedIn y CV?</strong>
+                  <span style="color: var(--text-medium); font-size: 12px; line-height: 1.4; display: block;" id="diagnosticCtaHeadshotsSubtitle">Genera 20 retratos fotográficos de alta resolución con esquemas ópticos 85mm y estilos corporativos.</span>
+                </div>
+              </div>
+              <a href="#headshotsSection" class="btn btn-sm" style="background: #0284c7; color: #ffffff; font-weight: 700; font-size: 12px; padding: 9px 15px; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" id="diagnosticCtaHeadshotsBtn">
+                <span id="diagnosticCtaHeadshotsBtnText">Generar Fotos de Estudio</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <!-- CTA 4: 1-on-1 Human Expert Consultation (Amber/Orange) -->
+            <div class="diagnostic-upgrade-banner cta-amber" id="diagnosticCtaExpert" style="padding: 14px 18px; background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(217,119,6,0.02) 100%); border: 1.5px solid rgba(245,158,11,0.3); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1 1 300px;">
+                <span style="font-size: 22px; line-height: 1;">👔</span>
+                <div>
+                  <strong style="color: #9a3412; font-size: 13.5px; display: block;" id="diagnosticCtaExpertTitle">¿Prefieres asesoría 1 a 1 y simulación de entrevista con un Experto Humano?</strong>
+                  <span style="color: var(--text-medium); font-size: 12px; line-height: 1.4; display: block;" id="diagnosticCtaExpertSubtitle">Sesión de 90 minutos con un especialista senior en RRHH y reclutamiento para potenciar tu carrera.</span>
+                </div>
+              </div>
+              <a href="#pricingSection" class="btn btn-sm" style="background: #ea580c; color: #ffffff; font-weight: 700; font-size: 12px; padding: 9px 15px; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" id="diagnosticCtaExpertBtn">
+                <span id="diagnosticCtaExpertBtnText">Solicitar Asesoría con Experto</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </div>
+
           </div>
         </div>
 
