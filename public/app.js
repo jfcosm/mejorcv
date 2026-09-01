@@ -2191,12 +2191,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── Local / Demo Payment Simulation Button ───
+  // ─── Local / Demo Payment Simulation Button ───
   const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
   if (simulatePaymentBtn) {
     simulatePaymentBtn.addEventListener('click', async () => {
-      simulatePaymentBtn.disabled = true;
       const origText = simulatePaymentBtn.textContent;
+      simulatePaymentBtn.disabled = true;
       simulatePaymentBtn.textContent = 'Simulando pago y activando servicio...';
+
+      if (currentTier === 'headshots') {
+        checkoutModal.close();
+        simulatePaymentBtn.disabled = false;
+        simulatePaymentBtn.textContent = origText;
+
+        const loadingNotice = document.getElementById('headshotsLoadingNotice');
+        if (loadingNotice) {
+          loadingNotice.style.display = 'block';
+          loadingNotice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        try {
+          const resp = await fetch('/api/payment/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              analysisId: currentAnalysisId,
+              tier: 'headshots',
+              paymentMethod: 'simulate'
+            })
+          });
+          const result = await resp.json();
+          if (!resp.ok) throw new Error(result.error || 'Error en simulación');
+          await generateAndDisplayHeadshots(result.headshots);
+        } catch (err) {
+          if (loadingNotice) loadingNotice.style.display = 'none';
+          alert('Error en simulación de retratos: ' + err.message);
+        }
+        return;
+      }
 
       try {
         const jobOfferText = jobOfferInput ? jobOfferInput.value.trim() : '';
@@ -2218,8 +2250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentTier === 'ai') {
           unlockOptimizedCv(result.optimizedText || optimizedContentText);
-        } else if (currentTier === 'headshots') {
-          await generateAndDisplayHeadshots(result.headshots);
         } else if (currentTier === 'cover_letter') {
           if (coverLetterContentText && result.coverLetterText) {
             coverLetterContentText.textContent = cleanMarkdownToPlainText(result.coverLetterText);

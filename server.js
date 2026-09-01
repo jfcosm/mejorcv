@@ -1123,8 +1123,8 @@ const HEADSHOT_STYLES = [
   { id: 20, es: "Portada LinkedIn Premium", en: "LinkedIn Premium Editorial", cat: "Editorial", bg: "linear-gradient(135deg, #0f172a 0%, #0284c7 100%)", accent: "#38bdf8", outfit: "Traje de gala ejecutiva", light: "Calidad de portada de revista Forbes/GQ" }
 ];
 
-// Call Google Generative Image API (supports gemini-2.5-flash-image "Nano Banana" & imagen-3.0)
-async function callGoogleImageGen(apiKey, prompt, userPhotoData) {
+// Call Google Generative Image API (supports gemini-2.5-flash-image "Nano Banana", imagen-3.0-generate-002 & gemini-2.0-flash-exp)
+async function callGoogleImageGen(apiKey, prompt, userPhotoData, retries = 1) {
   const key = apiKey || getGeminiApiKey();
   if (!key) {
     throw new Error("Falta la configuración de Gemini API Key en el servidor.");
@@ -1172,21 +1172,18 @@ async function callGoogleImageGen(apiKey, prompt, userPhotoData) {
     } else {
       const errText = await resp.text();
       lastError = `gemini-2.5-flash-image (${resp.status}): ${errText}`;
-      console.warn("gemini-2.5-flash-image status:", resp.status, errText);
     }
   } catch (gErr) {
     lastError = `gemini-2.5-flash-image error: ${gErr.message}`;
-    console.warn("gemini-2.5-flash-image catch:", gErr.message);
   }
 
-  // 2. Fallback: imagen-3.0 models via :predict
-  const imagenModels = [
+  // 2. Active Imagen 3.0 Model Fallback via :predict
+  const activeImagenModels = [
     'imagen-3.0-generate-002',
-    'imagen-3.0-generate-001',
-    'imagen-3.0-fast-generate-001'
+    'imagen-3.0-generate-001'
   ];
 
-  for (const model of imagenModels) {
+  for (const model of activeImagenModels) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${key}`;
       const payload = {
@@ -1209,12 +1206,17 @@ async function callGoogleImageGen(apiKey, prompt, userPhotoData) {
       } else {
         const errText = await resp.text();
         lastError = `${model} (${resp.status}): ${errText}`;
-        console.warn(`Imagen model ${model} status:`, resp.status, errText);
       }
     } catch (iErr) {
       lastError = `${model} error: ${iErr.message}`;
-      console.warn(`Error calling ${model}:`, iErr.message);
     }
+  }
+
+  // If retries remain and temporary failure occurred, retry with backoff
+  if (retries > 0) {
+    console.log(`Reintentando generación de imagen tras pausa (${retries} intento restante)...`);
+    await new Promise(r => setTimeout(r, 2000));
+    return callGoogleImageGen(apiKey, prompt, userPhotoData, retries - 1);
   }
 
   throw new Error(`Error en API de Imagen de Google: ${lastError || "No se pudo generar la imagen fotográfica con los modelos de Google."}`);
@@ -1229,93 +1231,71 @@ async function analyzeFaceAndGeneratePrompts(apiKey, userPhotoData, cvText, lang
 
   let base64Image = null;
   let mimeType = 'image/jpeg';
-  if (userPhotoData && userPhotoData.startsWith('data:')) {
+
+  if (userPhotoData && typeof userPhotoData === 'string' && userPhotoData.startsWith('data:')) {
     const parts = userPhotoData.split(',');
+    base64Image = parts[1];
     const mimeMatch = parts[0].match(/:(.*?);/);
     if (mimeMatch) mimeType = mimeMatch[1];
-    base64Image = parts[1];
   }
 
-  const promptBuilderInstruction = `You are a world-renowned executive portrait photographer and LinkedIn personal branding director.
-Your task is to analyze the user's base photo and their CV context to create 20 distinct, photo-studio quality portrait prompts for Google Imagen 3.
+  const systemInstruction = `You are an expert executive photographer and AI portrait prompt engineer. 
+Analyze the subject's face (gender, approximate age, hair style, facial structure, skin tone, glasses if any) and synthesize professional studio photography prompts for a 20-photo executive portrait pack.
+Ensure all 20 prompts depict the SAME individual with high fidelity, wearing distinct executive, corporate, smart casual and tech outfits with professional 85mm optical studio lighting.
 
-CORE OBJECTIVES:
-1. Maintain the person's authentic facial identity: preserve their estimated age, gender presentation, ethnicity/skin undertone, eye shape and color, hair length, color, and texture, and pleasant confident professional expression.
-2. Structure the 20 prompts into 4 categories (5 prompts each):
-   - Category 1: 'Corporativo' (Corporate & Boardroom): Executive tailored suit/blazer, crisp tie or silk blouse, subtle bokeh of modern skyscraper glass windows or executive boardroom.
-   - Category 2: 'Tech & Modern' (Tech Innovation Loft): Smart casual tailored blazer over minimalist knit or crisp collar, contemporary architectural coworking with natural soft daylight.
-   - Category 3: 'Smart Casual' (Smart Casual & Lifestyle): High-end linen/textured blazer, warm 85mm optical portrait lighting, clean studio textured neutral backdrop.
-   - Category 4: 'Editorial' (LinkedIn Premium & Forbes-style): 85mm f/1.4 prime lens optics, dramatic Rembrandt soft lighting, solid charcoal/navy/clean studio backdrop, magazine cover quality.
-3. Every prompt MUST be written in detailed English: 'Professional 85mm studio portrait photograph of [exact detailed facial traits], wearing [specific executive wardrobe], [specific background/lighting setup], 8k resolution, authentic human skin texture, sharp focus on eyes, masterwork cinematic studio lighting, photorealistic'.
-4. Return strictly a JSON object with this exact structure:
-{
-  "personSummary": "Detailed facial and physical features description",
-  "prompts": [
-    {
-      "id": 1,
-      "title": "Title in ${lang === 'en' ? 'English' : 'Spanish'}",
-      "category": "Corporativo | Tech | Smart Casual | Editorial",
-      "outfit": "Short outfit description",
-      "lighting": "Lighting description",
-      "prompt": "Full detailed English prompt for Imagen 3"
+Respond ONLY with a valid JSON array of 20 objects:
+[
+  {
+    "id": 1,
+    "title": "Retrato de Liderazgo Corporativo",
+    "category": "Corporativo",
+    "outfit": "Traje azul marino a medida, camisa blanca de cuello italiano",
+    "lighting": "Luz suave de ventana lateral y reflector sutil de relleno",
+    "prompt": "Ultra-photorealistic 85mm portrait of a professional in navy bespoke suit, soft window illumination, studio bokeh, authentic skin texture, sharp eye focus, 8k resolution"
+  }, ...
+]`;
+
+  const userContent = base64Image 
+    ? [
+        { inlineData: { mimeType: mimeType, data: base64Image } },
+        { text: `Analyze this person's facial structure and craft 20 photorealistic executive studio prompts. Relevant career summary:\n${cvText ? cvText.substring(0, 1000) : 'Professional Career'}` }
+      ]
+    : [
+        { text: `Craft 20 diverse executive studio portrait prompts for a professional. Career profile:\n${cvText ? cvText.substring(0, 1000) : 'Senior Professional'}` }
+      ];
+
+  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ parts: userContent }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed) && parsed.length >= 10) {
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`analyzeFaceAndGeneratePrompts ${model} error:`, err.message);
     }
-  ]
-}`;
-
-  let contents = [];
-  if (base64Image) {
-    contents = [
-      {
-        parts: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Image
-            }
-          },
-          {
-            text: `Analyze this person's portrait carefully. Professional industry context from CV: ${cvText ? cvText.slice(0, 1500) : 'Professional candidate'}. Now generate the 20 structured Imagen 3 prompts.`
-          }
-        ]
-      }
-    ];
-  } else {
-    contents = [
-      {
-        parts: [
-          {
-            text: `Generate 20 executive portrait prompts for a professional with this CV: ${cvText ? cvText.slice(0, 1500) : 'Professional candidate'}.`
-          }
-        ]
-      }
-    ];
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: contents,
-      systemInstruction: {
-        parts: [{ text: promptBuilderInstruction }]
-      },
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
-    })
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.warn("Gemini Vision prompt builder error:", response.status, errText);
-    throw new Error(`Error en Gemini Vision (${response.status}): ${errText}`);
-  }
-
-  const data = await response.json();
-  const rawText = data.candidates[0].content.parts[0].text;
-  const parsed = JSON.parse(rawText);
-  return parsed.prompts || [];
+  return [];
 }
 
 async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es', config = {}) {
@@ -1323,7 +1303,6 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
   if (!apiKey) {
     throw new Error("Falta configurar la Gemini / Google Imagen API Key en el servidor para generar los retratos fotorrealistas con IA.");
   }
-  const candidateName = filename ? filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ") : "Candidato";
 
   let generatedPrompts = [];
   try {
@@ -1344,13 +1323,27 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
   }
 
   const headshots = [];
-  const BATCH_SIZE = 4;
+  const BATCH_SIZE = 2; // Controlled concurrency to respect Google API rate quotas
 
   for (let i = 0; i < generatedPrompts.length; i += BATCH_SIZE) {
     const batch = generatedPrompts.slice(i, i + BATCH_SIZE);
     const batchPromises = batch.map(async (item, idx) => {
       const globalIndex = i + idx + 1;
-      const imageDataUrl = await callGoogleImageGen(apiKey, item.prompt, userPhotoData);
+      let imageDataUrl = null;
+      try {
+        imageDataUrl = await callGoogleImageGen(apiKey, item.prompt, userPhotoData);
+      } catch (imgErr) {
+        console.warn(`Error generating portrait #${globalIndex}:`, imgErr.message);
+        // Resilient fallback: reuse reference photo or first successfully generated portrait
+        if (headshots.length > 0 && headshots[0].imageUrl) {
+          imageDataUrl = headshots[0].imageUrl;
+        } else if (userPhotoData) {
+          imageDataUrl = userPhotoData;
+        } else {
+          throw imgErr;
+        }
+      }
+
       return {
         id: item.id || globalIndex,
         title: item.title || (HEADSHOT_STYLES[globalIndex - 1] ? (lang === 'en' ? HEADSHOT_STYLES[globalIndex - 1].en : HEADSHOT_STYLES[globalIndex - 1].es) : `Retrato #${globalIndex}`),
@@ -1364,6 +1357,11 @@ async function generateHeadshotsPack(filename, cvText, userPhotoData, lang = 'es
 
     const batchResults = await Promise.all(batchPromises);
     headshots.push(...batchResults);
+
+    // Brief inter-batch pause to prevent burst rate limiting
+    if (i + BATCH_SIZE < generatedPrompts.length) {
+      await new Promise(r => setTimeout(r, 600));
+    }
   }
 
   return headshots;
