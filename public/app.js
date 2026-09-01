@@ -2705,42 +2705,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const simulateHeadshotsBtn = document.getElementById('simulateHeadshotsBtn');
-  if (simulateHeadshotsBtn) {
-    simulateHeadshotsBtn.addEventListener('click', async () => {
-      if (!currentAnalysisId) {
-        alert(currentLanguage === 'en' ? 'Please analyze your resume first.' : 'Por favor analiza un currículum primero.');
-        return;
-      }
-      simulateHeadshotsBtn.disabled = true;
-      const origHtml = simulateHeadshotsBtn.innerHTML;
-      simulateHeadshotsBtn.innerHTML = `
-        <svg class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
-        <span>${currentLanguage === 'en' ? 'Simulating payment & generating portraits...' : 'Simulando pago y generando 20 fotos...'}</span>
-      `;
-      try {
-        const resp = await fetch('/api/payment/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysisId: currentAnalysisId,
-            tier: 'headshots',
-            paymentMethod: 'simulate'
-          })
-        });
-        const result = await resp.json();
-        if (!resp.ok) throw new Error(result.error || 'Error en simulación');
-
-        await generateAndDisplayHeadshots(result.headshots);
-      } catch (err) {
-        alert('Error en simulación: ' + err.message);
-      } finally {
-        simulateHeadshotsBtn.disabled = false;
-        simulateHeadshotsBtn.innerHTML = origHtml;
-      }
-    });
-  }
-
   async function generateAndDisplayHeadshots(preloadedHeadshots) {
     const loadingNotice = document.getElementById('headshotsLoadingNotice');
     const loadingStepText = document.getElementById('headshotsLoadingStepText');
