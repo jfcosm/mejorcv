@@ -1780,9 +1780,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    // Parse detailed explanation markdown to clean HTML bold tags
+    // Parse detailed explanation markdown to clean HTML bold tags (with defense-in-depth sanitization)
     if (detailedExplanationText) {
-      detailedExplanationText.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation);
+      let cleanExplanation = evalData.detailedExplanation || '';
+      const recHeaderRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:Recomendaciones\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Sugerencias\s*(?:para\s*(?:mejorar|optimizar))?|Consejos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Pasos\s*(?:clave)?\s*(?:para\s*(?:mejorar|optimizar))?|Key\s*Recommendations|How\s*to\s*Improve|Actionable\s*Recommendations|Suggested\s*Improvements)[:\s*#_-]*[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(recHeaderRegex, '').trim();
+      detailedExplanationText.innerHTML = parseFeedbackMarkdown(cleanExplanation);
     }
   }
 
