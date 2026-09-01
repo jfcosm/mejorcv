@@ -443,8 +443,8 @@ function readConfig() {
       optExpertEnabled: true,
       captchaEnabled: true,
       rateLimitPerHour: 20,
-      evaluationPrompt: "Eres Cintia, la experta virtual de MelodIA Lab en reclutamiento y optimización de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y evalúalo bajo estos 7 criterios clave:\n1. Compatibilidad ATS (estructura de secciones estándar, legibilidad por software ATS, tipografías limpias y encabezados reconocibles).\n2. Claridad de Talentos e Habilidades (habilidades duras, blandas y certificaciones claras y categorizadas).\n3. Extensión del Documento (máximo 2 páginas recomendadas).\n4. Logros y Métricas Cuantificables (existencia de números, porcentajes o impactos cuantificados en la experiencia laboral).\n5. Lenguaje y Verbos de Acción (uso de verbos activos y tono profesional persuasivo).\n6. Datos de Contacto y Enlaces (presencia de datos esenciales de contacto y enlaces clave como LinkedIn o Portafolio).\n7. Ortografía y Consistencia Gramatical (ausencia de errores y concordancia en tiempos verbales).\n\nREGLAS FUNDAMENTALES DE EVALUACIÓN:\n- CRONOLOGÍA Y FECHAS: No generes falsos positivos de fechas. Es completamente normal y válido que un currículum contenga fechas recientes (como 2024, 2025, 2026), roles actuales ('Presente', 'Actualidad', 'Present') o certificaciones recientes. Solo señala un problema de fechas si hay una inconsistencia lógica evidente e imposible (por ejemplo, terminar un trabajo antes de empezarlo). JAMÁS menciones variables internas, 'fecha del sistema' ni términos técnicos de la plataforma en las explicaciones o retroalimentaciones.\n- IDIOMA Y TONO: Debes responder 100% en el mismo idioma del currículum (si el CV está en inglés, responde todo el JSON estrictamente en inglés con vocabulario profesional; si está en español, responde estrictamente en español). Mantén un tono constructivo, profesional, empático y claro, destacando fortalezas y dando consejos prácticos.\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5 para el puntaje global),\n  \"summary\": \"Resumen breve de la evaluación\",\n  \"atsCompatibility\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita** para conceptos clave\" },\n  \"skillsClarity\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"lengthCheck\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"quantifiableMetrics\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"actionVerbs\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"contactLinks\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"grammarSpelling\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"retroalimentación con marcadores **negrita**\" },\n  \"detailedExplanation\": \"Explicación detallada del porqué de la puntuación en estrellas y recomendaciones clave para mejorar.\"\n}",
-      optimizationPrompt: "Eres Cintia, la redactora profesional y experta virtual de MelodIA Lab en marca personal. Toma el siguiente currículum vitae y genera una versión optimizada, con redacción persuasiva, palabras clave estratégicas para filtros ATS, y una estructura impecable. Además del currículum optimizado, debes incluir obligatoriamente una sección con ejemplos de párrafos alternativos completamente optimizados para su perfil (como un perfil profesional pulido o la redacción de sus logros clave) y una sección de recomendaciones de mejora estratégicas detalladas según su trayectoria laboral y conocimientos específicos del sector. Devuelve todo el documento formateado en Markdown limpio."
+      evaluationPrompt: "Eres Cintia, la experta virtual de MelodIA Lab en reclutamiento y auditoría de Currículums para superar filtros ATS (Applicant Tracking Systems). Analiza el siguiente texto de currículum vitae y audítalo bajo estos 7 criterios clave:\n1. Compatibilidad ATS (estructura de secciones estándar, legibilidad por software ATS, tipografías limpias y encabezados reconocibles).\n2. Claridad de Talentos e Habilidades (habilidades duras, blandas y certificaciones claras y categorizadas).\n3. Extensión del Documento (máximo 2 páginas recomendadas).\n4. Logros y Métricas Cuantificables (existencia de números, porcentajes o impactos cuantificados en la experiencia laboral).\n5. Lenguaje y Verbos de Acción (uso de verbos activos y tono profesional persuasivo).\n6. Datos de Contacto y Enlaces (presencia de datos esenciales de contacto y enlaces clave como LinkedIn o Portafolio).\n7. Ortografía y Consistencia Gramatical (ausencia de errores y concordancia en tiempos verbales).\n\nREGLAS ESTRICTAS DE AUDITORÍA DIAGNÓSTICA (TIER GRATUITO):\n- RESTRICCIÓN TOTAL DE RECOMENDACIONES: Tu objetivo es exclusivamente DIAGNOSTICAR EL ESTADO ACTUAL (describir qué problemas o debilidades presenta el CV frente a los filtros ATS y reclutadores, y qué nivel de compatibilidad tiene). QUEDA TERMINANTEMENTE PROHIBIDO incluir secciones de 'Recomendaciones Clave', 'Sugerencias de mejora', listas de consejos, listas de palabras clave o ejemplos de reescritura ('Por ejemplo, cambia X por Y'). Esos elementos pertenecen exclusivamente al informe pagado de Optimización por IA.\n- DETAILED EXPLANATION: El campo 'detailedExplanation' debe contener ÚNICA Y EXCLUSIVAMENTE 1 o 2 párrafos concisos resumiendo el diagnóstico general del documento y por qué obtuvo ese puntaje en estrellas, sin listas numeradas ni consejos prácticos.\n- CRONOLOGÍA Y FECHAS: No generes falsos positivos de fechas. Es completamente normal y válido que un currículum contenga fechas recientes (como 2024, 2025, 2026), roles actuales ('Presente', 'Actualidad', 'Present') o certificaciones recientes. Solo señala un problema de fechas si hay una inconsistencia lógica evidente e imposible (por ejemplo, terminar un trabajo antes de empezarlo). JAMÁS menciones variables internas, 'fecha del sistema' ni términos técnicos de la plataforma en las explicaciones o retroalimentaciones.\n- IDIOMA Y TONO: Debes responder 100% en el mismo idioma del currículum (si el CV está en inglés, responde todo el JSON estrictamente en inglés con vocabulario profesional; si está en español, responde estrictamente en español). Mantén un tono constructivo, profesional, empático y claro.\n\nDevuelve la respuesta estrictamente en formato JSON con la siguiente estructura:\n{\n  \"stars\": (número entero de 1 a 5 para el puntaje global),\n  \"summary\": \"Resumen ejecutivo del diagnóstico\",\n  \"atsCompatibility\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico de brechas y estado actual con marcadores **negrita** para conceptos clave\" },\n  \"skillsClarity\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"lengthCheck\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"quantifiableMetrics\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"actionVerbs\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"contactLinks\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"grammarSpelling\": { \"stars\": (número entero de 1 a 5), \"feedback\": \"diagnóstico con marcadores **negrita**\" },\n  \"detailedExplanation\": \"Diagnóstico cualitativo en 1 o 2 párrafos del estado actual del currículum y justificación del puntaje obtenido (sin listas de recomendaciones ni ejemplos de redacción).\"\n}",
+      optimizationPrompt: "Eres Cintia, la redactora profesional y experta virtual de MelodIA Lab en marca personal y reclutamiento ATS. Toma el siguiente currículum vitae y genera un entregable integral de alto impacto estructurado en dos secciones principales en formato Markdown limpio:\n\n# 📄 CURRÍCULUM VITAE OPTIMIZADO (Formato ATS)\nReescribe completamente el currículum del candidato con una estructura impecable de alta legibilidad para software ATS, encabezados estándar de la industria, viñetas de impacto redactadas con verbos de acción fuertes y logros con métricas cuantificables.\n\n---\n\n# 💡 PLAN DE ACCIÓN Y RECOMENDACIONES TÁCTICAS DE CINTIA\nEntrega una guía de consultoría personalizada y detallada para potenciar la empleabilidad del postulante:\n1. **Palabras Clave Estratégicas para su Sector:** Términos técnicos, herramientas y competencias demandadas que debe destacar en postulaciones.\n2. **Fórmulas de Redacción de Logros:** Ejemplos concretos de cómo reformular responsabilidades pasadas en logros de alto impacto usando la fórmula 'Acción + Contexto + Resultado Cuantificable'.\n3. **Propuesta de Perfil Profesional Alternativo:** Redacción persuasiva y moderna para el resumen inicial del CV o biografía de LinkedIn.\n4. **Recomendaciones para LinkedIn y Entrevistas:** Consejos específicos sobre cómo presentar su trayectoria en su perfil digital y defender sus fortalezas ante reclutadores."
     };
     return inMemoryConfig;
   }
@@ -483,20 +483,16 @@ function verifyAdminToken(token) {
   if (!token) return false;
   try {
     const decoded = Buffer.from(token, 'base64url').toString('utf8');
-    const parts = decoded.split(':');
-    if (parts.length !== 3) return false;
-    const [email, expiresAtStr, receivedHmac] = parts;
+    const [email, expiresAtStr, receivedHmac] = decoded.split(':');
+    if (!email || !expiresAtStr || !receivedHmac) return false;
     const expiresAt = parseInt(expiresAtStr, 10);
-    if (isNaN(expiresAt) || Date.now() > expiresAt) return false;
-
+    if (Date.now() > expiresAt) return false;
     const payload = `${email}:${expiresAtStr}`;
     const expectedHmac = crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('hex');
-
-    if (crypto.timingSafeEqual(Buffer.from(receivedHmac, 'hex'), Buffer.from(expectedHmac, 'hex'))) {
-      const expectedEmail = process.env.ADMIN_EMAIL || 'admin@cintia.net';
-      return email === expectedEmail;
+    if (crypto.timingSafeEqual(Buffer.from(receivedHmac), Buffer.from(expectedHmac))) {
+      return { email };
     }
-  } catch (err) {
+  } catch (e) {
     return false;
   }
   return false;
@@ -504,22 +500,32 @@ function verifyAdminToken(token) {
 
 async function getConfigDoc() {
   const dbFs = initFirebase();
+  const fileConfig = readConfig();
   if (dbFs) {
     try {
       const doc = await dbFs.collection('app_config').doc('settings').get();
       if (doc.exists) {
-        inMemoryConfig = { ...readConfig(), ...doc.data() };
+        const firestoreData = doc.data() || {};
+        inMemoryConfig = { ...fileConfig, ...firestoreData };
+        // Sync code prompt to Firestore so stale prompts never persist in DB
+        if (fileConfig.evaluationPrompt && (!firestoreData.evaluationPrompt || firestoreData.evaluationPrompt.includes('recomendaciones clave para mejorar') || firestoreData.evaluationPrompt.includes('REGLAS FUNDAMENTALES DE EVALUACIÓN') || firestoreData.evaluationPrompt.includes('Explicación detallada del porqué de la puntuación en estrellas'))) {
+          inMemoryConfig.evaluationPrompt = fileConfig.evaluationPrompt;
+          inMemoryConfig.optimizationPrompt = fileConfig.optimizationPrompt;
+          await dbFs.collection('app_config').doc('settings').set({
+            evaluationPrompt: fileConfig.evaluationPrompt,
+            optimizationPrompt: fileConfig.optimizationPrompt
+          }, { merge: true });
+        }
         return inMemoryConfig;
       } else {
-        const initialConfig = readConfig();
-        await dbFs.collection('app_config').doc('settings').set(initialConfig);
-        return initialConfig;
+        await dbFs.collection('app_config').doc('settings').set(fileConfig);
+        return fileConfig;
       }
     } catch (err) {
       console.error("Firestore getConfigDoc error, falling back to local:", err.message);
     }
   }
-  return readConfig();
+  return fileConfig;
 }
 
 // Captcha System (Stateless AES-256-CBC with deterministic cross-instance key)
@@ -1813,7 +1819,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
             stars: 5,
             feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles**."
           },
-          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los criterios clave de calidad.\n\nPara mejorar tu CV:\n- Añade verbos de acción en tu experiencia laboral (ej. 'Lideré', 'Implementé').\n- Asegúrate de cuantificar tus resultados en lo posible (ej. 'reducción de tiempos en un 20%').\n- Mantén secciones bien delimitadas.`
+          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los criterios clave de calidad y compatibilidad ATS.`
         };
       }
     } else {
@@ -1835,6 +1841,33 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
         evaluation = JSON.parse(analysisRaw);
       } catch (parseErr) {
         evaluation = { stars: 3, summary: "Evaluación procesada con incidencias.", detailedExplanation: analysisRaw };
+      }
+    }
+
+    // Sanitize free tier diagnostic to guarantee NO actionable recommendation lists or rewrite recipes are leaked
+    if (evaluation && typeof evaluation === 'object') {
+      if (evaluation.detailedExplanation && typeof evaluation.detailedExplanation === 'string') {
+        let text = evaluation.detailedExplanation;
+        
+        // 1. Cut off at any phrase introducing recommendations, suggestions or advice
+        const cutoffRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:(?:Mis|Nuestras|Las|Algunas|Principales|A\s+continuación|Aquí)\s+)?(?:recomendaciones?|sugerencias?|consejos?|pasos?|puntos?\s+clave|aspectos?\s+a\s+mejorar|claves?\s+para\s+(?:mejorar|optimizar)|key\s*recommendations?|how\s*to\s*improve|actionable\s*recommendations?|suggested\s*improvements?)[\s\S]*/i;
+        text = text.replace(cutoffRegex, '').trim();
+
+        // 2. Cut off if there is any numbered list starting with 1. (e.g. 1. Reestructuración...)
+        const numberedListCutoff = /(?:\n\s*|\n|^)\s*1[\.\)]\s+[\s\S]*/i;
+        text = text.replace(numberedListCutoff, '').trim();
+
+        // 3. Filter out any remaining lines that look like bullet advice
+        const lines = text.split('\n');
+        const filteredLines = [];
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (/^(?:\d+[\.\)]|[\*\-•])\s+/i.test(trimmed)) {
+            continue;
+          }
+          filteredLines.push(line);
+        }
+        evaluation.detailedExplanation = filteredLines.join('\n').trim();
       }
     }
 

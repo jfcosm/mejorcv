@@ -147,15 +147,27 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiAtsLabel: "Filtro ATS",
       kpiStrengthsLabel: "Fortalezas",
       kpiFixesLabel: "Por Mejorar",
-      critiqueExplanationTitle: "Explicación del Puntaje",
-      previewPillText: "CV Optimizado por Cintia Listo",
-      previewSectionTitle: "Reescritura Profesional de Alto Impacto",
-      previewSectionSubtitle: "Cintia ha reestructurado tu currículum inyectando palabras clave ATS, logros cuantificados y formato profesional listo para postular.",
-      unlockCtaHeading: "Desbloquea tu Currículum Optimizado",
-      unlockCtaDescription: "Accede a la versión completa optimizada por Cintia, con redacción persuasiva, palabras clave ATS y lista para enviar a reclutadores.",
+      critiqueExplanationTitle: "Explicación del Diagnóstico",
+      diagnosticBannerTitle: "¿Quieres solucionar estas brechas y obtener tu CV reescrito?",
+      diagnosticBannerSubtitle: "Reescritura completa en formato ATS con palabras clave y el Plan de Acción Táctico de Cintia.",
+      diagnosticBannerBtnText: "Ver Optimización con IA",
+      diagnosticCtaCoverLetterTitle: "¿Postulas a un puesto específico? Crea tu Carta de Presentación",
+      diagnosticCtaCoverLetterSubtitle: "Cintia redacta una carta personalizada y persuasiva alineada 100% con los requisitos de tu vacante.",
+      diagnosticCtaCoverLetterBtnText: "Crear Carta de Presentación",
+      diagnosticCtaHeadshotsTitle: "¿Necesitas una fotografía profesional de estudio para tu LinkedIn y CV?",
+      diagnosticCtaHeadshotsSubtitle: "Genera 20 retratos fotográficos de alta resolución con esquemas ópticos 85mm y estilos corporativos.",
+      diagnosticCtaHeadshotsBtnText: "Generar Fotos de Estudio",
+      diagnosticCtaExpertTitle: "¿Prefieres asesoría 1 a 1 y simulación de entrevista con un Experto Humano?",
+      diagnosticCtaExpertSubtitle: "Sesión de 90 minutos con un especialista senior en RRHH y reclutamiento para potenciar tu carrera.",
+      diagnosticCtaExpertBtnText: "Solicitar Asesoría con Experto",
+      previewPillText: "CURRÍCULUM OPTIMIZADO + PLAN DE ACCIÓN",
+      previewSectionTitle: "Currículum Optimizado + Plan de Acción Táctico",
+      previewSectionSubtitle: "Reescritura completa con formato ATS y consultoría personalizada con palabras clave estratégicas y fórmulas de logros.",
+      unlockCtaHeading: "Desbloquea tu Currículum Optimizado y Plan de Acción",
+      unlockCtaDescription: "Descarga tu CV reescrito por Cintia para superar filtros ATS junto con la guía estratégica de palabras clave y redacción de logros.",
       unlockCtaPeriod: "USD / pago único",
       unlockActionBtnText: "Desbloquear y Descargar CV",
-      unlockedStatusText: "¡Currículum Desbloqueado con Éxito!",
+      unlockedStatusText: "¡Currículum y Plan de Acción Desbloqueados!",
       unlockedCopyBtnText: "Copiar Texto",
       unlockedDownloadBtnText: "Descargar .txt",
       pricingTitle: "¿Prefieres la asesoría y optimización de un Experto Humano?",
@@ -303,15 +315,27 @@ document.addEventListener('DOMContentLoaded', () => {
       kpiAtsLabel: "ATS Filter",
       kpiStrengthsLabel: "Strengths",
       kpiFixesLabel: "To Improve",
-      critiqueExplanationTitle: "Score Explanation",
-      previewPillText: "Cintia-Optimized Resume Ready",
-      previewSectionTitle: "High-Impact Professional Rewrite",
-      previewSectionSubtitle: "Cintia has restructured your resume injecting ATS keywords, quantified achievements, and recruiter-ready layout.",
-      unlockCtaHeading: "Unlock Your Optimized Resume",
-      unlockCtaDescription: "Access the full version optimized by Cintia, with persuasive copywriting, ATS keywords, and ready to send to recruiters.",
+      critiqueExplanationTitle: "Diagnostic Explanation",
+      diagnosticBannerTitle: "Want to solve these gaps and get your rewritten resume?",
+      diagnosticBannerSubtitle: "Full ATS rewrite with keywords plus Cintia's Tactical Action Plan.",
+      diagnosticBannerBtnText: "View AI Optimization",
+      diagnosticCtaCoverLetterTitle: "Applying for a specific job? Create your tailored Cover Letter",
+      diagnosticCtaCoverLetterSubtitle: "Cintia writes a persuasive and tailored cover letter aligned 100% with your job opening requirements.",
+      diagnosticCtaCoverLetterBtnText: "Create Cover Letter",
+      diagnosticCtaHeadshotsTitle: "Need a professional studio photo for your LinkedIn and Resume?",
+      diagnosticCtaHeadshotsSubtitle: "Generate 20 high-definition portraits with 85mm optical lighting and corporate styles.",
+      diagnosticCtaHeadshotsBtnText: "Generate Studio Photos",
+      diagnosticCtaExpertTitle: "Prefer 1-on-1 advisory and interview prep with a Human Expert?",
+      diagnosticCtaExpertSubtitle: "90-minute session with a senior HR and recruitment specialist to boost your career.",
+      diagnosticCtaExpertBtnText: "Request Human Expert Advisory",
+      previewPillText: "OPTIMIZED RESUME + ACTION PLAN",
+      previewSectionTitle: "Optimized Resume + Tactical Action Plan",
+      previewSectionSubtitle: "Full ATS rewrite and personalized consulting guide with strategic keywords and impact formulas.",
+      unlockCtaHeading: "Unlock Your Optimized Resume and Action Plan",
+      unlockCtaDescription: "Download your Cintia-rewritten resume for ATS filters along with the strategic keyword and achievement wording guide.",
       unlockCtaPeriod: "USD / one-time payment",
       unlockActionBtnText: "Unlock and Download Resume",
-      unlockedStatusText: "Resume Successfully Unlocked!",
+      unlockedStatusText: "Resume & Tactical Action Plan Unlocked!",
       unlockedCopyBtnText: "Copy Text",
       unlockedDownloadBtnText: "Download .txt",
       pricingTitle: "Prefer Guidance and Optimization from a Human Expert?",
@@ -512,6 +536,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kpiFixesLabelEl) kpiFixesLabelEl.textContent = t.kpiFixesLabel;
     const critiqueExplanationTitleEl = document.getElementById('critiqueExplanationTitle');
     if (critiqueExplanationTitleEl) critiqueExplanationTitleEl.textContent = t.critiqueExplanationTitle;
+    const diagnosticBannerTitleEl = document.getElementById('diagnosticBannerTitle');
+    if (diagnosticBannerTitleEl) diagnosticBannerTitleEl.textContent = t.diagnosticBannerTitle;
+    const diagnosticBannerSubtitleEl = document.getElementById('diagnosticBannerSubtitle');
+    if (diagnosticBannerSubtitleEl) diagnosticBannerSubtitleEl.textContent = t.diagnosticBannerSubtitle;
+    const diagnosticBannerBtnTextEl = document.getElementById('diagnosticBannerBtnText');
+    if (diagnosticBannerBtnTextEl) diagnosticBannerBtnTextEl.textContent = t.diagnosticBannerBtnText;
+
+    const diagnosticCtaCoverLetterTitleEl = document.getElementById('diagnosticCtaCoverLetterTitle');
+    if (diagnosticCtaCoverLetterTitleEl) diagnosticCtaCoverLetterTitleEl.textContent = t.diagnosticCtaCoverLetterTitle;
+    const diagnosticCtaCoverLetterSubtitleEl = document.getElementById('diagnosticCtaCoverLetterSubtitle');
+    if (diagnosticCtaCoverLetterSubtitleEl) diagnosticCtaCoverLetterSubtitleEl.textContent = t.diagnosticCtaCoverLetterSubtitle;
+    const diagnosticCtaCoverLetterBtnTextEl = document.getElementById('diagnosticCtaCoverLetterBtnText');
+    if (diagnosticCtaCoverLetterBtnTextEl) diagnosticCtaCoverLetterBtnTextEl.textContent = t.diagnosticCtaCoverLetterBtnText;
+
+    const diagnosticCtaHeadshotsTitleEl = document.getElementById('diagnosticCtaHeadshotsTitle');
+    if (diagnosticCtaHeadshotsTitleEl) diagnosticCtaHeadshotsTitleEl.textContent = t.diagnosticCtaHeadshotsTitle;
+    const diagnosticCtaHeadshotsSubtitleEl = document.getElementById('diagnosticCtaHeadshotsSubtitle');
+    if (diagnosticCtaHeadshotsSubtitleEl) diagnosticCtaHeadshotsSubtitleEl.textContent = t.diagnosticCtaHeadshotsSubtitle;
+    const diagnosticCtaHeadshotsBtnTextEl = document.getElementById('diagnosticCtaHeadshotsBtnText');
+    if (diagnosticCtaHeadshotsBtnTextEl) diagnosticCtaHeadshotsBtnTextEl.textContent = t.diagnosticCtaHeadshotsBtnText;
+
+    const diagnosticCtaExpertTitleEl = document.getElementById('diagnosticCtaExpertTitle');
+    if (diagnosticCtaExpertTitleEl) diagnosticCtaExpertTitleEl.textContent = t.diagnosticCtaExpertTitle;
+    const diagnosticCtaExpertSubtitleEl = document.getElementById('diagnosticCtaExpertSubtitle');
+    if (diagnosticCtaExpertSubtitleEl) diagnosticCtaExpertSubtitleEl.textContent = t.diagnosticCtaExpertSubtitle;
+    const diagnosticCtaExpertBtnTextEl = document.getElementById('diagnosticCtaExpertBtnText');
+    if (diagnosticCtaExpertBtnTextEl) diagnosticCtaExpertBtnTextEl.textContent = t.diagnosticCtaExpertBtnText;
     
     // Modern AI Preview Section (Blurred UI)
     const previewPillTextEl = document.getElementById('previewPillText');
@@ -1762,9 +1813,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    // Parse detailed explanation markdown to clean HTML bold tags
+    // Parse detailed explanation markdown to clean HTML bold tags (strictly diagnostic only)
     if (detailedExplanationText) {
-      detailedExplanationText.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation);
+      let cleanExplanation = evalData.detailedExplanation || '';
+      const cutoffRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:(?:Mis|Nuestras|Las|Algunas|Principales|A\s+continuación|Aquí)\s+)?(?:recomendaciones?|sugerencias?|consejos?|pasos?|puntos?\s+clave|aspectos?\s+a\s+mejorar|claves?\s+para\s+(?:mejorar|optimizar)|key\s*recommendations?|how\s*to\s*improve|actionable\s*recommendations?|suggested\s*improvements?)[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(cutoffRegex, '').trim();
+
+      const numberedListCutoff = /(?:\n\s*|\n|^)\s*1[\.\)]\s+[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(numberedListCutoff, '').trim();
+
+      const lines = cleanExplanation.split('\n');
+      const filteredLines = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^(?:\d+[\.\)]|[\*\-•])\s+/i.test(trimmed)) {
+          continue;
+        }
+        filteredLines.push(line);
+      }
+      cleanExplanation = filteredLines.join('\n').trim();
+
+      detailedExplanationText.innerHTML = parseFeedbackMarkdown(cleanExplanation);
     }
   }
 

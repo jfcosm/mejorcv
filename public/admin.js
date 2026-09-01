@@ -1112,7 +1112,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const explanationEl = document.getElementById('adminDetailedExplanationText');
     if (explanationEl) {
-      explanationEl.innerHTML = parseFeedbackMarkdown(evalData.detailedExplanation || '(Sin explicación adicional)');
+      let cleanExplanation = evalData.detailedExplanation || '(Sin explicación adicional)';
+      const cutoffRegex = /(?:\n\s*|\n|^)(?:[#*_\s]*)(?:(?:Mis|Nuestras|Las|Algunas|Principales|A\s+continuación|Aquí)\s+)?(?:recomendaciones?|sugerencias?|consejos?|pasos?|puntos?\s+clave|aspectos?\s+a\s+mejorar|claves?\s+para\s+(?:mejorar|optimizar)|key\s*recommendations?|how\s*to\s*improve|actionable\s*recommendations?|suggested\s*improvements?)[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(cutoffRegex, '').trim();
+      const numberedListCutoff = /(?:\n\s*|\n|^)\s*1[\.\)]\s+[\s\S]*/i;
+      cleanExplanation = cleanExplanation.replace(numberedListCutoff, '').trim();
+      explanationEl.innerHTML = parseFeedbackMarkdown(cleanExplanation);
     }
   }
 
