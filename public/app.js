@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Google Ads Tracking Helper
+  function trackGoogleAdsEvent(eventName, eventParams = {}) {
+    if (typeof window.gtag === 'function') {
+      try {
+        window.gtag('event', eventName, { ...eventParams, send_to: 'AW-16872995581' });
+      } catch (e) {
+        console.warn('Google Tag event tracking warning:', e);
+      }
+    }
+  }
+
   // Elements
   const cvForm = document.getElementById('cvForm');
   const dropZone = document.getElementById('dropZone');
@@ -1140,18 +1151,36 @@ document.addEventListener('DOMContentLoaded', () => {
         successPaymentSpinner.style.display = 'none';
 
         if (tier === 'ai') {
+          trackGoogleAdsEvent('purchase', {
+            transaction_id: (result?.orderId || Date.now()).toString() + '_ai',
+            value: appConfig.priceAi || 2.0,
+            currency: 'USD',
+            items: [{ item_name: 'AI CV Optimization', price: appConfig.priceAi || 2.0 }]
+          });
           successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ AI Optimization Unlocked!' : '✅ ¡Optimización con IA Desbloqueada!';
           successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your optimized resume...' : 'Redirigiendo a tu currículum optimizado...';
           await new Promise(r => setTimeout(r, 1500));
           checkoutModal.close();
           unlockOptimizedCv(result?.optimizedText || '');
         } else if (tier === 'headshots') {
+          trackGoogleAdsEvent('purchase', {
+            transaction_id: (result?.orderId || Date.now()).toString() + '_hs',
+            value: appConfig.priceHeadshots || 6.0,
+            currency: 'USD',
+            items: [{ item_name: 'Studio Headshots Pack', price: appConfig.priceHeadshots || 6.0 }]
+          });
           successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Studio Headshots Unlocked!' : '✅ ¡Fotos de Estudio Desbloqueadas!';
           successPaymentMessage.textContent = currentLanguage === 'en' ? 'Generating your 20 studio portraits...' : 'Generando tus 20 retratos de estudio...';
           await new Promise(r => setTimeout(r, 1500));
           checkoutModal.close();
           await generateAndDisplayHeadshots(result?.headshots);
         } else if (tier === 'cover_letter') {
+          trackGoogleAdsEvent('purchase', {
+            transaction_id: (result?.orderId || Date.now()).toString() + '_cl',
+            value: appConfig.priceCoverLetter || 2.0,
+            currency: 'USD',
+            items: [{ item_name: 'Tailored Cover Letter', price: appConfig.priceCoverLetter || 2.0 }]
+          });
           successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Cover Letter Unlocked!' : '✅ ¡Carta de Presentación Desbloqueada!';
           successPaymentMessage.textContent = currentLanguage === 'en' ? 'Generating your tailored cover letter...' : 'Generando tu carta de presentación personalizada...';
           await new Promise(r => setTimeout(r, 1500));
@@ -1479,6 +1508,12 @@ document.addEventListener('DOMContentLoaded', () => {
       loadingWrapper.style.display = 'none';
       resultsSection.style.display = 'block';
       resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+      // Track Google Ads Conversion Event
+      trackGoogleAdsEvent('cv_analysis_completed', {
+        event_category: 'engagement',
+        event_label: 'Free CV Analysis'
+      });
 
     } catch (err) {
       clearInterval(progressInterval);
@@ -1948,6 +1983,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentTier = 'expert';
     pendingExpertContact = { email, phone };
+
+    // Track Google Ads Lead Generation Event
+    trackGoogleAdsEvent('generate_lead', {
+      event_category: 'consultation',
+      event_label: 'Human Expert Mentoring',
+      value: appConfig.priceExpert || 25.0,
+      currency: 'USD'
+    });
+
     openCheckout(
       currentLanguage === 'en' ? 'Human Expert Mentoring & CV Optimization' : 'Asesoría y Optimización con Experto Humano',
       appConfig.priceExpert.toFixed(2)
