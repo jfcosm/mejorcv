@@ -128,6 +128,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminDownloadZipBtn = document.getElementById('adminDownloadZipBtn');
   const closeTextModalBtn = document.getElementById('closeTextModalBtn');
 
+  // Bulk Actions & Modals Elements
+  const leadsBulkBar = document.getElementById('leadsBulkBar');
+  const leadsBulkCount = document.getElementById('leadsBulkCount');
+  const leadsBulkArchiveBtn = document.getElementById('leadsBulkArchiveBtn');
+  const leadsBulkStatusBtn = document.getElementById('leadsBulkStatusBtn');
+  const leadsBulkDeleteBtn = document.getElementById('leadsBulkDeleteBtn');
+  const leadsBulkCancelBtn = document.getElementById('leadsBulkCancelBtn');
+  const selectAllLeadsCheckbox = document.getElementById('selectAllLeadsCheckbox');
+
+  const historyBulkBar = document.getElementById('historyBulkBar');
+  const historyBulkCount = document.getElementById('historyBulkCount');
+  const historyBulkArchiveBtn = document.getElementById('historyBulkArchiveBtn');
+  const historyBulkStatusBtn = document.getElementById('historyBulkStatusBtn');
+  const historyBulkDeleteBtn = document.getElementById('historyBulkDeleteBtn');
+  const historyBulkCancelBtn = document.getElementById('historyBulkCancelBtn');
+  const selectAllHistoryCheckbox = document.getElementById('selectAllHistoryCheckbox');
+
+  const editCvModal = document.getElementById('editCvModal');
+  const editCvForm = document.getElementById('editCvForm');
+  const editCvId = document.getElementById('editCvId');
+  const editCvFilename = document.getElementById('editCvFilename');
+  const editCvRating = document.getElementById('editCvRating');
+  const editCvPaymentStatus = document.getElementById('editCvPaymentStatus');
+  const editCvContact = document.getElementById('editCvContact');
+  const editCvArchived = document.getElementById('editCvArchived');
+  const closeEditCvModalBtn = document.getElementById('closeEditCvModalBtn');
+  const cancelEditCvBtn = document.getElementById('cancelEditCvBtn');
+
+  const batchStatusModal = document.getElementById('batchStatusModal');
+  const batchStatusForm = document.getElementById('batchStatusForm');
+  const batchPaymentStatus = document.getElementById('batchPaymentStatus');
+  const batchRating = document.getElementById('batchRating');
+  const batchModalTargetCount = document.getElementById('batchModalTargetCount');
+  const closeBatchStatusModalBtn = document.getElementById('closeBatchStatusModalBtn');
+  const cancelBatchStatusBtn = document.getElementById('cancelBatchStatusBtn');
+
+  const batchDeleteModal = document.getElementById('batchDeleteModal');
+  const batchDeleteCount = document.getElementById('batchDeleteCount');
+  const confirmBatchDeleteBtn = document.getElementById('confirmBatchDeleteBtn');
+  const cancelBatchDeleteBtn = document.getElementById('cancelBatchDeleteBtn');
+
+  const selectedLeadsIds = new Set();
+  const selectedHistoryIds = new Set();
+  let currentBatchContext = 'leads'; // 'leads' | 'history'
+
   let currentInspectionDoc = null;
   let currentInspectionTab = 'evaluation';
 
@@ -470,12 +515,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const endIndex = Math.min(startIndex + historyPageSizeVal, totalCount);
     const pageItems = filtered.slice(startIndex, endIndex);
 
+    // Update master history checkbox
+    if (selectAllHistoryCheckbox) {
+      const visibleIds = pageItems.map(p => p.id);
+      selectAllHistoryCheckbox.checked = visibleIds.length > 0 && visibleIds.every(id => selectedHistoryIds.has(id));
+      selectAllHistoryCheckbox.indeterminate = visibleIds.some(id => selectedHistoryIds.has(id)) && !selectAllHistoryCheckbox.checked;
+    }
+
     historyTableBody.innerHTML = '';
     if (totalCount === 0) {
       historyTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-light);">No se encontraron currículums con los filtros seleccionados.</td></tr>';
     } else {
       pageItems.forEach(row => {
         const contact = renderContactColumn(row.expertContact);
+        const isSelected = selectedHistoryIds.has(row.id);
         
         let actionBtn = `<button class="btn-secondary btn-sm cv-text-btn" data-id="${row.id}">Ver Texto</button>`;
         if (row.paymentStatus === 'pending_expert') {
@@ -483,7 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         historyTableBody.innerHTML += `
-          <tr>
+          <tr class="${isSelected ? 'row-selected' : ''}">
+            <td class="td-checkbox">
+              <input type="checkbox" class="history-row-checkbox" data-id="${row.id}" ${isSelected ? 'checked' : ''}>
+            </td>
             <td>
               <div style="display:flex; align-items:center; gap:8px;">
                 ${row.archived ? '<span title="Archivado" style="font-size:13px; opacity:0.8;">📦</span>' : ''}
@@ -505,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td style="text-align:right;">
               <div class="actions-cell" style="justify-content:flex-end;">
                 ${actionBtn}
+                <button type="button" class="btn-secondary btn-sm btn-action-edit cv-edit-btn" data-id="${row.id}" style="padding:4px 8px;" title="Editar datos">✏️</button>
                 <a href="/api/admin/download-text/${row.id}" headers='{"Authorization":"${adminToken}"}' download class="btn-secondary btn-sm" style="display:inline-flex; align-items:center; text-decoration:none; padding:4px 8px;" title="Descargar texto original">Bajar</a>
                 <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" style="padding:4px 8px;" title="Eliminar registro">🗑️</button>
               </div>
@@ -528,6 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (historyNextPageBtn) historyNextPageBtn.disabled = historyCurrentPage >= totalPages;
     if (historyLastPageBtn) historyLastPageBtn.disabled = historyCurrentPage >= totalPages;
 
+    updateHistoryBulkBar();
     attachRowActionListeners();
   }
 
@@ -552,16 +610,24 @@ document.addEventListener('DOMContentLoaded', () => {
       visibleLeads = rawDocLog;
     }
 
+    // Update master leads checkbox
+    if (selectAllLeadsCheckbox) {
+      const visibleIds = visibleLeads.map(p => p.id);
+      selectAllLeadsCheckbox.checked = visibleIds.length > 0 && visibleIds.every(id => selectedLeadsIds.has(id));
+      selectAllLeadsCheckbox.indeterminate = visibleIds.some(id => selectedLeadsIds.has(id)) && !selectAllLeadsCheckbox.checked;
+    }
+
     // 1. Render Table View
     leadsTableBody.innerHTML = '';
     if (visibleLeads.length === 0) {
-      leadsTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-light);">${currentLeadsArchiveMode === 'archived' ? 'No hay leads archivados.' : 'No hay leads activos.'}</td></tr>`;
+      leadsTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-light);">${currentLeadsArchiveMode === 'archived' ? 'No hay leads archivados.' : 'No hay leads activos.'}</td></tr>`;
     } else {
       visibleLeads.forEach(row => {
         const isAiPaid = Boolean(row.hasAiPaid === true || row.paymentStatus === 'completed_ai');
         const isCoverLetterPaid = Boolean(row.hasCoverLetterPaid === true || row.paymentStatus === 'completed_cover_letter');
         const isExpertPending = Boolean((row.hasExpertPaid && row.expertStatus === 'pending') || row.paymentStatus === 'pending_expert' || row.paymentStatus === 'paid_expert' || (row.expertContact && row.expertStatus !== 'completed'));
         const isExpertDone = Boolean((row.hasExpertPaid && row.expertStatus === 'completed') || row.paymentStatus === 'completed_expert');
+        const isSelected = selectedLeadsIds.has(row.id);
 
         const contact = row.expertContact 
           ? renderContactColumn(row.expertContact) 
@@ -598,11 +664,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isExpertPending) {
           actionBtn += ` <button class="btn btn-sm complete-expert-btn" style="background-color:#059669; margin-top:0;" data-id="${row.id}">Marcar como Entregado</button>`;
         }
+        actionBtn += ` <button type="button" class="btn-secondary btn-sm btn-action-edit cv-edit-btn" data-id="${row.id}" style="padding:4px 8px;" title="Editar lead">✏️</button>`;
         actionBtn += ` <button type="button" class="btn-secondary btn-sm btn-action-archive lead-archive-btn" data-id="${row.id}" data-archived="${row.archived ? 'true' : 'false'}" title="${row.archived ? 'Desarchivar lead' : 'Archivar lead'}">${row.archived ? '📦 Desarchivar' : '📦 Archivar'}</button>`;
         actionBtn += ` <button type="button" class="btn-secondary btn-sm btn-action-delete doc-delete-btn" data-id="${row.id}" data-filename="${escapeHtml(row.filename)}" title="Eliminar lead permanentemente">🗑️</button>`;
 
         leadsTableBody.innerHTML += `
-          <tr>
+          <tr class="${isSelected ? 'row-selected' : ''}">
+            <td class="td-checkbox">
+              <input type="checkbox" class="lead-row-checkbox" data-id="${row.id}" ${isSelected ? 'checked' : ''}>
+            </td>
             <td>
               <div style="display:flex; align-items:center; gap:8px;">
                 ${row.archived ? '<span title="Archivado" style="font-size:13px; opacity:0.8;">📦</span>' : ''}
@@ -658,6 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderKanbanCards(doingList, cardsDoing, true);
     renderKanbanCards(doneList, cardsDone, false);
 
+    updateLeadsBulkBar();
     attachRowActionListeners();
   }
 
@@ -754,8 +825,73 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Bulk Action Bar Helper Functions
+  function updateHistoryBulkBar() {
+    if (!historyBulkBar || !historyBulkCount) return;
+    const count = selectedHistoryIds.size;
+    historyBulkCount.textContent = count;
+    if (count > 0) {
+      historyBulkBar.classList.add('active');
+    } else {
+      historyBulkBar.classList.remove('active');
+    }
+  }
+
+  function updateLeadsBulkBar() {
+    if (!leadsBulkBar || !leadsBulkCount) return;
+    const count = selectedLeadsIds.size;
+    leadsBulkCount.textContent = count;
+    if (count > 0) {
+      leadsBulkBar.classList.add('active');
+    } else {
+      leadsBulkBar.classList.remove('active');
+    }
+  }
+
   // Attach action button listeners for both tables & cards
   function attachRowActionListeners() {
+    // 0. Row Checkboxes for History
+    document.querySelectorAll('.history-row-checkbox').forEach(chk => {
+      chk.onchange = (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const tr = e.currentTarget.closest('tr');
+        if (e.currentTarget.checked) {
+          selectedHistoryIds.add(id);
+          if (tr) tr.classList.add('row-selected');
+        } else {
+          selectedHistoryIds.delete(id);
+          if (tr) tr.classList.remove('row-selected');
+        }
+        updateHistoryBulkBar();
+        if (selectAllHistoryCheckbox) {
+          const visibleCheckboxes = Array.from(document.querySelectorAll('.history-row-checkbox'));
+          selectAllHistoryCheckbox.checked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(c => c.checked);
+          selectAllHistoryCheckbox.indeterminate = visibleCheckboxes.some(c => c.checked) && !selectAllHistoryCheckbox.checked;
+        }
+      };
+    });
+
+    // 0. Row Checkboxes for Leads
+    document.querySelectorAll('.lead-row-checkbox').forEach(chk => {
+      chk.onchange = (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const tr = e.currentTarget.closest('tr');
+        if (e.currentTarget.checked) {
+          selectedLeadsIds.add(id);
+          if (tr) tr.classList.add('row-selected');
+        } else {
+          selectedLeadsIds.delete(id);
+          if (tr) tr.classList.remove('row-selected');
+        }
+        updateLeadsBulkBar();
+        if (selectAllLeadsCheckbox) {
+          const visibleCheckboxes = Array.from(document.querySelectorAll('.lead-row-checkbox'));
+          selectAllLeadsCheckbox.checked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(c => c.checked);
+          selectAllLeadsCheckbox.indeterminate = visibleCheckboxes.some(c => c.checked) && !selectAllLeadsCheckbox.checked;
+        }
+      };
+    });
+
     // 1. Text detail inspection
     document.querySelectorAll('.cv-text-btn').forEach(btn => {
       btn.onclick = (e) => {
@@ -776,6 +912,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.onclick = (e) => {
         e.stopPropagation();
         completeExpertReview(e.currentTarget.getAttribute('data-id'));
+      };
+    });
+
+    // 3.1 Edit CV Data Modal
+    document.querySelectorAll('.cv-edit-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = e.currentTarget.getAttribute('data-id');
+        openEditCvModal(id);
       };
     });
 
@@ -813,6 +958,300 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(err => console.error('Could not copy email:', err));
       };
     });
+  }
+
+  // ─── Single CV Edit Modal ───
+  function openEditCvModal(id) {
+    const doc = rawDocLog.find(d => d.id === id);
+    if (!doc || !editCvModal) return;
+
+    if (editCvId) editCvId.value = doc.id;
+    if (editCvFilename) editCvFilename.value = doc.filename || '';
+    if (editCvRating) editCvRating.value = String(doc.rating || 3);
+    if (editCvPaymentStatus) editCvPaymentStatus.value = doc.paymentStatus || 'free';
+    if (editCvContact) editCvContact.value = doc.expertContact || '';
+    if (editCvArchived) editCvArchived.checked = Boolean(doc.archived);
+
+    editCvModal.showModal();
+  }
+
+  if (closeEditCvModalBtn) {
+    closeEditCvModalBtn.onclick = () => editCvModal.close();
+  }
+  if (cancelEditCvBtn) {
+    cancelEditCvBtn.onclick = () => editCvModal.close();
+  }
+
+  if (editCvForm) {
+    editCvForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const id = editCvId.value;
+      if (!id) return;
+
+      const payload = {
+        filename: editCvFilename.value.trim(),
+        rating: parseInt(editCvRating.value, 10) || 3,
+        paymentStatus: editCvPaymentStatus.value,
+        expertContact: editCvContact.value.trim(),
+        archived: editCvArchived.checked
+      };
+
+      try {
+        const resp = await fetch(`/api/admin/analysis-update/${id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': adminToken
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error al actualizar currículum');
+
+        const doc = rawDocLog.find(d => d.id === id);
+        if (doc) {
+          Object.assign(doc, payload);
+          if (payload.paymentStatus === 'completed_ai') doc.hasAiPaid = true;
+          if (payload.paymentStatus === 'completed_cover_letter') doc.hasCoverLetterPaid = true;
+          if (payload.paymentStatus === 'completed_headshots') doc.hasHeadshotsPaid = true;
+          if (payload.paymentStatus === 'pending_expert') {
+            doc.hasExpertPaid = true;
+            doc.expertStatus = 'pending';
+          }
+          if (payload.paymentStatus === 'completed_expert') {
+            doc.hasExpertPaid = true;
+            doc.expertStatus = 'completed';
+          }
+        }
+
+        editCvModal.close();
+        renderLeadsViews();
+        renderHistoryTable();
+        loadStats();
+      } catch (err) {
+        alert('Error al guardar cambios: ' + err.message);
+      }
+    };
+  }
+
+  // ─── Batch Operations Modals & Actions ───
+  function openBatchStatusModal(context) {
+    currentBatchContext = context;
+    const targetSet = context === 'leads' ? selectedLeadsIds : selectedHistoryIds;
+    if (targetSet.size === 0) return;
+
+    if (batchModalTargetCount) batchModalTargetCount.textContent = targetSet.size;
+    if (batchPaymentStatus) batchPaymentStatus.value = '';
+    if (batchRating) batchRating.value = '';
+
+    if (batchStatusModal) batchStatusModal.showModal();
+  }
+
+  if (closeBatchStatusModalBtn) {
+    closeBatchStatusModalBtn.onclick = () => batchStatusModal.close();
+  }
+  if (cancelBatchStatusBtn) {
+    cancelBatchStatusBtn.onclick = () => batchStatusModal.close();
+  }
+
+  if (batchStatusForm) {
+    batchStatusForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const targetSet = currentBatchContext === 'leads' ? selectedLeadsIds : selectedHistoryIds;
+      const ids = Array.from(targetSet);
+      if (ids.length === 0) return;
+
+      const payload = {
+        analysisIds: ids
+      };
+      if (batchPaymentStatus.value) payload.paymentStatus = batchPaymentStatus.value;
+      if (batchRating.value) payload.rating = parseInt(batchRating.value, 10);
+
+      try {
+        const resp = await fetch('/api/admin/batch/update-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': adminToken
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error al actualizar');
+
+        ids.forEach(id => {
+          const doc = rawDocLog.find(d => d.id === id);
+          if (doc) {
+            if (payload.paymentStatus) doc.paymentStatus = payload.paymentStatus;
+            if (payload.rating) doc.rating = payload.rating;
+          }
+        });
+
+        targetSet.clear();
+        batchStatusModal.close();
+        renderLeadsViews();
+        renderHistoryTable();
+        loadStats();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+  }
+
+  function openBatchDeleteModal(context) {
+    currentBatchContext = context;
+    const targetSet = context === 'leads' ? selectedLeadsIds : selectedHistoryIds;
+    if (targetSet.size === 0) return;
+
+    if (batchDeleteCount) batchDeleteCount.textContent = targetSet.size;
+    if (batchDeleteModal) batchDeleteModal.showModal();
+  }
+
+  if (cancelBatchDeleteBtn) {
+    cancelBatchDeleteBtn.onclick = () => batchDeleteModal.close();
+  }
+
+  if (confirmBatchDeleteBtn) {
+    confirmBatchDeleteBtn.onclick = async () => {
+      const targetSet = currentBatchContext === 'leads' ? selectedLeadsIds : selectedHistoryIds;
+      const ids = Array.from(targetSet);
+      if (ids.length === 0) return;
+
+      confirmBatchDeleteBtn.disabled = true;
+      confirmBatchDeleteBtn.textContent = 'Eliminando...';
+
+      try {
+        const resp = await fetch('/api/admin/batch/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': adminToken
+          },
+          body: JSON.stringify({ analysisIds: ids })
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error al eliminar');
+
+        const deletedSet = new Set(ids);
+        rawDocLog = rawDocLog.filter(d => !deletedSet.has(d.id));
+        targetSet.clear();
+
+        batchDeleteModal.close();
+        renderLeadsViews();
+        renderHistoryTable();
+        loadStats();
+      } catch (err) {
+        alert('Error al eliminar currículums: ' + err.message);
+      } finally {
+        confirmBatchDeleteBtn.disabled = false;
+        confirmBatchDeleteBtn.textContent = 'Sí, Eliminar Definitivamente';
+      }
+    };
+  }
+
+  async function executeBatchArchive(context, shouldArchive) {
+    const targetSet = context === 'leads' ? selectedLeadsIds : selectedHistoryIds;
+    const ids = Array.from(targetSet);
+    if (ids.length === 0) return;
+
+    try {
+      const resp = await fetch('/api/admin/batch/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
+        body: JSON.stringify({ analysisIds: ids, archived: shouldArchive })
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Error al archivar');
+
+      const now = shouldArchive ? new Date().toISOString() : null;
+      ids.forEach(id => {
+        const doc = rawDocLog.find(d => d.id === id);
+        if (doc) {
+          doc.archived = shouldArchive;
+          doc.archivedAt = now;
+        }
+      });
+
+      targetSet.clear();
+      renderLeadsViews();
+      renderHistoryTable();
+      loadStats();
+    } catch (err) {
+      alert('Error al archivar: ' + err.message);
+    }
+  }
+
+  // ─── Bind Master Select All Checkboxes ───
+  if (selectAllHistoryCheckbox) {
+    selectAllHistoryCheckbox.onchange = (e) => {
+      const filtered = getFilteredHistoryLog();
+      const startIndex = (historyCurrentPage - 1) * historyPageSizeVal;
+      const endIndex = Math.min(startIndex + historyPageSizeVal, filtered.length);
+      const pageItems = filtered.slice(startIndex, endIndex);
+
+      if (e.currentTarget.checked) {
+        pageItems.forEach(p => selectedHistoryIds.add(p.id));
+      } else {
+        pageItems.forEach(p => selectedHistoryIds.delete(p.id));
+      }
+      renderHistoryTable();
+    };
+  }
+
+  if (selectAllLeadsCheckbox) {
+    selectAllLeadsCheckbox.onchange = (e) => {
+      const activeLeads = rawDocLog.filter(r => !r.archived);
+      const archivedLeads = rawDocLog.filter(r => Boolean(r.archived));
+      let visibleLeads = activeLeads;
+      if (currentLeadsArchiveMode === 'archived') visibleLeads = archivedLeads;
+      else if (currentLeadsArchiveMode === 'all') visibleLeads = rawDocLog;
+
+      if (e.currentTarget.checked) {
+        visibleLeads.forEach(p => selectedLeadsIds.add(p.id));
+      } else {
+        visibleLeads.forEach(p => selectedLeadsIds.delete(p.id));
+      }
+      renderLeadsViews();
+    };
+  }
+
+  // ─── Bind Bulk Toolbar Buttons ───
+  if (historyBulkArchiveBtn) {
+    historyBulkArchiveBtn.onclick = () => executeBatchArchive('history', true);
+  }
+  if (historyBulkStatusBtn) {
+    historyBulkStatusBtn.onclick = () => openBatchStatusModal('history');
+  }
+  if (historyBulkDeleteBtn) {
+    historyBulkDeleteBtn.onclick = () => openBatchDeleteModal('history');
+  }
+  if (historyBulkCancelBtn) {
+    historyBulkCancelBtn.onclick = () => {
+      selectedHistoryIds.clear();
+      renderHistoryTable();
+    };
+  }
+
+  if (leadsBulkArchiveBtn) {
+    leadsBulkArchiveBtn.onclick = () => {
+      const shouldArchive = currentLeadsArchiveMode !== 'archived';
+      executeBatchArchive('leads', shouldArchive);
+    };
+  }
+  if (leadsBulkStatusBtn) {
+    leadsBulkStatusBtn.onclick = () => openBatchStatusModal('leads');
+  }
+  if (leadsBulkDeleteBtn) {
+    leadsBulkDeleteBtn.onclick = () => openBatchDeleteModal('leads');
+  }
+  if (leadsBulkCancelBtn) {
+    leadsBulkCancelBtn.onclick = () => {
+      selectedLeadsIds.clear();
+      renderLeadsViews();
+    };
   }
 
   // Archive lead API call

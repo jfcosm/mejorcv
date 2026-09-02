@@ -2708,6 +2708,153 @@ app.post('/api/admin/leads/delete', requireAdminAuth, async (req, res) => {
   res.json({ success: true, message: "Registro eliminado correctamente." });
 });
 
+// Batch Delete Multiple Analyses / Leads
+app.post('/api/admin/batch/delete', requireAdminAuth, async (req, res) => {
+  try {
+    const { analysisIds } = req.body;
+    if (!Array.isArray(analysisIds) || analysisIds.length === 0) {
+      return res.status(400).json({ error: "Lista de IDs inválida o vacía." });
+    }
+
+    for (const id of analysisIds) {
+      await deleteAnalysisDoc(id);
+    }
+
+    res.json({ success: true, count: analysisIds.length, message: `${analysisIds.length} currículums eliminados correctamente.` });
+  } catch (err) {
+    console.error("Batch delete error:", err);
+    res.status(500).json({ error: "Error al eliminar currículums seleccionados." });
+  }
+});
+
+// Batch Archive / Unarchive Multiple Analyses / Leads
+app.post('/api/admin/batch/archive', requireAdminAuth, async (req, res) => {
+  try {
+    const { analysisIds, archived } = req.body;
+    if (!Array.isArray(analysisIds) || analysisIds.length === 0) {
+      return res.status(400).json({ error: "Lista de IDs inválida o vacía." });
+    }
+
+    const isArchived = Boolean(archived);
+    const now = isArchived ? new Date().toISOString() : null;
+
+    for (const id of analysisIds) {
+      await updateAnalysisDoc(id, {
+        archived: isArchived,
+        archivedAt: now
+      });
+    }
+
+    res.json({ success: true, count: analysisIds.length, archived: isArchived });
+  } catch (err) {
+    console.error("Batch archive error:", err);
+    res.status(500).json({ error: "Error al archivar currículums seleccionados." });
+  }
+});
+
+// Batch Update Status of Multiple Analyses / Leads
+app.post('/api/admin/batch/update-status', requireAdminAuth, async (req, res) => {
+  try {
+    const { analysisIds, paymentStatus, rating } = req.body;
+    if (!Array.isArray(analysisIds) || analysisIds.length === 0) {
+      return res.status(400).json({ error: "Lista de IDs inválida o vacía." });
+    }
+
+    const updateData = {};
+    if (paymentStatus) {
+      updateData.paymentStatus = paymentStatus;
+      if (paymentStatus === 'completed_ai') updateData.hasAiPaid = true;
+      if (paymentStatus === 'completed_cover_letter') updateData.hasCoverLetterPaid = true;
+      if (paymentStatus === 'completed_headshots') updateData.hasHeadshotsPaid = true;
+      if (paymentStatus === 'pending_expert') {
+        updateData.hasExpertPaid = true;
+        updateData.expertStatus = 'pending';
+      }
+      if (paymentStatus === 'completed_expert') {
+        updateData.hasExpertPaid = true;
+        updateData.expertStatus = 'completed';
+        updateData.expertCompletedAt = new Date().toISOString();
+      }
+      if (paymentStatus === 'free') {
+        updateData.hasAiPaid = false;
+        updateData.hasCoverLetterPaid = false;
+        updateData.hasHeadshotsPaid = false;
+        updateData.hasExpertPaid = false;
+        updateData.expertStatus = null;
+      }
+    }
+    if (typeof rating === 'number' && rating >= 1 && rating <= 5) {
+      updateData.rating = Math.round(rating);
+    }
+
+    for (const id of analysisIds) {
+      await updateAnalysisDoc(id, updateData);
+    }
+
+    res.json({ success: true, count: analysisIds.length, message: "Estados actualizados correctamente." });
+  } catch (err) {
+    console.error("Batch update status error:", err);
+    res.status(500).json({ error: "Error al actualizar estados en lote." });
+  }
+});
+
+// Update Single Analysis / CV Metadata
+app.post('/api/admin/analysis-update/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const analysisId = req.params.id;
+    const { filename, rating, paymentStatus, expertContact, jobOfferText, archived } = req.body;
+
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) return res.status(404).json({ error: "Currículum no encontrado." });
+
+    const updateData = {};
+    if (typeof filename === 'string' && filename.trim().length > 0) {
+      updateData.filename = filename.trim();
+    }
+    if (typeof rating === 'number' && rating >= 1 && rating <= 5) {
+      updateData.rating = Math.round(rating);
+    }
+    if (typeof expertContact === 'string') {
+      updateData.expertContact = expertContact.trim();
+    }
+    if (typeof jobOfferText === 'string') {
+      updateData.jobOfferText = jobOfferText.trim();
+    }
+    if (typeof archived === 'boolean') {
+      updateData.archived = archived;
+      updateData.archivedAt = archived ? new Date().toISOString() : null;
+    }
+    if (paymentStatus) {
+      updateData.paymentStatus = paymentStatus;
+      if (paymentStatus === 'completed_ai') updateData.hasAiPaid = true;
+      if (paymentStatus === 'completed_cover_letter') updateData.hasCoverLetterPaid = true;
+      if (paymentStatus === 'completed_headshots') updateData.hasHeadshotsPaid = true;
+      if (paymentStatus === 'pending_expert') {
+        updateData.hasExpertPaid = true;
+        updateData.expertStatus = 'pending';
+      }
+      if (paymentStatus === 'completed_expert') {
+        updateData.hasExpertPaid = true;
+        updateData.expertStatus = 'completed';
+        updateData.expertCompletedAt = new Date().toISOString();
+      }
+      if (paymentStatus === 'free') {
+        updateData.hasAiPaid = false;
+        updateData.hasCoverLetterPaid = false;
+        updateData.hasHeadshotsPaid = false;
+        updateData.hasExpertPaid = false;
+        updateData.expertStatus = null;
+      }
+    }
+
+    await updateAnalysisDoc(analysisId, updateData);
+    res.json({ success: true, message: "Datos actualizados correctamente." });
+  } catch (err) {
+    console.error("Analysis update error:", err);
+    res.status(500).json({ error: "Error al actualizar currículum." });
+  }
+});
+
 // Get admin settings
 app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   const config = await getConfigDoc();

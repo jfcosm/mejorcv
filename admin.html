@@ -488,6 +488,111 @@
       color: var(--text-medium);
       margin-bottom: 16px;
     }
+
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px 16px;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .bulk-actions-bar.active {
+      display: flex;
+    }
+    .bulk-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .bulk-buttons-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bulk-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .bulk-btn-archive {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .bulk-btn-archive:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .bulk-btn-status {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .bulk-btn-status:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+    .bulk-btn-delete {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .bulk-btn-delete:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+    .bulk-btn-cancel {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+    .bulk-btn-cancel:hover {
+      color: #ffffff;
+    }
+    .row-selected {
+      background-color: rgba(16, 185, 129, 0.07) !important;
+    }
+    .th-checkbox, .td-checkbox {
+      width: 40px;
+      text-align: center;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+    .th-checkbox input, .td-checkbox input {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-mint);
+    }
+    .btn-action-edit {
+      color: #0284c7;
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .btn-action-edit:hover {
+      background: #0284c7;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -644,17 +749,39 @@
           </button>
         </div>
 
+        <!-- Bulk Actions Bar for History -->
+        <div id="historyBulkBar" class="bulk-actions-bar">
+          <div class="bulk-count-badge">
+            <span>✓</span> <span id="historyBulkCount">0</span> seleccionados
+          </div>
+          <div class="bulk-buttons-group">
+            <button type="button" class="bulk-btn bulk-btn-archive" id="historyBulkArchiveBtn" title="Archivar seleccionados">
+              📦 Archivar
+            </button>
+            <button type="button" class="bulk-btn bulk-btn-status" id="historyBulkStatusBtn" title="Cambiar estado o calificación masiva">
+              ✏️ Cambiar Estado
+            </button>
+            <button type="button" class="bulk-btn bulk-btn-delete" id="historyBulkDeleteBtn" title="Eliminar seleccionados permanentemente">
+              🗑️ Eliminar
+            </button>
+            <button type="button" class="bulk-btn-cancel" id="historyBulkCancelBtn">
+              ✕ Cancelar
+            </button>
+          </div>
+        </div>
+
         <div class="table-container">
           <table id="historyTable">
             <thead>
               <tr>
+                <th class="th-checkbox"><input type="checkbox" id="selectAllHistoryCheckbox" title="Seleccionar todos los visibles"></th>
                 <th style="min-width: 200px;">Currículum</th>
                 <th style="min-width: 100px;">Fecha</th>
                 <th style="min-width: 110px;">Calificación</th>
                 <th style="min-width: 130px;">Estado Pago</th>
                 <th style="min-width: 180px;">Contacto Experto</th>
                 <th style="min-width: 85px;">IP</th>
-                <th style="min-width: 150px; text-align: right;">Acciones</th>
+                <th style="min-width: 180px; text-align: right;">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -719,18 +846,40 @@
           </div>
         </div>
 
+        <!-- Bulk Actions Bar for Leads -->
+        <div id="leadsBulkBar" class="bulk-actions-bar">
+          <div class="bulk-count-badge">
+            <span>✓</span> <span id="leadsBulkCount">0</span> seleccionados
+          </div>
+          <div class="bulk-buttons-group">
+            <button type="button" class="bulk-btn bulk-btn-archive" id="leadsBulkArchiveBtn" title="Archivar o desarchivar seleccionados">
+              📦 Archivar
+            </button>
+            <button type="button" class="bulk-btn bulk-btn-status" id="leadsBulkStatusBtn" title="Cambiar estado de leads seleccionados">
+              ✏️ Cambiar Estado
+            </button>
+            <button type="button" class="bulk-btn bulk-btn-delete" id="leadsBulkDeleteBtn" title="Eliminar seleccionados permanentemente">
+              🗑️ Eliminar
+            </button>
+            <button type="button" class="bulk-btn-cancel" id="leadsBulkCancelBtn">
+              ✕ Cancelar
+            </button>
+          </div>
+        </div>
+
         <!-- 1. List View (Table) -->
         <div id="leadsListView" class="table-container">
           <table id="leadsTable">
             <thead>
               <tr>
+                <th class="th-checkbox"><input type="checkbox" id="selectAllLeadsCheckbox" title="Seleccionar todos los visibles"></th>
                 <th style="min-width: 200px;">Currículum</th>
                 <th style="min-width: 140px;">Servicio</th>
                 <th style="min-width: 100px;">Fecha</th>
                 <th style="min-width: 180px;">Contacto</th>
                 <th style="min-width: 130px;">Estado Lead</th>
                 <th style="min-width: 100px;">Puntaje</th>
-                <th style="min-width: 150px; text-align: right;">Acciones</th>
+                <th style="min-width: 180px; text-align: right;">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -1140,6 +1289,120 @@
             ⬇️ Bajar Carta (.txt)
           </a>
         </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Single CV Quick Editor Modal -->
+  <dialog id="editCvModal" style="border: none; border-radius: var(--border-radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 0; max-width: 540px; width: 95%;">
+    <div class="modal-content" style="padding: 24px; max-width: 100%;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-grey); padding-bottom:12px; margin-bottom:18px;">
+        <h3 class="modal-title" style="margin:0; font-size:18px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
+          ✏️ Editar Datos del Currículum
+        </h3>
+        <button class="modal-close" id="closeEditCvModalBtn" type="button" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light);">&times;</button>
+      </div>
+      <form id="editCvForm">
+        <input type="hidden" id="editCvId">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="editCvFilename" style="font-size: 13px; font-weight: 600;">Nombre del Archivo</label>
+          <input type="text" id="editCvFilename" class="form-control" required style="font-size: 14px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="editCvRating" style="font-size: 13px; font-weight: 600;">Calificación / Estrellas (1 - 5)</label>
+          <select id="editCvRating" class="form-control" style="font-size: 14px;">
+            <option value="5">★★★★★ (5 Estrellas - Excelente)</option>
+            <option value="4">★★★★☆ (4 Estrellas - Muy Bueno)</option>
+            <option value="3">★★★☆☆ (3 Estrellas - Regular)</option>
+            <option value="2">★★☆☆☆ (2 Estrellas - Deficiente)</option>
+            <option value="1">★☆☆☆☆ (1 Estrella - Crítico)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="editCvPaymentStatus" style="font-size: 13px; font-weight: 600;">Estado de Pago / Servicio</label>
+          <select id="editCvPaymentStatus" class="form-control" style="font-size: 14px;">
+            <option value="free">Gratis (Evaluación Inicial)</option>
+            <option value="completed_ai">Optimizado con IA ($2 USD)</option>
+            <option value="completed_cover_letter">Carta de Presentación ($2 USD)</option>
+            <option value="completed_headshots">Pack 20 Fotos de Estudio ($6 USD)</option>
+            <option value="pending_expert">Experto Humano: Solicitado / Pendiente ($25 USD)</option>
+            <option value="completed_expert">Experto Humano: Finalizado / Entregado ($25 USD)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="editCvContact" style="font-size: 13px; font-weight: 600;">Datos de Contacto (Email o WhatsApp)</label>
+          <input type="text" id="editCvContact" class="form-control" placeholder="cliente@correo.com / +56912345678" style="font-size: 14px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="editCvArchived" style="width: 17px; height: 17px; accent-color: var(--color-mint); cursor: pointer;">
+          <label for="editCvArchived" style="margin: 0; font-size: 13.5px; font-weight: 600; cursor: pointer;">Marcar como Archivado (ocultar de la vista activa)</label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top: 1px solid var(--border-grey); padding-top: 14px;">
+          <button type="button" class="btn-secondary btn-sm" id="cancelEditCvBtn">Cancelar</button>
+          <button type="submit" class="btn btn-sm" id="saveEditCvBtn" style="margin-top:0; background: var(--color-mint); color:white;">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Batch Change Status Modal -->
+  <dialog id="batchStatusModal" style="border: none; border-radius: var(--border-radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 0; max-width: 500px; width: 95%;">
+    <div class="modal-content" style="padding: 24px; max-width: 100%;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-grey); padding-bottom:12px; margin-bottom:18px;">
+        <h3 class="modal-title" style="margin:0; font-size:18px; font-weight:700; color:var(--text-dark);">
+          ✏️ Cambiar Estado Masivo (<span id="batchModalTargetCount">0</span> CVs)
+        </h3>
+        <button class="modal-close" id="closeBatchStatusModalBtn" type="button" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light);">&times;</button>
+      </div>
+      <form id="batchStatusForm">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="batchPaymentStatus" style="font-size: 13px; font-weight: 600;">Nuevo Estado de Servicio / Pago</label>
+          <select id="batchPaymentStatus" class="form-control" style="font-size: 14px;">
+            <option value="">-- No modificar estado de pago --</option>
+            <option value="free">Gratis (Evaluación Inicial)</option>
+            <option value="completed_ai">Optimizado con IA</option>
+            <option value="completed_cover_letter">Carta de Presentación</option>
+            <option value="completed_headshots">Pack 20 Fotos de Estudio</option>
+            <option value="pending_expert">Experto: Pendiente por atender</option>
+            <option value="completed_expert">Experto: Finalizado / Entregado</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="batchRating" style="font-size: 13px; font-weight: 600;">Nueva Calificación (Opcional)</label>
+          <select id="batchRating" class="form-control" style="font-size: 14px;">
+            <option value="">-- No modificar calificación --</option>
+            <option value="5">★★★★★ (5 Estrellas)</option>
+            <option value="4">★★★★☆ (4 Estrellas)</option>
+            <option value="3">★★★☆☆ (3 Estrellas)</option>
+            <option value="2">★★☆☆☆ (2 Estrellas)</option>
+            <option value="1">★☆☆☆☆ (1 Estrella)</option>
+          </select>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top: 1px solid var(--border-grey); padding-top: 14px;">
+          <button type="button" class="btn-secondary btn-sm" id="cancelBatchStatusBtn">Cancelar</button>
+          <button type="submit" class="btn btn-sm" id="saveBatchStatusBtn" style="margin-top:0; background: var(--color-mint); color:white;">Aplicar a Seleccionados</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Batch Delete Confirmation Modal -->
+  <dialog id="batchDeleteModal" style="border: none; border-radius: var(--border-radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 0; max-width: 480px; width: 95%;">
+    <div class="modal-content" style="padding: 24px; max-width: 100%;">
+      <div style="text-align: center; margin-bottom: 16px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 26px; margin-bottom: 12px;">
+          🗑️
+        </div>
+        <h3 style="margin: 0 0 6px 0; font-size: 19px; font-weight: 700; color: #0f172a;">
+          ¿Eliminar <span id="batchDeleteCount">0</span> currículums?
+        </h3>
+        <p style="color: var(--text-medium); font-size: 13.5px; margin: 0; line-height: 1.5;">
+          Esta acción eliminará permanentemente los currículums seleccionados y sus análisis tanto de la base de datos como del historial. Esta acción <strong>no se puede deshacer</strong>.
+        </p>
+      </div>
+      <div style="display:flex; justify-content:center; gap:12px; margin-top: 20px;">
+        <button type="button" class="btn-secondary btn-sm" id="cancelBatchDeleteBtn" style="padding: 8px 18px;">Cancelar</button>
+        <button type="button" class="btn btn-sm" id="confirmBatchDeleteBtn" style="margin-top:0; background: #ef4444; color:white; padding: 8px 18px;">Sí, Eliminar Definitivamente</button>
       </div>
     </div>
   </dialog>
