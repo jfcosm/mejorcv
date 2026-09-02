@@ -8,7 +8,7 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const AdmZip = require('adm-zip');
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 require('dotenv').config();
 
@@ -376,12 +376,12 @@ async function recordGeminiCall(type, model) {
   if (dbFs) {
     try {
       const updateData = {
-        totalCalls: admin.firestore.FieldValue.increment(1),
+        totalCalls: FieldValue.increment(1),
         lastModel: model || "gemini-2.5-flash",
         lastCallAt: inMemoryGeminiUsage.lastCallAt
       };
       if (type) {
-        updateData[type] = admin.firestore.FieldValue.increment(1);
+        updateData[type] = FieldValue.increment(1);
       }
       await dbFs.collection('app_stats').doc('gemini').set(updateData, { merge: true });
     } catch (err) {
@@ -417,7 +417,7 @@ async function incrementVisitsCounter() {
   if (dbFs) {
     try {
       await dbFs.collection('app_stats').doc('general').set({
-        visits: admin.firestore.FieldValue.increment(1)
+        visits: FieldValue.increment(1)
       }, { merge: true });
     } catch (err) {
       console.error("Firestore incrementVisits error:", err.message);
@@ -2058,6 +2058,7 @@ async function getPublicStats() {
 
 // Public settings and live statistics endpoint
 app.get('/api/config', async (req, res) => {
+  incrementVisitsCounter().catch(() => {});
   const config = await getConfigDoc();
   const publicStats = await getPublicStats();
 
