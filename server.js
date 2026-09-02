@@ -215,89 +215,47 @@ async function getAdminData(config) {
   const priceHeadshots = parseFloat(config?.priceHeadshots) || 6.0;
   const geminiStats = await getGeminiStats(config);
 
+  const map = new Map();
+  const localDb = readDb();
+  if (localDb.analyses && Array.isArray(localDb.analyses)) {
+    localDb.analyses.forEach(a => {
+      if (a && a.id) map.set(a.id, a);
+    });
+  }
+
+  let totalVisits = localDb.visits || 0;
+
   const dbFs = initFirebase();
   if (dbFs) {
     try {
       // Get visits
       const statsDoc = await dbFs.collection('app_stats').doc('general').get();
-      const totalVisits = statsDoc.exists ? (statsDoc.data().visits || 0) : (readDb().visits || 0);
-
-      // Get analyses (try ordered, fallback to regular get if index/field issue)
-      let snap;
-      try {
-        snap = await dbFs.collection('analyses').orderBy('uploadedAt', 'desc').limit(300).get();
-      } catch (orderErr) {
-        console.warn("Firestore orderBy uploadedAt failed, reading without orderBy:", orderErr.message);
-        snap = await dbFs.collection('analyses').limit(300).get();
+      if (statsDoc.exists && typeof statsDoc.data().visits === 'number') {
+        totalVisits = Math.max(statsDoc.data().visits, totalVisits);
       }
 
-      let analysesList = snap.docs.map(d => d.data());
-      // Ensure sorted by uploadedAt descending
-      analysesList.sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0));
+      // Get analyses from Firestore
+      let snap;
+      try {
+        snap = await dbFs.collection('analyses').orderBy('uploadedAt', 'desc').limit(500).get();
+      } catch (orderErr) {
+        console.warn("Firestore orderBy uploadedAt failed, reading without orderBy:", orderErr.message);
+        snap = await dbFs.collection('analyses').limit(500).get();
+      }
 
-      const totalAnalyses = analysesList.length;
-      const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
-      const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
-      const paidHeadshots = analysesList.filter(a => a.hasHeadshotsPaid || a.paymentStatus === 'completed_headshots').length;
-      const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
-      const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
-      const paidExpert = paidExpertPending + paidExpertCompleted;
-      const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidHeadshots * priceHeadshots) + (paidExpert * priceExpert);
-
-      const documentLog = analysesList.map(a => {
-        const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
-        const hasCoverLetterPaid = Boolean(a.hasCoverLetterPaid === true || a.paymentStatus === 'completed_cover_letter');
-        const hasHeadshotsPaid = Boolean(a.hasHeadshotsPaid === true || a.paymentStatus === 'completed_headshots');
-        const hasExpertPaid = Boolean(a.hasExpertPaid === true || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || a.paymentStatus === 'completed_expert' || a.expertContact);
-        const expertStatus = a.expertStatus || (a.paymentStatus === 'completed_expert' ? 'completed' : (hasExpertPaid ? 'pending' : null));
-
-        return {
-          id: a.id,
-          filename: a.filename || 'cv_documento',
-          fileSize: a.fileSize || 0,
-          fileType: a.fileType || '.pdf',
-          uploadedAt: a.uploadedAt || new Date().toISOString(),
-          ip: a.ip || '127.0.0.1',
-          rating: a.rating || 3,
-          paymentStatus: a.paymentStatus || 'free',
-          hasAiPaid,
-          hasCoverLetterPaid,
-          hasHeadshotsPaid,
-          hasExpertPaid,
-          expertStatus,
-          expertContact: a.expertContact || null,
-          jobOfferText: a.jobOfferText || '',
-          coverLetterText: a.coverLetterText || '',
-          userPhotoData: a.userPhotoData || null,
-          headshotsCount: Array.isArray(a.headshotImages) ? a.headshotImages.length : 0,
-          archived: Boolean(a.archived),
-          archivedAt: a.archivedAt || null
-        };
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data) map.set(doc.id || data.id, data);
       });
-
-      return {
-        stats: {
-          totalVisits: Number(totalVisits) || 0,
-          totalAnalyses: Number(totalAnalyses) || 0,
-          paidAi: Number(paidAi) || 0,
-          paidCoverLetter: Number(paidCoverLetter) || 0,
-          paidHeadshots: Number(paidHeadshots) || 0,
-          paidExpertPending: Number(paidExpertPending) || 0,
-          paidExpertCompleted: Number(paidExpertCompleted) || 0,
-          totalRevenue: Number(totalRevenue) || 0,
-          geminiStats
-        },
-        documentLog
-      };
     } catch (err) {
-      console.error("Firestore getAdminData error, falling back to local:", err.message);
+      console.error("Firestore getAdminData error, using local fallback:", err.message);
     }
   }
 
-  // Local fallback
-  const db = readDb();
-  const totalVisits = db.visits || 0;
-  const analysesList = db.analyses || [];
+  const analysesList = Array.from(map.values());
+  // Ensure sorted by uploadedAt descending
+  analysesList.sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0));
+
   const totalAnalyses = analysesList.length;
   const paidAi = analysesList.filter(a => a.hasAiPaid || a.paymentStatus === 'completed_ai').length;
   const paidCoverLetter = analysesList.filter(a => a.hasCoverLetterPaid || a.paymentStatus === 'completed_cover_letter').length;
@@ -336,7 +294,7 @@ async function getAdminData(config) {
       archived: Boolean(a.archived),
       archivedAt: a.archivedAt || null
     };
-  }).reverse();
+  });
 
   return {
     stats: {
