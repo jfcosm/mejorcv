@@ -1931,8 +1931,11 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
   }
 });
 
-// Payment simulation route
+// Payment simulation route (Disabled in Production)
 app.post('/api/payment/simulate', async (req, res) => {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    return res.status(403).json({ error: "El modo de simulación de pagos está deshabilitado en el entorno de producción." });
+  }
   try {
     const { analysisId, tier, paymentMethod, contact, jobOfferText } = req.body;
     if (!analysisId || !tier) {
