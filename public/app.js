@@ -961,16 +961,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getBulletinSlides(count, score) {
     const totalCount = count || 0;
-    const ratingScore = score || "4.0";
+    const ratingScore = score || "4.2";
     if (currentLanguage === 'en') {
+      const slide1 = totalCount > 0
+        ? `📊 Cintia has evaluated and analyzed <span class="bulletin-highlight">${totalCount} resumes</span> with an average rating of <span class="bulletin-highlight">${ratingScore} stars (out of a maximum of 5) ★</span>.`
+        : `📊 Cintia audits and optimizes resumes with <span class="bulletin-highlight">Artificial Intelligence</span> under global ATS standards.`;
       return [
-        `📊 Cintia has evaluated and analyzed <span class="bulletin-highlight">${totalCount} resumes</span> with an average rating of <span class="bulletin-highlight">${ratingScore} stars (out of a maximum of 5) ★</span>.`,
+        slide1,
         `⚡ <span class="bulletin-highlight">80% of resumes</span> contain invisible ATS keyword gaps that prevent recruiters from calling.`,
         `🚀 Elevate your professional profile with honest feedback, actionable guidance, and instant AI optimization!`
       ];
     }
+    const slide1Es = totalCount > 0
+      ? `📊 Cintia ha evaluado y analizado <span class="bulletin-highlight">${totalCount} currículums</span> con una nota promedio de <span class="bulletin-highlight">${ratingScore} estrellas (de un máximo de 5) ★</span>.`
+      : `📊 Cintia audita y optimiza currículums con <span class="bulletin-highlight">Inteligencia Artificial</span> bajo estándares ATS de reclutamiento.`;
     return [
-      `📊 Cintia ha evaluado y analizado <span class="bulletin-highlight">${totalCount} currículums</span> con una nota promedio de <span class="bulletin-highlight">${ratingScore} estrellas (de un máximo de 5) ★</span>.`,
+      slide1Es,
       `⚡ El <span class="bulletin-highlight">80% de los currículums</span> presentan fallas en palabras clave ATS que impiden llegar a la entrevista laboral.`,
       `🚀 Lleva tu perfil profesional al siguiente nivel con retroalimentación honesta y optimización al instante.`
     ];
