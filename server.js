@@ -202,6 +202,9 @@ async function deleteAnalysisDoc(analysisId) {
   if (dbFs) {
     try {
       await dbFs.collection('analyses').doc(analysisId).delete();
+      await dbFs.collection('app_stats').doc('tombstones').set({
+        deletedIds: FieldValue.arrayUnion(analysisId)
+      }, { merge: true });
     } catch (err) {
       console.error("Firestore deleteAnalysisDoc error:", err.message);
     }
@@ -247,6 +250,14 @@ async function getAdminData(config) {
         const data = doc.data();
         if (data) map.set(doc.id || data.id, data);
       });
+
+      // Filter out permanently deleted IDs (tombstones)
+      try {
+        const tombDoc = await dbFs.collection('app_stats').doc('tombstones').get();
+        if (tombDoc.exists && Array.isArray(tombDoc.data().deletedIds)) {
+          tombDoc.data().deletedIds.forEach(id => map.delete(id));
+        }
+      } catch (tombErr) {}
     } catch (err) {
       console.error("Firestore getAdminData error, using local fallback:", err.message);
     }
