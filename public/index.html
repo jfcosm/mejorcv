@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cintia - Deja que la IA perfeccione tu Currículum</title>
   <meta name="description" content="Sube tu currículum, evalúa su compatibilidad con filtros ATS y optimízalo al instante con Inteligencia Artificial.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="style.css?v=2.4">
+
+  <!-- Google Fonts: Alata (Headings) + Plus Jakarta Sans / Inter (UI & Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alata&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css?v=3.0">
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16872995581"></script>
@@ -30,19 +36,48 @@
 </head>
 <body>
 
+  <!-- Ambient Background Glows -->
+  <div class="ambient-glow glow-top-left" aria-hidden="true"></div>
+  <div class="ambient-glow glow-top-right" aria-hidden="true"></div>
+  <div class="ambient-glow glow-center" aria-hidden="true"></div>
+
   <!-- Header -->
-  <header>
+  <header class="bento-header">
     <div class="app-container nav">
-      <a href="/" class="logo"><span class="logo-text">Cint<span style="color: var(--color-mint)">ia</span></span><span class="logo-dot"></span></a>
-      <ul class="nav-links">
-        <li><a href="/" id="navHome">Inicio</a></li>
-        <li class="lang-selector-container">
-          <select id="langSelector" class="lang-selector">
-            <option value="es" selected>ES</option>
-            <option value="en">EN</option>
-          </select>
-        </li>
-      </ul>
+      <a href="/" class="logo">
+        <span class="logo-symbol">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+        </span>
+        <span class="logo-text">Cintia<span class="logo-pro">.pro</span></span>
+      </a>
+      
+      <nav class="nav-center">
+        <ul class="nav-links">
+          <li><a href="#coachShowcaseSection" id="navServices">Servicios</a></li>
+          <li><a href="#howItWorksSection" id="navHow">Cómo Funciona</a></li>
+          <li><a href="#faqSection" id="navFaq">Preguntas Frecuentes</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Theme Selector (Light / Dark Mode Toggle) -->
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Cambiar tema claro u oscuro" title="Cambiar tema claro u oscuro">
+          <span class="theme-icon sun-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </span>
+          <span class="theme-icon moon-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+        </button>
+
+        <!-- Language Switcher Pill (ES / EN) -->
+        <div class="lang-switch-pill" id="langSwitchPill" role="group" aria-label="Selector de idioma">
+          <button type="button" class="lang-btn active" data-lang="es" id="langBtnEs">ES</button>
+          <button type="button" class="lang-btn" data-lang="en" id="langBtnEn">EN</button>
+        </div>
+
+        <a href="#dropZone" class="btn-nav-action" id="navCtaBtn">Comenzar Gratis</a>
+      </div>
     </div>
   </header>
 
@@ -64,123 +99,145 @@
     </div>
   </section>
 
-  <!-- Main Hero -->
-  <section class="hero">
-    <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      <span id="heroBadgeText">TU COACH DE BÚSQUEDA LABORAL CON IA</span>
-    </div>
-    <h1 id="heroHeading">Tu Coach de <span>Búsqueda Laboral</span> con IA que multiplica tus entrevistas</h1>
-    <p id="heroDescription">¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.</p>
-    
-    <!-- Hero Feature Chips -->
-    <div class="hero-pills-container">
-      <div class="hero-pill-chip">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span id="heroPill1">Auditoría ATS Gratis</span>
+  <!-- Main Hero (Split Layout Bento Style) -->
+  <section class="hero-bento-section app-container">
+    <div class="hero-bento-grid">
+      
+      <!-- Hero Left: Headlines, Value Prop, Chips -->
+      <div class="hero-bento-copy">
+        <div class="hero-badge-pill">
+          <span class="pulse-emerald"></span>
+          <span id="heroBadgeText">TU COACH DE BÚSQUEDA LABORAL CON IA</span>
+        </div>
+        <h1 class="hero-bento-title" id="heroHeading">
+          Tu Currículum auditado por IA con <span class="text-gradient-emerald">precisión de Headhunter</span>
+        </h1>
+        <p class="hero-bento-desc" id="heroDescription">
+          ¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.
+        </p>
+
+        <!-- Feature Pill Chips -->
+        <div class="hero-pills-row">
+          <span class="hero-pill-badge pill-mint" id="heroPill1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            100% Gratis
+          </span>
+          <span class="hero-pill-badge pill-blue" id="heroPill2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            ATS 7-Ejes
+          </span>
+          <span class="hero-pill-badge pill-purple" id="heroPill3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            Google Gemini
+          </span>
+          <span class="hero-pill-badge pill-amber" id="heroPill4">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Sin Tarjeta
+          </span>
+        </div>
       </div>
-      <div class="hero-pill-chip">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <span id="heroPill2">Optimización con IA</span>
-      </div>
-      <div class="hero-pill-chip highlight-purple">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        <span id="heroPill3">Carta de Presentación por Oferta</span>
-      </div>
-      <div class="hero-pill-chip highlight-cyan">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
-        <span id="heroPill4">20 Fotos de Estudio (IA)</span>
-      </div>
-      <div class="hero-pill-chip highlight-orange">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span id="heroPill5">Mentoría Humana 1 a 1</span>
+
+      <!-- Hero Right: Interactive Drag & Drop Box -->
+      <div class="hero-bento-card-wrap">
+        <div class="card bento-upload-card" id="bentoUploadCard">
+          
+          <!-- Error banner -->
+          <div id="errorBanner" class="error-banner"></div>
+
+          <!-- Upload Form Wrapper -->
+          <div id="uploadWrapper">
+            <form id="cvForm">
+              <div class="upload-zone bento-dropzone" id="dropZone" role="button" tabindex="0" aria-label="Zona para subir archivo de currículum">
+                <div class="bento-upload-icon-pulse">
+                  <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                </div>
+                <h3 class="upload-title" id="dropzoneTitle">Arrastra tu currículum aquí</h3>
+                <p class="upload-hint" id="dropzoneSubtitle">Soporta .pdf, .docx, .odt o .txt (Menos de 5 MB)</p>
+                <button type="button" class="btn-browse-file" id="browseFileBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span id="browseFileBtnText">Seleccionar Archivo</span>
+                </button>
+              </div>
+              <input type="file" id="cvFileInput" name="cv" class="file-input" accept=".pdf,.docx,.odt,.txt" style="display: none;">
+
+              <!-- Selected File Display -->
+              <div class="selected-file-container" id="selectedFileContainer">
+                <div class="file-info">
+                  <svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  <div>
+                    <div class="file-name" id="fileNameDisplay">CV_Nombre_Archivo.pdf</div>
+                    <div class="file-size" id="fileSizeDisplay">1.2 MB</div>
+                  </div>
+                </div>
+                <button type="button" class="remove-file-btn" id="removeFileBtn" title="Eliminar archivo">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Captcha Box -->
+              <div class="captcha-container" id="captchaContainer">
+                <label class="captcha-label" for="captchaInput" id="captchaLabelText">Medida anti-abuso: Verifica que eres humano</label>
+                <div class="captcha-box">
+                  <div class="captcha-image-wrapper" id="captchaImageWrapper" title="Clic para recargar captcha">
+                    <!-- SVG Captcha dynamically injected -->
+                  </div>
+                  <input type="text" id="captchaInput" class="captcha-input" placeholder="Resultado" required>
+                  <button type="button" class="refresh-captcha" id="refreshCaptchaBtn">Recargar</button>
+                </div>
+              </div>
+
+              <!-- Consent Checkboxes -->
+              <div class="consent-container" id="consentContainer">
+                <label class="consent-label" for="consentCheckbox">
+                  <input type="checkbox" id="consentCheckbox" class="consent-checkbox" required>
+                  <span id="consentText">Acepto el procesamiento temporal de este documento para generar mi análisis.</span>
+                </label>
+                <label class="consent-label" for="termsCheckbox" style="margin-top: 8px;">
+                  <input type="checkbox" id="termsCheckbox" class="consent-checkbox" required>
+                  <span id="termsConsentText">Acepto los <a href="/terminos.html" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); text-decoration: underline; font-weight: 600;">términos y condiciones</a> de uso de Cintia.pro.</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary-gradient" id="submitBtn" disabled>
+                <span id="submitBtnText">Analizar Currículum Gratis</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
+            </form>
+          </div>
+
+          <!-- Loading State -->
+          <div class="loading-wrapper" id="loadingWrapper">
+            <div class="spinner"></div>
+            <h3 id="loadingStatus">Analizando tu Currículum...</h3>
+            <ul class="loading-steps" id="loadingSteps">
+              <li id="stepValidity" class="active">Verificando validez del Currículum...</li>
+              <li id="step0">Detectando el idioma del currículum...</li>
+              <li id="step1">Extrayendo texto del documento...</li>
+              <li id="step2">Evaluando estructura bajo estándares ATS...</li>
+              <li id="step3">Analizando claridad de capacidades y certificaciones...</li>
+              <li id="step4">Verificando la extensión de páginas...</li>
+              <li id="step5">Generando informe de calidad...</li>
+            </ul>
+          </div>
+
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Upload Dashboard -->
+  <!-- Upload Dashboard & Results (Expanded upon analysis) -->
   <main class="app-container main-dashboard">
-    <div class="card">
-      
-      <!-- Error banner -->
-      <div id="errorBanner" class="error-banner"></div>
-
-      <!-- Upload Form Wrapper -->
-      <div id="uploadWrapper">
-        <form id="cvForm">
-          <div class="upload-zone" id="dropZone" role="button" tabindex="0" aria-label="Zona para subir archivo de currículum">
-            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
-            <h3 class="upload-title">Arrastra tu currículum aquí</h3>
-            <p class="upload-hint">Formatos aceptados: .pdf, .docx, .odt, .txt (Menos de 5 MB)</p>
-          </div>
-          <input type="file" id="cvFileInput" name="cv" class="file-input" accept=".pdf,.docx,.odt,.txt" style="display: none;">
-
-          <!-- Selected File Display -->
-          <div class="selected-file-container" id="selectedFileContainer">
-            <div class="file-info">
-              <svg class="file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <div>
-                <div class="file-name" id="fileNameDisplay">CV_Nombre_Archivo.pdf</div>
-                <div class="file-size" id="fileSizeDisplay">1.2 MB</div>
-              </div>
-            </div>
-            <button type="button" class="remove-file-btn" id="removeFileBtn" title="Eliminar archivo">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Captcha Box -->
-          <div class="captcha-container" id="captchaContainer">
-            <label class="captcha-label" for="captchaInput">Medida anti-abuso: Verifica que eres humano</label>
-            <div class="captcha-box">
-              <div class="captcha-image-wrapper" id="captchaImageWrapper" title="Clic para recargar captcha">
-                <!-- SVG Captcha dynamically injected -->
-              </div>
-              <input type="text" id="captchaInput" class="captcha-input" placeholder="Resultado" required>
-              <button type="button" class="refresh-captcha" id="refreshCaptchaBtn">Recargar</button>
-            </div>
-          </div>
-
-          <!-- Consent Checkboxes -->
-          <div class="consent-container" id="consentContainer">
-            <label class="consent-label" for="consentCheckbox">
-              <input type="checkbox" id="consentCheckbox" class="consent-checkbox" required>
-              <span id="consentText">Acepto el procesamiento temporal de este documento para generar mi análisis.</span>
-            </label>
-            <label class="consent-label" for="termsCheckbox" style="margin-top: 8px;">
-              <input type="checkbox" id="termsCheckbox" class="consent-checkbox" required>
-              <span id="termsConsentText">Acepto los <a href="/terminos.html" target="_blank" rel="noopener noreferrer" style="color: var(--color-mint); text-decoration: underline; font-weight: 600;">términos y condiciones</a> de uso de Cintia.pro.</span>
-            </label>
-          </div>
-
-          <button type="submit" class="btn" id="submitBtn" disabled>Analizar CV Gratis</button>
-        </form>
-      </div>
-
-      <!-- Loading State -->
-      <div class="loading-wrapper" id="loadingWrapper">
-        <div class="spinner"></div>
-        <h3 id="loadingStatus">Analizando tu Currículum...</h3>
-        <ul class="loading-steps" id="loadingSteps">
-          <li id="stepValidity" class="active">Verificando validez del Currículum...</li>
-          <li id="step0">Detectando el idioma del currículum...</li>
-          <li id="step1">Extrayendo texto del documento...</li>
-          <li id="step2">Evaluando estructura bajo estándares ATS...</li>
-          <li id="step3">Analizando claridad de capacidades y certificaciones...</li>
-          <li id="step4">Verificando la extensión de páginas...</li>
-          <li id="step5">Generando informe de calidad...</li>
-        </ul>
-      </div>
+    <div class="card" id="resultsMainCard" style="border: none; background: transparent; box-shadow: none; padding: 0;">
 
       <!-- Results Panel -->
       <section class="results-section" id="resultsSection">
@@ -629,66 +686,81 @@
     </div>
   </main>
 
-  <!-- AI Career Coach Showcase Section -->
+  <!-- AI Career Coach Showcase Section (Impressive Bento Grid) -->
   <section class="coach-showcase-section app-container" id="coachShowcaseSection">
     <div class="service-section-header">
       <div class="coach-badge-pill">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
         <span id="coachShowcaseBadge">CAPACIDADES DE CINTIA.PRO</span>
       </div>
-      <h2 class="section-title" id="coachShowcaseTitle">El Ecosistema Completo para tu Éxito Laboral</h2>
+      <h2 class="section-title bento-section-title" id="coachShowcaseTitle">El Ecosistema Completo para tu Éxito Laboral</h2>
       <p class="service-section-subtitle" id="coachShowcaseSubtitle">Cintia combina inteligencia artificial de vanguardia y experiencia humana en reclutamiento para acompañarte estratégicamente en cada fase de tu postulación.</p>
     </div>
 
-    <div class="coach-cards-grid">
+    <!-- The 5 Bento Cards Grid -->
+    <div class="bento-cards-grid">
       <!-- Card 1: Diagnóstico ATS -->
-      <div class="coach-feature-card mint-card" id="coachCard1">
-        <div class="coach-card-icon-wrap mint-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div class="bento-feature-card bento-card-mint" id="coachCard1">
+        <div class="bento-card-header">
+          <div class="bento-icon-badge mint-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="bento-pill-tag mint-pill" id="coachCardTag1">100% GRATIS</span>
         </div>
-        <div class="coach-card-tag mint-tag" id="coachCardTag1">100% GRATIS</div>
-        <h3 class="coach-card-title" id="coachCardTitle1">Auditoría ATS & Diagnóstico en 7 Ejes</h3>
-        <p class="coach-card-desc" id="coachCardDesc1">Supera los filtros invisibles de reclutamiento. Conoce al instante tu puntaje global, compatibilidad algorítmica y el balance de competencias de tu CV.</p>
+        <h3 class="bento-card-title" id="coachCardTitle1">Auditoría ATS & Diagnóstico en 7 Ejes</h3>
+        <p class="bento-card-desc" id="coachCardDesc1">Supera los filtros invisibles de reclutamiento. Conoce al instante tu puntaje global, compatibilidad algorítmica y el balance de competencias de tu CV.</p>
       </div>
 
       <!-- Card 2: Optimización con IA -->
-      <div class="coach-feature-card mint-card" id="coachCard2">
-        <div class="coach-card-icon-wrap mint-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <div class="bento-feature-card bento-card-teal" id="coachCard2">
+        <div class="bento-card-header">
+          <div class="bento-icon-badge teal-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="bento-pill-tag teal-pill" id="coachCardTag2">$2 USD / $2.000 CLP</span>
         </div>
-        <div class="coach-card-tag mint-tag" id="coachCardTag2">$2 USD / $2.000 CLP</div>
-        <h3 class="coach-card-title" id="coachCardTitle2">Reescritura de Perfil de Alto Impacto</h3>
-        <p class="coach-card-desc" id="coachCardDesc2">Transforma tus responsabilidades en logros cuantificables con palabras clave estratégicas para destacar ante los ojos de los reclutadores.</p>
+        <h3 class="bento-card-title" id="coachCardTitle2">Reescritura de Perfil de Alto Impacto</h3>
+        <p class="bento-card-desc" id="coachCardDesc2">Transforma tus responsabilidades en logros cuantificables con palabras clave estratégicas para destacar ante los ojos de los reclutadores.</p>
       </div>
 
       <!-- Card 3: Carta de Presentación -->
-      <div class="coach-feature-card purple-card" id="coachCard3">
-        <div class="coach-card-icon-wrap purple-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      <div class="bento-feature-card bento-card-purple" id="coachCard3">
+        <div class="bento-card-header">
+          <div class="bento-icon-badge purple-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </div>
+          <span class="bento-pill-tag purple-pill" id="coachCardTag3">$2 USD / $2.000 CLP</span>
         </div>
-        <div class="coach-card-tag purple-tag" id="coachCardTag3">$2 USD / $2.000 CLP</div>
-        <h3 class="coach-card-title" id="coachCardTitle3">Cartas de Presentación por Vacante</h3>
-        <p class="coach-card-desc" id="coachCardDesc3">Pega la descripción de cualquier empleo de LinkedIn o portales de trabajo. Cintia redactará una carta formal y persuasiva alineada a los requisitos del puesto.</p>
+        <h3 class="bento-card-title" id="coachCardTitle3">Cartas de Presentación por Vacante</h3>
+        <p class="bento-card-desc" id="coachCardDesc3">Pega la descripción de cualquier empleo de LinkedIn o portales de trabajo. Cintia redactará una carta formal y persuasiva alineada a los requisitos del puesto.</p>
       </div>
 
-      <!-- Card 4: 20 Fotos de Estudio (IA) -->
-      <div class="coach-feature-card cyan-card" id="coachCardHeadshots">
-        <div class="coach-card-icon-wrap cyan-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/><circle cx="12" cy="12" r="10"/></svg>
+      <!-- Card 4: 20 Fotos de Estudio (IA) with Avatar Stack Cluster -->
+      <div class="bento-feature-card bento-card-cyan" id="coachCardHeadshots">
+        <div class="bento-card-header">
+          <!-- Avatar Stack mirroring the mockup! -->
+          <div class="bento-avatar-stack" aria-label="Retratos de estudio con IA">
+            <span class="bento-avatar-item av-1" title="Retrato Ejecutivo Azul">👨‍💼</span>
+            <span class="bento-avatar-item av-2" title="Retrato Smart Casual">👩‍💼</span>
+            <span class="bento-avatar-item av-3" title="Retrato Tech Modern">👨‍💻</span>
+            <span class="bento-avatar-item av-4" title="Retrato Editorial Forbes">👩‍💻</span>
+          </div>
+          <span class="bento-pill-tag cyan-pill" id="coachCardTagHeadshots">$6 USD / $6.000 CLP</span>
         </div>
-        <div class="coach-card-tag cyan-tag" id="coachCardTagHeadshots">$6 USD / $6.000 CLP</div>
-        <h3 class="coach-card-title" id="coachCardTitleHeadshots">Pack 20 Fotos de Estudio para LinkedIn</h3>
-        <p class="coach-card-desc" id="coachCardDescHeadshots">Sube tu foto base y genera 20 retratos fotográficos de alta resolución con iluminación de estudio profesional, vestimentas ejecutivas y fondos modernos.</p>
+        <h3 class="bento-card-title" id="coachCardTitleHeadshots">Pack 20 Fotos de Estudio para LinkedIn</h3>
+        <p class="bento-card-desc" id="coachCardDescHeadshots">Sube tu foto base y genera 20 retratos fotográficos de alta resolución con iluminación de estudio profesional, vestimentas ejecutivas y fondos modernos.</p>
       </div>
 
       <!-- Card 5: Experto Humano -->
-      <div class="coach-feature-card orange-card" id="coachCardExpert">
-        <div class="coach-card-icon-wrap orange-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <div class="bento-feature-card bento-card-orange" id="coachCardExpert">
+        <div class="bento-card-header">
+          <div class="bento-icon-badge orange-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <span class="bento-pill-tag orange-pill" id="coachCardTagExpert">$25 USD / $25.000 CLP</span>
         </div>
-        <div class="coach-card-tag orange-tag" id="coachCardTagExpert">$25 USD / $25.000 CLP</div>
-        <h3 class="coach-card-title" id="coachCardTitleExpert">Mentoría 1 a 1 y Pulido Experto</h3>
-        <p class="coach-card-desc" id="coachCardDescExpert">Sesión dedicada de 1.5 horas con un especialista senior en RRHH para preparar tus entrevistas laborales y recibir tu CV final en PDF y Word editable.</p>
+        <h3 class="bento-card-title" id="coachCardTitleExpert">Mentoría 1 a 1 y Pulido Experto</h3>
+        <p class="bento-card-desc" id="coachCardDescExpert">Sesión dedicada de 1.5 horas con un especialista senior en RRHH para preparar tus entrevistas laborales y recibir tu CV final en PDF y Word editable.</p>
       </div>
     </div>
   </section>

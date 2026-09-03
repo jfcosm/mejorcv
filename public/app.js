@@ -449,17 +449,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Language Setup
-  langSelector.value = currentLanguage;
-  applyLanguage(currentLanguage);
+  // ─── Theme Management (Light / Dark Mode) ──────────────────────────────────
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const storedTheme = localStorage.getItem('cintia_theme');
+  const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let currentTheme = storedTheme || (systemPrefersDark ? 'dark' : 'light');
 
-  langSelector.addEventListener('change', (e) => {
-    const selected = e.target.value;
-    localStorage.setItem('cvLang', selected);
-    applyLanguage(selected);
-    // Reload captcha text language
-    loadCaptcha();
-  });
+  function applyTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('cintia_theme', theme);
+    if (themeToggleBtn) {
+      themeToggleBtn.setAttribute('aria-label', theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    }
+  }
+
+  applyTheme(currentTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(nextTheme);
+    });
+  }
+
+  // ─── Language Switcher Pill (ES / EN) ──────────────────────────────────────
+  const langBtnEs = document.getElementById('langBtnEs');
+  const langBtnEn = document.getElementById('langBtnEn');
+  const browseFileBtn = document.getElementById('browseFileBtn');
+
+  if (browseFileBtn && cvFileInput) {
+    browseFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cvFileInput.click();
+    });
+  }
+
+  function updateLangButtons(lang) {
+    if (langBtnEs && langBtnEn) {
+      if (lang === 'en') {
+        langBtnEs.classList.remove('active');
+        langBtnEn.classList.add('active');
+      } else {
+        langBtnEs.classList.add('active');
+        langBtnEn.classList.remove('active');
+      }
+    }
+    if (langSelector) {
+      langSelector.value = lang;
+    }
+  }
+
+  if (langBtnEs) {
+    langBtnEs.addEventListener('click', () => {
+      currentLanguage = 'es';
+      localStorage.setItem('cvLang', 'es');
+      updateLangButtons('es');
+      applyLanguage('es');
+      loadCaptcha();
+    });
+  }
+
+  if (langBtnEn) {
+    langBtnEn.addEventListener('click', () => {
+      currentLanguage = 'en';
+      localStorage.setItem('cvLang', 'en');
+      updateLangButtons('en');
+      applyLanguage('en');
+      loadCaptcha();
+    });
+  }
+
+  // Language Setup Initial State
+  if (langSelector) {
+    langSelector.value = currentLanguage;
+    langSelector.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      localStorage.setItem('cvLang', selected);
+      updateLangButtons(selected);
+      applyLanguage(selected);
+      loadCaptcha();
+    });
+  }
+  updateLangButtons(currentLanguage);
+  applyLanguage(currentLanguage);
 
   function applyLanguage(lang) {
     currentLanguage = lang;
