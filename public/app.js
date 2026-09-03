@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTier = null; // 'ai' or 'expert'
   let optimizedContentText = '';
   let currentLanguage = localStorage.getItem('cvLang') || 'es';
+  let currentAppVersion = '2.0';
   let bulletinIndex = 0;
   let bulletinTimer = null;
 
@@ -209,7 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Tarjeta de Crédito / Débito",
       modalSuccessTitle: "¡Pago Realizado con Éxito!",
       modalSuccessMessage: "Tu pago ha sido procesado correctamente. Cintia está procesando el documento...",
-      footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología impulsada por Google Gemini.",
+      footerCopyright: `&copy; 2026 Cintia V <span id="appVersionDisplay">${currentAppVersion}</span>. Todos los derechos reservados. Tecnología impulsada por Google Gemini.`,
+      footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Términos y Condiciones</a> Creado con ❤️ y ⚡ por <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Términos y Condiciones</a> Creado con ❤️ y ⚡ por <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       heroBadgeText: "TU COACH DE BÚSQUEDA LABORAL CON IA",
       heroHeading1: "Tu Coach de <span class=\"text-gradient-emerald\">Búsqueda Laboral</span> con IA que multiplica tus entrevistas",
@@ -387,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPayCard: "Credit / Debit Card",
       modalSuccessTitle: "Payment Completed!",
       modalSuccessMessage: "Your payment has been successfully processed. Cintia is processing document...",
-      footerCopyright: "&copy; 2026 Cintia. All rights reserved. Technology powered by Google Gemini.",
+      footerCopyright: `&copy; 2026 Cintia V <span id="appVersionDisplay">${currentAppVersion}</span>. All rights reserved. Technology powered by Google Gemini.`,
       footerCredits: "<a href=\"/terminos.html?lang=en\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Terms & Conditions</a> Made with ❤️ and ⚡ by <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       heroPill1: "Free ATS Audit",
       heroPill2: "AI Profile Upgrade",
@@ -968,6 +970,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/config');
       const data = await response.json();
       appConfig = data;
+      if (data.appVersion) {
+        currentAppVersion = data.appVersion;
+        const vDisplay = document.getElementById('appVersionDisplay');
+        if (vDisplay) vDisplay.textContent = currentAppVersion;
+      }
       applyConfigToUi();
 
       // Load PayPal SDK dynamically once we have the client ID

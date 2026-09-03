@@ -1,6 +1,6 @@
 {
   "name": "cintia",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Cintia - Análisis, evaluación y optimización de Currículums Vitae con IA",
   "main": "server.js",
   "scripts": {

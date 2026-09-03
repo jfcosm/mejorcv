@@ -10,6 +10,7 @@ const AdmZip = require('adm-zip');
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const pkg = require('./package.json');
 require('dotenv').config();
 
 const app = express();
@@ -2064,6 +2065,7 @@ app.get('/api/config', async (req, res) => {
     paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
     mercadopagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY || '',
     mercadopagoEnabled: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
+    appVersion: pkg.version ? pkg.version.split('.').slice(0, 2).join('.') : '2.0',
     publicStats: publicStats
   });
 });
