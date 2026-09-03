@@ -1665,16 +1665,46 @@ footer {
   box-shadow: var(--shadow-lg);
 }
 
-.coach-feature-card.mint-card:hover {
-  border-color: var(--color-mint);
+.coach-feature-card.mint-card,
+.coach-feature-card.emerald-card {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.coach-feature-card.mint-card:hover,
+.coach-feature-card.emerald-card:hover {
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.12);
+}
+
+.coach-feature-card.purple-card {
+  border-color: rgba(99, 102, 241, 0.25);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
 }
 
 .coach-feature-card.purple-card:hover {
-  border-color: #6366f1;
+  border-color: rgba(99, 102, 241, 0.55);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12);
+}
+
+.coach-feature-card.cyan-card {
+  border-color: rgba(14, 165, 233, 0.25);
+  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+.coach-feature-card.cyan-card:hover {
+  border-color: rgba(14, 165, 233, 0.55);
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.12);
+}
+
+.coach-feature-card.orange-card {
+  border-color: rgba(234, 88, 12, 0.25);
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
 }
 
 .coach-feature-card.orange-card:hover {
-  border-color: #ea580c;
+  border-color: rgba(234, 88, 12, 0.55);
+  box-shadow: 0 10px 30px rgba(234, 88, 12, 0.12);
 }
 
 .coach-card-icon-wrap {
@@ -1687,18 +1717,24 @@ footer {
   margin-bottom: 1rem;
 }
 
-.coach-card-icon-wrap.mint-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-mint);
+.coach-card-icon-wrap.mint-icon,
+.coach-card-icon-wrap.emerald-icon {
+  background: #d1fae5;
+  color: var(--color-mint-hover);
 }
 
 .coach-card-icon-wrap.purple-icon {
-  background: rgba(99, 102, 241, 0.1);
+  background: #ede9fe;
   color: #6366f1;
 }
 
+.coach-card-icon-wrap.cyan-icon {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
 .coach-card-icon-wrap.orange-icon {
-  background: rgba(234, 88, 12, 0.1);
+  background: #ffedd5;
   color: #ea580c;
 }
 
@@ -1713,19 +1749,29 @@ footer {
   margin-bottom: 0.75rem;
 }
 
-.coach-card-tag.mint-tag {
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--color-mint-hover);
+.coach-card-tag.mint-tag,
+.coach-card-tag.emerald-tag {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .coach-card-tag.purple-tag {
-  background: rgba(99, 102, 241, 0.12);
+  background: #ede9fe;
   color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.coach-card-tag.cyan-tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid rgba(14, 165, 233, 0.25);
 }
 
 .coach-card-tag.orange-tag {
-  background: rgba(234, 88, 12, 0.12);
-  color: #ea580c;
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
 }
 
 .coach-card-title {
