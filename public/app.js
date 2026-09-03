@@ -863,11 +863,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const expBadge = document.getElementById('expertBadgeText');
     if (expBadge) expBadge.textContent = t.expertBadgeText;
 
-    // Footer
-    const footerCopyrightEl = document.getElementById('footerCopyright');
-    if (footerCopyrightEl) footerCopyrightEl.innerHTML = t.footerCopyright;
-    const footerCreditsEl = document.getElementById('footerCredits');
-    if (footerCreditsEl) footerCreditsEl.innerHTML = t.footerCredits;
+    // Mobile Drawer Translations
+    const mServices = document.getElementById('mobileNavServices');
+    if (mServices) {
+      const span = mServices.querySelector('span');
+      if (span) span.textContent = lang === 'en' ? 'Ecosystem Services' : 'Servicios del Ecosistema';
+    }
+    const mHow = document.getElementById('mobileNavHow');
+    if (mHow) {
+      const span = mHow.querySelector('span');
+      if (span) span.textContent = lang === 'en' ? 'How It Works?' : '¿Cómo Funciona?';
+    }
+    const mFaq = document.getElementById('mobileNavFaq');
+    if (mFaq) {
+      const span = mFaq.querySelector('span');
+      if (span) span.textContent = lang === 'en' ? 'Frequently Asked Questions' : 'Preguntas Frecuentes';
+    }
+    const mTerms = document.getElementById('mobileNavTerms');
+    if (mTerms) {
+      const span = mTerms.querySelector('span');
+      if (span) span.textContent = lang === 'en' ? 'Terms & Conditions' : 'Términos y Condiciones';
+    }
+    const mCta = document.getElementById('mobileNavCtaBtn');
+    if (mCta) {
+      const span = mCta.querySelector('span');
+      if (span) span.textContent = lang === 'en' ? 'Start Free (Audit CV)' : 'Comenzar Gratis (Auditar CV)';
+    }
 
     // Apply configuration UI overrides
     applyConfigToUi();
@@ -962,6 +983,79 @@ document.addEventListener('DOMContentLoaded', () => {
       cvFileInput.click();
     });
   }
+
+  // ─── Mobile Menu Drawer Controller ──────────────────────────────────────────
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const mobileMenuDrawer = document.getElementById('mobileMenuDrawer');
+  const mobileNavCtaBtn = document.getElementById('mobileNavCtaBtn');
+
+  function closeMobileMenu() {
+    if (mobileMenuBtn) {
+      mobileMenuBtn.classList.remove('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+    if (mobileMenuDrawer) {
+      mobileMenuDrawer.classList.remove('open');
+      mobileMenuDrawer.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function toggleMobileMenu() {
+    if (!mobileMenuBtn || !mobileMenuDrawer) return;
+    const isOpen = mobileMenuDrawer.classList.contains('open');
+    if (isOpen) {
+      closeMobileMenu();
+    } else {
+      mobileMenuBtn.classList.add('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      mobileMenuDrawer.classList.add('open');
+      mobileMenuDrawer.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMobileMenu();
+    });
+  }
+
+  // Close when clicking any mobile link
+  document.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMobileMenu();
+    });
+  });
+
+  // Mobile CTA Button (Scroll to Dropzone and trigger file input)
+  if (mobileNavCtaBtn) {
+    mobileNavCtaBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMobileMenu();
+      const dropZoneEl = document.getElementById('dropZone');
+      if (dropZoneEl) {
+        dropZoneEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      if (cvFileInput) {
+        cvFileInput.click();
+      }
+    });
+  }
+
+  // Close on outside click or ESC key
+  document.addEventListener('click', (e) => {
+    if (mobileMenuDrawer && mobileMenuDrawer.classList.contains('open')) {
+      if (!mobileMenuDrawer.contains(e.target) && (!mobileMenuBtn || !mobileMenuBtn.contains(e.target))) {
+        closeMobileMenu();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeMobileMenu();
+    }
+  });
 
   // Fetch Public Config Parameters on Load
   // Also dynamically loads the PayPal JS SDK with the correct client-id
@@ -1135,8 +1229,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4500);
 
     const dots = document.querySelectorAll('.bulletin-dot');
-    dots.forEach((dot, idx) => {
+    dots.forEach((dot) => {
       dot.onclick = () => {
+        const idx = parseInt(dot.getAttribute('data-index') || '0', 10);
         bulletinIndex = idx;
         updateBulletinSlide();
       };
@@ -1159,7 +1254,8 @@ document.addEventListener('DOMContentLoaded', () => {
       msgEl.classList.add('slide-in');
       
       const dots = document.querySelectorAll('.bulletin-dot');
-      dots.forEach((dot, idx) => {
+      dots.forEach((dot) => {
+        const idx = parseInt(dot.getAttribute('data-index') || '0', 10);
         dot.classList.toggle('active', idx === bulletinIndex);
       });
 
@@ -1185,7 +1281,8 @@ document.addEventListener('DOMContentLoaded', () => {
     msgEl.innerHTML = slides[bulletinIndex % slides.length];
 
     const dots = document.querySelectorAll('.bulletin-dot');
-    dots.forEach((dot, idx) => {
+    dots.forEach((dot) => {
+      const idx = parseInt(dot.getAttribute('data-index') || '0', 10);
       dot.classList.toggle('active', idx === (bulletinIndex % slides.length));
     });
   }
