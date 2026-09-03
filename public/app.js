@@ -212,8 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
       footerCopyright: "&copy; 2026 Cintia. Todos los derechos reservados. Tecnología impulsada por Google Gemini.",
       footerCredits: "<a href=\"/terminos.html\" target=\"_blank\" style=\"color: var(--text-medium); text-decoration: underline; margin-right: 14px;\" id=\"footerTermsLink\">Términos y Condiciones</a> Creado con ❤️ y ⚡ por <a href=\"https://www.melodialab.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #e65c00; text-decoration: none; font-weight: 600;\">MelodIA Lab</a>",
       heroBadgeText: "TU COACH DE BÚSQUEDA LABORAL CON IA",
-      heroTitle: "Tu Coach de <span>Búsqueda Laboral</span> con IA que multiplica tus entrevistas",
-      heroDesc: "¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.",
+      heroHeading1: "Tu Coach de <span class=\"text-gradient-emerald\">Búsqueda Laboral</span> con IA que multiplica tus entrevistas",
+      heroDescription1: "¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.",
+      heroHeading2: "Genera 20 Retratos de <span class=\"text-gradient-cyan\">Calidad de Estudio</span> para LinkedIn y tu CV",
+      heroDescription2: "Sube tu foto base y genera 20 fotografías de alta resolución con iluminación de estudio profesional, vestimentas ejecutivas y fondos corporativos modernos listos para destacar.",
+      heroHeading3: "Cartas a la Medida y <span class=\"text-gradient-purple\">Optimización de Perfil</span> por Vacante",
+      heroDescription3: "Pega cualquier vacante de LinkedIn o portales de empleo. Cintia redacta una carta formal y persuasiva, y reescribe tu CV con las palabras clave exactas que buscan los reclutadores.",
       heroPill1: "Auditoría ATS Gratuita",
       heroPill2: "Reescritura de Perfil con IA",
       heroPill3: "Cartas a la Medida",
@@ -298,8 +302,13 @@ document.addEventListener('DOMContentLoaded', () => {
       navHome: "Home",
       navAdmin: "Admin Panel",
       bulletinBadgeText: "GREAT NEWS!",
-      heroTitle: "Your AI <span>Job Search Coach</span> that lands you more interviews",
-      heroDesc: "Sending out resumes and hearing only silence? Cintia audits your CV for free against ATS standards, rewrites your profile with AI, and crafts tailored Cover Letters customized to each job opening.",
+      heroBadgeText: "YOUR AI JOB SEARCH COACH",
+      heroHeading1: "Your AI <span class=\"text-gradient-emerald\">Job Search Coach</span> that lands you more interviews",
+      heroDescription1: "Sending out resumes and hearing only silence? Cintia audits your CV for free against ATS standards, rewrites your profile with AI, and crafts tailored Cover Letters customized to each job opening.",
+      heroHeading2: "Generate 20 <span class=\"text-gradient-cyan\">Studio-Quality Portraits</span> for LinkedIn and Resume",
+      heroDescription2: "Upload your photo and get 20 high-resolution professional portraits with studio lighting, executive wardrobe, and modern corporate backgrounds.",
+      heroHeading3: "Custom Cover Letters and <span class=\"text-gradient-purple\">ATS Profile Optimization</span>",
+      heroDescription3: "Paste any job posting from LinkedIn or career boards. Cintia crafts a persuasive letter and injects the exact keywords recruiters and ATS filters look for.",
       uploadTitle: "Drag your resume here",
       uploadHint: "Accepted formats: .pdf, .docx, .odt, .txt (Under 5 MB)",
       captchaLabel: "Anti-abuse measure: Verify you are human",
@@ -546,10 +555,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const heroBadgeEl = document.getElementById('heroBadgeText');
     if (heroBadgeEl && t.heroBadgeText) heroBadgeEl.textContent = t.heroBadgeText;
-    const heroHeadingEl = document.getElementById('heroHeading');
-    if (heroHeadingEl) heroHeadingEl.innerHTML = t.heroTitle;
-    const heroDescEl = document.getElementById('heroDescription');
-    if (heroDescEl) heroDescEl.textContent = t.heroDesc;
+
+    for (let s = 1; s <= 3; s++) {
+      const hEl = document.getElementById(`heroHeading${s}`);
+      if (hEl && t[`heroHeading${s}`]) hEl.innerHTML = t[`heroHeading${s}`];
+      const dEl = document.getElementById(`heroDescription${s}`);
+      if (dEl && t[`heroDescription${s}`]) dEl.textContent = t[`heroDescription${s}`];
+    }
 
     for (let p = 1; p <= 4; p++) {
       const pillEl = document.getElementById(`heroPill${p}`);
@@ -895,6 +907,59 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initFaqAccordion();
+
+  // ─── Hero Rotating Slides Controller ───────────────────────────────────────
+  const heroSlides = document.querySelectorAll('.hero-slide');
+  const heroDots = document.querySelectorAll('.hero-dot');
+  let currentHeroSlide = 0;
+  let heroSlideInterval = null;
+
+  function setHeroSlide(index) {
+    if (!heroSlides.length) return;
+    currentHeroSlide = (index + heroSlides.length) % heroSlides.length;
+    heroSlides.forEach((slide, idx) => {
+      slide.classList.toggle('active', idx === currentHeroSlide);
+    });
+    heroDots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentHeroSlide);
+    });
+  }
+
+  function startHeroSlideTimer() {
+    stopHeroSlideTimer();
+    heroSlideInterval = setInterval(() => {
+      setHeroSlide(currentHeroSlide + 1);
+    }, 6000);
+  }
+
+  function stopHeroSlideTimer() {
+    if (heroSlideInterval) {
+      clearInterval(heroSlideInterval);
+      heroSlideInterval = null;
+    }
+  }
+
+  heroDots.forEach((dot, idx) => {
+    dot.addEventListener('click', () => {
+      setHeroSlide(idx);
+      startHeroSlideTimer();
+    });
+  });
+
+  startHeroSlideTimer();
+
+  // ─── Navbar CTA Button ("Comenzar Gratis") ──────────────────────────────────
+  const navCtaBtn = document.getElementById('navCtaBtn');
+  if (navCtaBtn && cvFileInput) {
+    navCtaBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const dropZoneEl = document.getElementById('dropZone');
+      if (dropZoneEl) {
+        dropZoneEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      cvFileInput.click();
+    });
+  }
 
   // Fetch Public Config Parameters on Load
   // Also dynamically loads the PayPal JS SDK with the correct client-id

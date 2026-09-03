@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Alata&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alata&family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --font-display: 'Alata', sans-serif;
   --font-hero: 'Alata', sans-serif;
+  --font-logo: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Vibrant Light Mode Palette */
@@ -181,36 +182,67 @@ header.bento-header .nav {
   gap: 20px;
 }
 
+/* Logo replicating production exact typography */
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   text-decoration: none;
-  color: var(--text-dark);
+  font-family: var(--font-logo);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111827;
+  transition: transform 0.2s ease;
 }
 
-.logo-symbol {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+.logo:hover {
+  transform: scale(1.02);
+}
+
+[data-theme="dark"] .logo {
+  color: #f8fafc;
 }
 
 .logo-text {
-  font-family: var(--font-display);
-  font-size: 23px;
-  letter-spacing: 0.03em;
-  color: var(--text-dark);
+  font-family: var(--font-logo);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.logo-ia {
+  color: #10b981;
+}
+
+[data-theme="dark"] .logo-ia {
+  color: #34d399;
+}
+
+.logo-dot {
+  width: 9px;
+  height: 9px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 4px 0 3px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .logo-dot {
+  background-color: #34d399;
 }
 
 .logo-pro {
-  color: var(--color-mint);
+  font-family: var(--font-logo);
+  font-weight: 700;
   font-size: 19px;
+  color: #6b7280;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+}
+
+[data-theme="dark"] .logo-pro {
+  color: #94a3b8;
 }
 
 .nav-center {
@@ -503,6 +535,54 @@ header.bento-header .nav {
   50% { opacity: 0.5; transform: scale(0.85); }
 }
 
+.hero-slides-wrapper {
+  position: relative;
+  min-height: 240px;
+  width: 100%;
+}
+
+.hero-slide {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-slide.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-slide-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 24px;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-grey);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.hero-dot:hover {
+  background: var(--text-light);
+}
+
+.hero-dot.active {
+  width: 22px;
+  border-radius: 11px;
+  background: var(--color-mint);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
 .hero-bento-title {
   font-family: var(--font-hero);
   font-size: clamp(32px, 4.2vw, 48px);
@@ -524,11 +604,37 @@ header.bento-header .nav {
   -webkit-text-fill-color: transparent;
 }
 
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
+}
+
+[data-theme="dark"] .text-gradient-cyan {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
+}
+
+[data-theme="dark"] .text-gradient-purple {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .hero-bento-desc {
   color: var(--text-medium);
   font-size: clamp(15px, 1.8vw, 17px);
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .hero-pills-row {

@@ -45,10 +45,7 @@
   <header class="bento-header">
     <div class="app-container nav">
       <a href="/" class="logo">
-        <span class="logo-symbol">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-        </span>
-        <span class="logo-text">Cintia<span class="logo-pro">.pro</span></span>
+        <span class="logo-text">Cint<span class="logo-ia" style="color: var(--color-mint)">ia</span></span><span class="logo-dot"></span><span class="logo-pro">pro</span>
       </a>
       
       <nav class="nav-center">
@@ -76,7 +73,7 @@
           <button type="button" class="lang-btn" data-lang="en" id="langBtnEn">EN</button>
         </div>
 
-        <a href="#dropZone" class="btn-nav-action" id="navCtaBtn">Comenzar Gratis</a>
+        <button type="button" class="btn-nav-action" id="navCtaBtn">Comenzar Gratis</button>
       </div>
     </div>
   </header>
@@ -103,18 +100,52 @@
   <section class="hero-bento-section app-container">
     <div class="hero-bento-grid">
       
-      <!-- Hero Left: Headlines, Value Prop, Chips -->
+      <!-- Hero Left: Rotating Headlines, Value Prop, Chips -->
       <div class="hero-bento-copy">
         <div class="hero-badge-pill">
           <span class="pulse-emerald"></span>
           <span id="heroBadgeText">TU COACH DE BÚSQUEDA LABORAL CON IA</span>
         </div>
-        <h1 class="hero-bento-title" id="heroHeading">
-          Tu Currículum auditado por IA con <span class="text-gradient-emerald">precisión de Headhunter</span>
-        </h1>
-        <p class="hero-bento-desc" id="heroDescription">
-          ¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.
-        </p>
+
+        <!-- Rotating Slides Container -->
+        <div class="hero-slides-wrapper" id="heroSlidesWrapper">
+          <!-- Slide 1: Auditoría ATS & Coach General -->
+          <div class="hero-slide active" data-slide="0">
+            <h1 class="hero-bento-title" id="heroHeading1">
+              Tu Coach de <span class="text-gradient-emerald">Búsqueda Laboral</span> con IA que multiplica tus entrevistas
+            </h1>
+            <p class="hero-bento-desc" id="heroDescription1">
+              ¿Envías currículums y solo recibes silencio? Cintia audita tu CV gratis bajo estándares ATS, optimiza tu perfil con inteligencia artificial y redacta Cartas de Presentación hechas a la medida exacta de cada oferta laboral.
+            </p>
+          </div>
+
+          <!-- Slide 2: Pack 20 Fotos de Estudio para LinkedIn -->
+          <div class="hero-slide" data-slide="1">
+            <h1 class="hero-bento-title" id="heroHeading2">
+              Genera 20 Retratos de <span class="text-gradient-cyan">Calidad de Estudio</span> para LinkedIn y tu CV
+            </h1>
+            <p class="hero-bento-desc" id="heroDescription2">
+              Sube tu foto base y genera 20 fotografías de alta resolución con iluminación de estudio profesional, vestimentas ejecutivas y fondos corporativos modernos listos para destacar.
+            </p>
+          </div>
+
+          <!-- Slide 3: Cartas de Presentación & Optimización ATS -->
+          <div class="hero-slide" data-slide="2">
+            <h1 class="hero-bento-title" id="heroHeading3">
+              Cartas a la Medida y <span class="text-gradient-purple">Optimización de Perfil</span> por Vacante
+            </h1>
+            <p class="hero-bento-desc" id="heroDescription3">
+              Pega cualquier vacante de LinkedIn o portales de trabajo. Cintia redacta una carta formal y persuasiva, y reescribe tu CV con las palabras clave exactas que buscan los reclutadores.
+            </p>
+          </div>
+        </div>
+
+        <!-- Slide Indicator Dots -->
+        <div class="hero-slide-dots" id="heroSlideDots">
+          <button type="button" class="hero-dot active" data-index="0" aria-label="Slide 1"></button>
+          <button type="button" class="hero-dot" data-index="1" aria-label="Slide 2"></button>
+          <button type="button" class="hero-dot" data-index="2" aria-label="Slide 3"></button>
+        </div>
 
         <!-- Feature Pill Chips -->
         <div class="hero-pills-row">
@@ -766,7 +797,7 @@
   </section>
 
   <!-- How it Works section -->
-  <section class="how-it-works-section app-container">
+  <section class="how-it-works-section app-container" id="howItWorksSection">
     <h2 class="section-title" id="howItWorksTitle">¿Cómo funciona Cintia?</h2>
     <div class="steps-container">
       <div class="step-card">
