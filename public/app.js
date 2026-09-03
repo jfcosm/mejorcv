@@ -2207,6 +2207,107 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutModal.showModal();
   }
 
+  // Simulated Payment Button (Test Mode)
+  const simulatePaymentBtn = document.getElementById('simulatePaymentBtn');
+  if (simulatePaymentBtn) {
+    simulatePaymentBtn.addEventListener('click', async () => {
+      if (!currentAnalysisId) {
+        showPaymentError(currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.');
+        return;
+      }
+
+      // Show processing state in modal
+      paymentMethodsView.style.display = 'none';
+      successPaymentView.style.display = 'flex';
+      successPaymentIcon.style.display = 'none';
+      successPaymentSpinner.style.display = 'block';
+      successPaymentTitle.textContent = currentLanguage === 'en' ? 'Simulating Instant Payment...' : 'Simulando Pago Instantáneo...';
+      successPaymentMessage.textContent = currentLanguage === 'en'
+        ? 'Processing test approval and unlocking service...'
+        : 'Procesando aprobación de prueba y desbloqueando servicio...';
+
+      try {
+        const jobOfferInputEl = document.getElementById('jobOfferInput');
+        const jobOfferText = jobOfferInputEl ? jobOfferInputEl.value.trim() : '';
+
+        const resp = await fetch('/api/payment/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            tier: currentTier,
+            paymentMethod: 'simulated',
+            contact: pendingExpertContact,
+            jobOfferText: jobOfferText
+          })
+        });
+
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error al simular el pago.');
+
+        // Show success state
+        successPaymentIcon.style.display = 'block';
+        successPaymentSpinner.style.display = 'none';
+
+        if (currentTier === 'ai') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ AI Optimization Unlocked!' : '✅ ¡Optimización con IA Desbloqueada!';
+          successPaymentMessage.textContent = currentLanguage === 'en' ? 'Redirecting to your optimized resume...' : 'Redirigiendo a tu currículum optimizado...';
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          checkoutModal.close();
+          unlockOptimizedCv(result.optimizedText || optimizedContentText);
+
+        } else if (currentTier === 'headshots') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Studio Headshots Unlocked!' : '✅ ¡Fotos de Estudio Desbloqueadas!';
+          successPaymentMessage.textContent = currentLanguage === 'en'
+            ? 'Cintia is generating your 20 studio portraits...'
+            : 'Cintia está creando tus 20 retratos fotográficos de estudio...';
+          
+          await generateAndDisplayHeadshots(result.headshots);
+          checkoutModal.close();
+
+        } else if (currentTier === 'cover_letter') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Cover Letter Unlocked!' : '✅ ¡Carta de Presentación Desbloqueada!';
+          successPaymentMessage.textContent = currentLanguage === 'en'
+            ? 'Cintia is generating your tailored cover letter...'
+            : 'Cintia está redactando tu carta de presentación personalizada...';
+          
+          await generateAndDisplayCoverLetter();
+          checkoutModal.close();
+
+        } else if (currentTier === 'expert') {
+          successPaymentTitle.textContent = currentLanguage === 'en' ? '✅ Expert Session Confirmed!' : '✅ ¡Sesión con Experto Confirmada!';
+          successPaymentMessage.textContent = currentLanguage === 'en'
+            ? 'Your simulated payment for the 1-on-1 human expert session has been confirmed. A recruitment specialist from MelodIA Lab will contact you within 24 hours.'
+            : 'Tu pago simulado para la sesión de asesoría 1 a 1 con un experto humano ha sido confirmado con éxito. Un especialista de MelodIA Lab te contactará para coordinar tu sesión.';
+          
+          if (expertWhatsappSupportBox) {
+            expertWhatsappSupportBox.style.display = 'block';
+            if (expertWhatsappNotice) {
+              expertWhatsappNotice.innerHTML = currentLanguage === 'en'
+                ? 'If you have not received any message from us in the next 24 hours, write to us directly on WhatsApp for immediate assistance from our team.'
+                : 'Si no te ha llegado ningún mensaje nuestro en las próximas 24 horas, escríbenos directamente por WhatsApp para recibir ayuda inmediata de nuestro equipo.';
+            }
+            if (expertWhatsappBtn) {
+              const waText = currentLanguage === 'en'
+                ? 'Hello MelodIA Lab team, I just tested the human expert CV review ($25 USD) on Cintia.pro and would like to schedule my session.'
+                : 'Hola equipo de MelodIA Lab, acabo de probar la asesoría de experto ($25.000 CLP) en Cintia.pro y quisiera coordinar mi sesión.';
+              expertWhatsappBtn.href = `https://wa.me/56930781181?text=${encodeURIComponent(waText)}`;
+            }
+          }
+
+          if (expertEmail) expertEmail.value = '';
+          if (expertPhone) expertPhone.value = '';
+          pendingExpertContact = null;
+        }
+
+      } catch (err) {
+        paymentMethodsView.style.display = 'flex';
+        successPaymentView.style.display = 'none';
+        showPaymentError('❌ ' + err.message);
+      }
+    });
+  }
+
   // Mercado Pago Checkout Pro Redirection
   if (mpCheckoutBtn) {
     mpCheckoutBtn.addEventListener('click', async () => {
