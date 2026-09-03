@@ -1497,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   removeFileBtn.addEventListener('click', () => {
     activeFile = null;
-    cvFileInput.value = '';
+    if (cvFileInput) cvFileInput.value = '';
     selectedFileContainer.style.display = 'none';
     dropZone.style.display = 'block';
     updateSubmitBtnState();
@@ -1646,7 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Auto-apply resume's detected language to the entire app interface
       if (data.lang && data.lang !== currentLanguage) {
         localStorage.setItem('cvLang', data.lang);
-        langSelector.value = data.lang;
+        if (langSelector) langSelector.value = data.lang;
         applyLanguage(data.lang);
       }
 
@@ -2402,8 +2402,8 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
 
-            expertEmail.value = '';
-            expertPhone.value = '';
+            if (expertEmail) expertEmail.value = '';
+            if (expertPhone) expertPhone.value = '';
             pendingExpertContact = null;
           }
 
