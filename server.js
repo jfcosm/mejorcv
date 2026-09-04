@@ -792,28 +792,57 @@ app.get('/api/captcha', (req, res) => {
   res.json({ enabled: true, svg: captcha.svg, token: captcha.token });
 });
 
-// Language detection helper
-function detectLanguage(text) {
-  const englishWords = ['experience', 'education', 'skills', 'developer', 'engineer', 'manager', 'software', 'project', 'present', 'about', 'summary', 'languages'];
-  const spanishWords = ['experiencia', 'educación', 'habilidades', 'desarrollador', 'ingeniero', 'gerente', 'software', 'proyecto', 'actualidad', 'presente', 'sobre', 'resumen', 'idiomas'];
+// Language detection helper using grammatical function words (stopwords)
+function detectLanguage(text, clientPreference = 'es') {
+  if (!text || typeof text !== 'string') return clientPreference || 'es';
+
+  // Grammatical markers and high-frequency Spanish words that never or rarely appear in English
+  const spanishMarkers = [
+    'de', 'la', 'el', 'en', 'y', 'los', 'las', 'del', 'por', 'con', 'para', 'un', 'una', 'unos', 'unas',
+    'su', 'sus', 'al', 'lo', 'como', 'más', 'mas', 'pero', 'este', 'esta', 'estos', 'estas', 'entre',
+    'cuando', 'todo', 'todos', 'toda', 'todas', 'años', 'anos', 'experiencia', 'experiencias',
+    'proyecto', 'proyectos', 'gestión', 'gestion', 'desarrollo', 'empresa', 'empresas',
+    'responsable', 'responsabilidades', 'funciones', 'logros', 'habilidades', 'educación', 'educacion',
+    'profesional', 'profesionales', 'liderazgo', 'liderando', 'formación', 'formacion', 'trabajo', 'trabajos',
+    'equipo', 'equipos', 'desde', 'hasta', 'actualidad', 'presente', 'sobre', 'resumen', 'contacto', 'teléfono', 'telefono'
+  ];
+
+  // Grammatical markers and high-frequency English words that never or rarely appear in Spanish
+  const englishMarkers = [
+    'the', 'and', 'of', 'to', 'in', 'for', 'with', 'on', 'at', 'from', 'by', 'an', 'as', 'is', 'are',
+    'was', 'were', 'that', 'this', 'these', 'those', 'their', 'his', 'her', 'have', 'has', 'had',
+    'years', 'skills', 'experience', 'experiences', 'education', 'responsibilities', 'achievements',
+    'summary', 'about', 'work', 'working', 'responsibilities', 'team', 'teams'
+  ];
 
   const lowerText = text.toLowerCase();
-  let enCount = 0;
   let esCount = 0;
+  let enCount = 0;
 
-  englishWords.forEach(word => {
-    const regex = new RegExp('\\b' + word + '\\b', 'g');
-    const matches = lowerText.match(regex);
-    if (matches) enCount += matches.length;
-  });
-
-  spanishWords.forEach(word => {
+  spanishMarkers.forEach(word => {
     const regex = new RegExp('\\b' + word + '\\b', 'g');
     const matches = lowerText.match(regex);
     if (matches) esCount += matches.length;
   });
 
-  return enCount > esCount ? 'en' : 'es';
+  englishMarkers.forEach(word => {
+    const regex = new RegExp('\\b' + word + '\\b', 'g');
+    const matches = lowerText.match(regex);
+    if (matches) enCount += matches.length;
+  });
+
+  // If both counts are low or ambiguous, give weight to clientPreference
+  if (esCount === 0 && enCount === 0) {
+    return clientPreference === 'en' ? 'en' : 'es';
+  }
+
+  // Clear determination:
+  if (esCount > enCount) return 'es';
+  if (enCount > esCount * 1.5) return 'en';
+  if (esCount >= enCount) return 'es';
+
+  // If closely contested, default to client preference
+  return clientPreference === 'en' ? 'en' : 'es';
 }
 
 // AI Optimization Generator Helper
@@ -893,7 +922,7 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   if (lang === 'en') {
     languageInstruction = "\n\nLANGUAGE: Please generate the optimized resume and recommendations strictly and exclusively in ENGLISH (Inglés).";
   } else {
-    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y las recomendaciones estrictamente en ESPAÑOL (Spanish).";
+    languageInstruction = "\n\nIDIOMA: Por favor genera el currículum optimizado y las recomendaciones estrictamente en ESPAÑOL (Spanish). Mantén en inglés únicamente nombres propios de herramientas técnicas, certificaciones o cargos internacionales cuando sea pertinente.";
   }
   const currentDate = lang === 'en'
     ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -1710,8 +1739,9 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       return res.status(400).json({ error: "El texto extraído supera el límite de seguridad permitido (100,000 caracteres)." });
     }
 
-    // Auto-detect the CV's language
-    const lang = detectLanguage(extractedText);
+    // Auto-detect the CV's language with client preference fallback
+    const clientLang = (req.body && req.body.lang) ? req.body.lang : 'es';
+    const lang = detectLanguage(extractedText, clientLang);
 
     // 5. Evaluate CV Quality
     let evaluation = null;
@@ -1813,7 +1843,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 
       const languagePrompt = lang === 'en'
         ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The resume is in English. You MUST write ALL JSON fields (summary, feedback, detailedExplanation) strictly and exclusively in ENGLISH. Do not include any Spanish words or phrases.\n2. DATES & TIMELINE: Today's reference date is ${currentDateFormatted} (Year ${new Date().getFullYear()}). Dates like 2024, 2025, 2026, or 'Present' are completely valid and normal for current roles or recent certifications. Do NOT penalize or flag recent or current experiences as future dates. Never quote internal system terms or variable names.`
-        : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en español. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
+        : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en ESPAÑOL. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL. Aunque el currículum contenga títulos de cargos en inglés, certificaciones internacionales o terminología tecnológica anglosajona (ej. 'Project Manager', 'Scrum Alliance', 'Full Stack', etc.), TODAS tus explicaciones, diagnósticos, resúmenes y retroalimentaciones deben estar 100% en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
 
       const systemInstruction = config.evaluationPrompt + languagePrompt;
       const userContent = lang === 'en'
