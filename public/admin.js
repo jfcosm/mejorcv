@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const geminiCallsCount = document.getElementById('geminiCallsCount');
   const testGeminiBtn = document.getElementById('testGeminiBtn');
   const geminiTestOutput = document.getElementById('geminiTestOutput');
+  const testFirestoreBtn = document.getElementById('testFirestoreBtn');
+  const firestoreTestOutput = document.getElementById('firestoreTestOutput');
   
   // Tables & Leads Views
   const recentActivityTableBody = document.querySelector('#recentActivityTable tbody');
@@ -297,6 +299,65 @@ document.addEventListener('DOMContentLoaded', () => {
         testGeminiBtn.disabled = false;
         testGeminiBtn.innerHTML = originalHtml;
         loadStats();
+      }
+    });
+  }
+
+  // 9.1 Test Firestore Database Connection Button
+  if (testFirestoreBtn) {
+    testFirestoreBtn.addEventListener('click', async () => {
+      testFirestoreBtn.disabled = true;
+      const originalHtml = testFirestoreBtn.innerHTML;
+      testFirestoreBtn.textContent = 'Diagnosticando DB...';
+      
+      if (firestoreTestOutput) {
+        firestoreTestOutput.style.display = 'block';
+        firestoreTestOutput.style.background = '#f1f5f9';
+        firestoreTestOutput.style.color = '#334155';
+        firestoreTestOutput.style.border = '1px solid #cbd5e1';
+        firestoreTestOutput.textContent = 'Enviando petición de lectura en tiempo real a Cloud Firestore...';
+      }
+
+      try {
+        const response = await fetch('/api/admin/test-firestore', {
+          headers: { 'Authorization': adminToken }
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          if (firestoreTestOutput) {
+            firestoreTestOutput.style.background = '#d1fae5';
+            firestoreTestOutput.style.color = '#065f46';
+            firestoreTestOutput.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            firestoreTestOutput.innerHTML = `✓ <strong>${data.message}</strong> (Proyecto: <code>${data.projectId}</code>, Latencia: <strong>${data.latencyMs} ms</strong>)`;
+          }
+          const dbStorageText = document.getElementById('dbStorageText');
+          if (dbStorageText) {
+            dbStorageText.innerHTML = `<span style="color:#059669;">🔥 Cloud Firestore Activo (Proyecto: <code>${data.projectId || 'cintia-pro'}</code> - Latencia: ${data.latencyMs}ms)</span>`;
+          }
+        } else {
+          if (firestoreTestOutput) {
+            firestoreTestOutput.style.background = '#fee2e2';
+            firestoreTestOutput.style.color = '#991b1b';
+            firestoreTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            firestoreTestOutput.innerHTML = `✕ <strong>Fallo en la base de datos:</strong> ${data.error || 'Error desconocido al consultar Firestore.'}`;
+          }
+          const dbStorageText = document.getElementById('dbStorageText');
+          if (dbStorageText) {
+            dbStorageText.innerHTML = `<div><span style="color:#dc2626;">⚠️ Error en Firestore:</span> <div style="font-size:11px; color:#b45309; margin-top:2px;">${escapeHtml(data.error || 'No disponible')}</div></div>`;
+          }
+        }
+      } catch (err) {
+        if (firestoreTestOutput) {
+          firestoreTestOutput.style.background = '#fee2e2';
+          firestoreTestOutput.style.color = '#991b1b';
+          firestoreTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          firestoreTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${err.message}`;
+        }
+      } finally {
+        testFirestoreBtn.disabled = false;
+        testFirestoreBtn.innerHTML = originalHtml;
+        loadSettings();
       }
     });
   }
@@ -2008,8 +2069,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const dbStorageText = document.getElementById('dbStorageText');
       if (dbStorageText) {
-        if (settings.firestoreConnected) {
-          dbStorageText.innerHTML = `<span style="color:#059669;">🔥 Cloud Firestore Activo (Proyecto: <code>${settings.firestoreProjectId || 'cintia'}</code> - Persistente)</span>`;
+        if (settings.firestoreConnected && !settings.firestoreError) {
+          dbStorageText.innerHTML = `<span style="color:#059669;">🔥 Cloud Firestore Activo (Proyecto: <code>${settings.firestoreProjectId || 'cintia-pro'}</code> - Persistente)</span>`;
         } else {
           const errDetail = settings.firestoreError ? `<div style="font-size:11px; color:#b45309; margin-top:2px;">Detalle: ${escapeHtml(settings.firestoreError)}</div>` : '';
           dbStorageText.innerHTML = `<div><span style="color:#d97706;">⚠️ Memoria Local / Efímera</span> ${errDetail}</div>`;
