@@ -405,19 +405,34 @@ async function getGeminiStats(config) {
   return stats;
 }
 
-async function incrementVisitsCounter() {
-  const db = readDb();
-  db.visits = (db.visits || 0) + 1;
-  writeDb(db);
+// Batched visits counter to prevent excessive Firestore write operations
+let pendingVisits = 0;
+let lastVisitFlush = 0;
+const VISIT_FLUSH_INTERVAL = 30 * 1000; // 30 seconds
 
-  const dbFs = initFirebase();
-  if (dbFs) {
-    try {
-      await dbFs.collection('app_stats').doc('general').set({
-        visits: FieldValue.increment(1)
-      }, { merge: true });
-    } catch (err) {
-      console.error("Firestore incrementVisits error:", err.message);
+async function incrementVisitsCounter() {
+  pendingVisits++;
+  const now = Date.now();
+  if (pendingVisits >= 10 || (now - lastVisitFlush > VISIT_FLUSH_INTERVAL)) {
+    const toFlush = pendingVisits;
+    pendingVisits = 0;
+    lastVisitFlush = now;
+
+    const db = readDb();
+    db.visits = (db.visits || 0) + toFlush;
+    writeDb(db);
+
+    const dbFs = initFirebase();
+    if (dbFs) {
+      try {
+        await dbFs.collection('app_stats').doc('general').set({
+          visits: FieldValue.increment(toFlush)
+        }, { merge: true });
+        lastFirebaseError = null;
+      } catch (err) {
+        lastFirebaseError = err.message;
+        console.error("Firestore incrementVisits error:", err.message);
+      }
     }
   }
 }
@@ -2108,12 +2123,13 @@ async function getPublicStats() {
   }
 }
 
-// Public settings and live statistics endpoint
+// Public settings and live statistics endpoint (Cached at Vercel CDN Edge)
 app.get('/api/config', async (req, res) => {
   incrementVisitsCounter().catch(() => {});
   const config = await getConfigDoc();
   const publicStats = await getPublicStats();
 
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
   res.json({
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,

@@ -1290,20 +1290,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start rotation immediately
   startBulletinRotation();
 
-  // Load configuration parameters then handle return callback
+  // Load configuration parameters once on startup then handle return callback
   fetchConfig().then(() => {
     updateBulletinSlide();
     checkPaymentReturnFromUrl();
   }).catch(() => {
     checkPaymentReturnFromUrl();
   });
-
-  // Automatically refresh live statistics every 60 seconds
-  setInterval(() => {
-    fetchConfig().then(() => {
-      updateBulletinSlide();
-    }).catch(() => {});
-  }, 60000);
 
   // Handle return redirect from Mercado Pago Checkout Pro
   async function checkPaymentReturnFromUrl() {
