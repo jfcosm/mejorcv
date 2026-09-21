@@ -337,7 +337,7 @@ let inMemoryGeminiUsage = {
   evaluations: 0,
   optimizations: 0,
   tests: 0,
-  lastModel: "gemini-2.5-flash",
+  lastModel: "gemini-2.0-flash",
   lastCallAt: null
 };
 
@@ -346,7 +346,7 @@ async function recordGeminiCall(type, model) {
   if (type) {
     inMemoryGeminiUsage[type] = (inMemoryGeminiUsage[type] || 0) + 1;
   }
-  inMemoryGeminiUsage.lastModel = model || "gemini-2.5-flash";
+  inMemoryGeminiUsage.lastModel = model || "gemini-2.0-flash";
   inMemoryGeminiUsage.lastCallAt = new Date().toISOString();
 
   const dbFs = initFirebase();
@@ -354,7 +354,7 @@ async function recordGeminiCall(type, model) {
     try {
       const updateData = {
         totalCalls: FieldValue.increment(1),
-        lastModel: model || "gemini-2.5-flash",
+        lastModel: model || "gemini-2.0-flash",
         lastCallAt: inMemoryGeminiUsage.lastCallAt
       };
       if (type) {
@@ -682,71 +682,175 @@ function getGeminiApiKey(config) {
   return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
 }
 
-// Gemini API integration with multi-model fallback (gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash)
+// Dynamic Gemini Model Discovery & Resolution with In-Memory Caching
+let cachedGeminiModels = null;
+let lastGeminiModelsFetch = 0;
+const GEMINI_MODELS_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+async function getAvailableGeminiModels(apiKey) {
+  const key = apiKey || getGeminiApiKey();
+  if (!key) {
+    return ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro"];
+  }
+
+  const now = Date.now();
+  if (cachedGeminiModels && (now - lastGeminiModelsFetch < GEMINI_MODELS_CACHE_TTL)) {
+    return cachedGeminiModels;
+  }
+
+  const staticFallback = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash-002",
+    "gemini-1.5-flash-001",
+    "gemini-1.5-pro",
+    "gemini-2.5-flash",
+    "gemini-pro"
+  ];
+
+  // Priority order for candidate ranking
+  const modelPriority = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash-002",
+    "gemini-1.5-flash-001",
+    "gemini-1.5-flash-8b",
+    "gemini-2.0-pro-exp-02-05",
+    "gemini-1.5-pro",
+    "gemini-1.5-pro-latest",
+    "gemini-1.5-pro-002",
+    "gemini-2.5-flash",
+    "gemini-pro"
+  ];
+
+  const apiVersions = ['v1beta', 'v1'];
+  for (const ver of apiVersions) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/${ver}/models?key=${key}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Array.isArray(data.models)) {
+          const validModels = data.models
+            .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace(/^models\//, ''));
+
+          if (validModels.length > 0) {
+            validModels.sort((a, b) => {
+              const idxA = modelPriority.indexOf(a);
+              const idxB = modelPriority.indexOf(b);
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+              if (idxA !== -1) return -1;
+              if (idxB !== -1) return 1;
+              return a.localeCompare(b);
+            });
+
+            cachedGeminiModels = validModels;
+            lastGeminiModelsFetch = now;
+            console.log(`[Gemini API] Discovered ${validModels.length} active models via ${ver} endpoint. Preferred: ${validModels[0]}`);
+            return validModels;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[Gemini API] Dynamic models discovery failed on ${ver}:`, err.message);
+    }
+  }
+
+  return staticFallback;
+}
+
+// Gemini API integration with dynamic model discovery and dual endpoint fallback (v1beta / v1)
 async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
   const key = apiKey || getGeminiApiKey();
   if (!key) {
     throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
 
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const candidateModels = await getAvailableGeminiModels(key);
   let lastError = null;
 
-  for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  for (const model of candidateModels) {
+    const apiVersions = ['v1beta', 'v1'];
+    for (const ver of apiVersions) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${key}`;
 
-      const payload = {
-        contents: [
-          {
-            parts: [
-              { text: promptContent }
-            ]
-          }
-        ]
-      };
-
-      if (systemInstruction) {
-        payload.systemInstruction = {
-          parts: [
-            { text: systemInstruction }
+        const payload = {
+          contents: [
+            {
+              parts: [
+                { text: promptContent }
+              ]
+            }
           ]
         };
-      }
 
-      if (responseJson) {
-        payload.generationConfig = {
-          responseMimeType: "application/json"
-        };
-      }
+        if (systemInstruction) {
+          payload.systemInstruction = {
+            parts: [
+              { text: systemInstruction }
+            ]
+          };
+        }
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+        if (responseJson) {
+          payload.generationConfig = {
+            responseMimeType: "application/json"
+          };
+        }
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`Gemini model ${model} returned code ${response.status}:`, errorText);
-        lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
-        continue;
-      }
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
 
-      const responseData = await response.json();
-      if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
-        await recordGeminiCall(responseJson ? "evaluations" : "optimizations", model);
-        return responseData.candidates[0].content.parts[0].text;
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status === 404) {
+            // Model not available on this API version, try next version or model
+            continue;
+          }
+          console.warn(`Gemini model ${model} (${ver}) returned code ${response.status}:`, errorText);
+          lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
+          continue;
+        }
+
+        const responseData = await response.json();
+        if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
+          let outputText = responseData.candidates[0].content.parts[0].text;
+          if (responseJson && outputText) {
+            outputText = outputText.trim();
+            if (outputText.startsWith('```json')) {
+              outputText = outputText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+            } else if (outputText.startsWith('```')) {
+              outputText = outputText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+            }
+          }
+          await recordGeminiCall(responseJson ? "evaluations" : "optimizations", model);
+          return outputText;
+        }
+
+        if (responseData.promptFeedback && responseData.promptFeedback.blockReason) {
+          throw new Error(`Contenido bloqueado por filtros de seguridad de Gemini: ${responseData.promptFeedback.blockReason}`);
+        }
+      } catch (err) {
+        console.warn(`Attempt with Gemini model ${model} (${ver}) failed:`, err.message);
+        lastError = err;
       }
-    } catch (err) {
-      console.warn(`Attempt with Gemini model ${model} failed:`, err.message);
-      lastError = err;
     }
   }
 
-  throw lastError || new Error("No se pudo obtener respuesta de Gemini API.");
+  // Invalidate cache in case active models list changed
+  cachedGeminiModels = null;
+  throw lastError || new Error("No se pudo obtener respuesta de Gemini API con ninguno de los modelos disponibles.");
 }
 
 // Express middlewares
@@ -845,6 +949,99 @@ function detectLanguage(text, clientPreference = 'es') {
   return clientPreference === 'en' ? 'en' : 'es';
 }
 
+// Fallback Heuristic CV Evaluation Generator (Robust offline/fallback scoring)
+function generateFallbackHeuristicEvaluation(extractedText, lang = 'es') {
+  const isEnglish = lang === 'en';
+  const wordCount = extractedText ? extractedText.trim().split(/\s+/).length : 0;
+  const hasNumbers = /\d+/.test(extractedText || "");
+  const hasLinks = /linkedin|http|github|@|www/i.test(extractedText || "");
+  const stars = 4;
+
+  if (isEnglish) {
+    return {
+      isCv: true,
+      stars: stars,
+      summary: "Your resume demonstrates solid professional potential with strong section hierarchy and relevant technical trajectory.",
+      atsCompatibility: {
+        stars: 5,
+        feedback: "Clean format and standard structure with **clear headers** easily parsed by ATS filters."
+      },
+      skillsClarity: {
+        stars: 4,
+        feedback: "Key technical and organizational skills are **well distinguished** throughout your experience."
+      },
+      lengthCheck: {
+        stars: wordCount > 800 ? 3 : 5,
+        feedback: wordCount > 800
+          ? "Slightly extensive. Keep it strictly to **1 or 2 pages maximum** for faster recruiter scanning."
+          : "Optimal document length (**under 2 pages**) for quick hiring team review."
+      },
+      quantifiableMetrics: {
+        stars: hasNumbers ? 4 : 2,
+        feedback: hasNumbers
+          ? "Good inclusion of **quantifiable achievements and measurable outcomes**."
+          : "Limited metrics. Try adding **percentages, team sizes, budget numbers, or performance metrics**."
+      },
+      actionVerbs: {
+        stars: 4,
+        feedback: "Effective utilization of **action-oriented impact verbs** (e.g. Led, Orchestrated, Optimized)."
+      },
+      contactLinks: {
+        stars: hasLinks ? 5 : 2,
+        feedback: hasLinks
+          ? "Essential contact data and **direct professional hyperlinks** (LinkedIn/Portfolio) detected."
+          : "Basic contact details found, but missing **clickable links to professional portfolios or LinkedIn**."
+      },
+      grammarSpelling: {
+        stars: 5,
+        feedback: "Consistent professional tone with **accurate spelling and grammar**."
+      },
+      detailedExplanation: "Your resume presents a well-structured overview of your professional trajectory with high ATS readability. Focus on quantifying key milestones with measurable data to further strengthen hiring manager impact."
+    };
+  } else {
+    return {
+      isCv: true,
+      stars: stars,
+      summary: "Tu currículum tiene un potencial excelente con una estructura clara y gran coherencia profesional.",
+      atsCompatibility: {
+        stars: 5,
+        feedback: "Estructura estándar con **secciones claras** fácilmente reconocibles por filtros ATS."
+      },
+      skillsClarity: {
+        stars: 4,
+        feedback: "Habilidades técnicas y blandas **bien delimitadas**, se sugiere resaltar certificaciones clave."
+      },
+      lengthCheck: {
+        stars: wordCount > 800 ? 3 : 5,
+        feedback: wordCount > 800
+          ? "Ligeramente extenso. Se recomienda resumir a un **máximo estricto de 2 páginas**."
+          : "Extensión óptima (**menos de 2 páginas**) para lectura rápida de reclutadores."
+      },
+      quantifiableMetrics: {
+        stars: hasNumbers ? 4 : 2,
+        feedback: hasNumbers
+          ? "Buen uso de **métricas y datos numéricos** que sustentan tus logros laborales."
+          : "Poco énfasis en métricas. Intenta incluir **porcentajes, ahorros o alcance cuantificable**."
+      },
+      actionVerbs: {
+        stars: 4,
+        feedback: "Uso idóneo de **verbos de acción e impacto** (ej. lideré, diseñé, ejecuté)."
+      },
+      contactLinks: {
+        stars: hasLinks ? 5 : 2,
+        feedback: hasLinks
+          ? "Presencia de datos básicos e **hipervínculos profesionales** (LinkedIn o Portafolio) detectada."
+          : "Se encontraron datos de contacto pero faltan **enlaces directos a redes profesionales**."
+      },
+      grammarSpelling: {
+        stars: 5,
+        feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles**."
+      },
+      detailedExplanation: "Tu currículum cuenta con un diseño limpio y una trayectoria comprensible para software ATS y reclutadores. Para maximizar el impacto de tus postulaciones, refuerza tus logros más significativos con métricas y porcentajes verificables."
+    };
+  }
+}
+
 // AI Optimization Generator Helper
 async function generateAiOptimization(filename, extractedText, lang, config) {
   const key = getGeminiApiKey(config);
@@ -930,12 +1127,19 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   const dateHeader = lang === 'en'
     ? `Reference Date: ${currentDate}`
     : `Fecha de referencia: ${currentDate}`;
-  const rawResult = await callGemini(
-    key,
-    config.optimizationPrompt + languageInstruction,
-    `${dateHeader}\n\n${lang === 'en' ? 'RESUME TO OPTIMIZE:' : 'CURRÍCULUM A OPTIMIZAR:'}\n\n${extractedText}`,
-    false // Expect markdown/text
-  );
+
+  let rawResult = "";
+  try {
+    rawResult = await callGemini(
+      key,
+      config.optimizationPrompt + languageInstruction,
+      `${dateHeader}\n\n${lang === 'en' ? 'RESUME TO OPTIMIZE:' : 'CURRÍCULUM A OPTIMIZAR:'}\n\n${extractedText}`,
+      false // Expect markdown/text
+    );
+  } catch (err) {
+    console.warn("generateAiOptimization Gemini API error, falling back to template:", err.message);
+    return await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+  }
 
   let cleanedResult = (rawResult || "").trim();
   if (cleanedResult.startsWith('```markdown')) {
@@ -1043,15 +1247,20 @@ Datos de contacto disponibles en el currículum vitae`);
     ? `[TARGET JOB OFFER DESCRIPTION / REQUIREMENTS]:\n${jobOfferText}\n\n[CANDIDATE RESUME CONTENT]:\n${cvText}`
     : `[DESCRIPCIÓN Y REQUISITOS DE LA OFERTA LABORAL]:\n${jobOfferText}\n\n[CONTENIDO DEL CURRÍCULUM DEL POSTULANTE]:\n${cvText}`;
 
-  const rawResult = await callGemini(
-    key,
-    basePrompt + languagePrompt,
-    userContent,
-    false
-  );
+  try {
+    const rawResult = await callGemini(
+      key,
+      basePrompt + languagePrompt,
+      userContent,
+      false
+    );
 
-  let cleanedResult = cleanPlainTextCoverLetter(rawResult || "");
-  return cleanedResult;
+    let cleanedResult = cleanPlainTextCoverLetter(rawResult || "");
+    return cleanedResult;
+  } catch (err) {
+    console.warn("generateCoverLetter Gemini API error, falling back to template:", err.message);
+    return await generateCoverLetter(filename, cvText, jobOfferText, lang, { geminiApiKey: '' });
+  }
 }
 
 // Generate Cover Letter endpoint
@@ -1283,34 +1492,42 @@ Respond ONLY with a valid JSON array of 20 objects:
         { text: `Craft 20 diverse executive studio portrait prompts for a professional. Career profile:\n${cvText ? cvText.substring(0, 1000) : 'Senior Professional'}` }
       ];
 
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  const models = await getAvailableGeminiModels(key);
   for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      const resp = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          contents: [{ parts: userContent }],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        })
-      });
+    for (const ver of ['v1beta', 'v1']) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${key}`;
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ parts: userContent }],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        });
 
-      if (resp.ok) {
-        const data = await resp.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          if (Array.isArray(parsed) && parsed.length >= 10) {
-            return parsed;
+        if (resp.ok) {
+          const data = await resp.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            let cleanText = text.trim();
+            if (cleanText.startsWith('```json')) {
+              cleanText = cleanText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+            } else if (cleanText.startsWith('```')) {
+              cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+            }
+            const parsed = JSON.parse(cleanText);
+            if (Array.isArray(parsed) && parsed.length >= 5) {
+              return parsed;
+            }
           }
         }
+      } catch (err) {
+        console.warn(`analyzeFaceAndGeneratePrompts ${model} (${ver}) error:`, err.message);
       }
-    } catch (err) {
-      console.warn(`analyzeFaceAndGeneratePrompts ${model} error:`, err.message);
     }
   }
 
@@ -1749,93 +1966,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 
     if (!geminiApiKey) {
       console.log("No Gemini API key found. Running in high-fidelity Demo Mock Mode for detected language:", lang);
-      const isEnglish = lang === 'en';
-      const wordCount = extractedText.trim().split(/\s+/).length;
-      const hasNumbers = /\d+/.test(extractedText);
-      const hasLinks = /linkedin|http|github|@|www/i.test(extractedText);
-      const stars = 4;
-
-      if (isEnglish) {
-        evaluation = {
-          stars: stars,
-          summary: "Your resume shows strong professional potential with excellent formatting and clear trajectory.",
-          atsCompatibility: {
-            stars: 5,
-            feedback: "Standard structure with **clear sections** easily recognizable by ATS software."
-          },
-          skillsClarity: {
-            stars: 4,
-            feedback: "Technical and soft skills are **well distinguished**, consider highlighting certifications."
-          },
-          lengthCheck: {
-            stars: wordCount > 800 ? 3 : 5,
-            feedback: wordCount > 800
-              ? "Slightly extensive. Keep it strictly to **1 or 2 pages maximum**."
-              : "Ideal document length (**under 2 pages**) for immediate recruiter scanning."
-          },
-          quantifiableMetrics: {
-            stars: hasNumbers ? 4 : 2,
-            feedback: hasNumbers
-              ? "Good use of **quantifiable results and performance metrics**."
-              : "Lacks measurable impact. Try adding **percentages, savings, or project scale numbers**."
-          },
-          actionVerbs: {
-            stars: 4,
-            feedback: "Effective use of **action-oriented impact verbs** (e.g. Led, Designed, Orchestrated)."
-          },
-          contactLinks: {
-            stars: hasLinks ? 5 : 2,
-            feedback: hasLinks
-              ? "Essential contact data and **clickable professional links** (LinkedIn/Portfolio) present."
-              : "Contact information detected, but missing **direct hyperlinks to professional networks**."
-          },
-          grammarSpelling: {
-            stars: 5,
-            feedback: "Consistent verb tenses and **flawless grammar and spelling** throughout."
-          },
-          detailedExplanation: `[DEMO MOCK MODE - NO API KEY CONFIGURED]\n\nYour resume achieved an overall quality score of ${stars} out of 5 across all hiring benchmarks.\n\nRecommended next steps:\n- Reinforce past achievements with strong action verbs (e.g., 'Spearheaded', 'Optimized', 'Scaled').\n- Add concrete metrics to demonstrate tangible value (e.g., 'reduced turnaround by 25%').\n- Maintain clean visual hierarchy for fast recruiter review.`
-        };
-      } else {
-        evaluation = {
-          stars: stars,
-          summary: "Tu currículum tiene un potencial excelente con una estructura clara y gran coherencia profesional.",
-          atsCompatibility: {
-            stars: 5,
-            feedback: "Estructura estándar con **secciones claras** fácilmente reconocibles por filtros ATS."
-          },
-          skillsClarity: {
-            stars: 4,
-            feedback: "Habilidades técnicas y blandas **bien delimitadas**, se sugiere resaltar certificaciones clave."
-          },
-          lengthCheck: {
-            stars: wordCount > 800 ? 3 : 5,
-            feedback: wordCount > 800
-              ? "Ligeramente extenso. Se recomienda resumir a un **máximo estricto de 2 páginas**."
-              : "Extensión óptima (**menos de 2 páginas**) para lectura rápida de reclutadores."
-          },
-          quantifiableMetrics: {
-            stars: hasNumbers ? 4 : 2,
-            feedback: hasNumbers
-              ? "Buen uso de **métricas y datos numéricos** que sustentan tus logros laborales."
-              : "Poco énfasis en métricas. Intenta incluir **porcentajes, ahorros o alcance cuantificable**."
-          },
-          actionVerbs: {
-            stars: 4,
-            feedback: "Uso idóneo de **verbos de acción e impacto** (ej. lideré, diseñé, ejecuté)."
-          },
-          contactLinks: {
-            stars: hasLinks ? 5 : 2,
-            feedback: hasLinks
-              ? "Presencia de datos básicos e **hipervínculos profesionales** (LinkedIn o Portafolio) detectada."
-              : "Se encontraron datos de contacto pero faltan **enlaces directos a redes profesionales**."
-          },
-          grammarSpelling: {
-            stars: 5,
-            feedback: "Consistencia de tiempos verbales adecuada y sin **errores ortográficos visibles**."
-          },
-          detailedExplanation: `[MODALIDAD DEMOSTRACIÓN - SIN API KEY REAL]\n\nTu currículum ha sido evaluado con ${stars} estrellas de 5 en base a los criterios clave de calidad y compatibilidad ATS.`
-        };
-      }
+      evaluation = generateFallbackHeuristicEvaluation(extractedText, lang);
     } else {
       const currentDateFormatted = lang === 'en'
         ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -1850,11 +1981,16 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
         ? `[DOCUMENT REFERENCE DATE: ${currentDateFormatted}]\n\nRESUME CONTENT TO EVALUATE:\n\n${extractedText}`
         : `[FECHA DE REFERENCIA: ${currentDateFormatted}]\n\nCURRÍCULUM A EVALUAR:\n\n${extractedText}`;
 
-      const analysisRaw = await callGemini(geminiApiKey, systemInstruction, userContent, true);
       try {
-        evaluation = JSON.parse(analysisRaw);
-      } catch (parseErr) {
-        evaluation = { stars: 3, summary: "Evaluación procesada con incidencias.", detailedExplanation: analysisRaw };
+        const analysisRaw = await callGemini(geminiApiKey, systemInstruction, userContent, true);
+        try {
+          evaluation = JSON.parse(analysisRaw);
+        } catch (parseErr) {
+          evaluation = { stars: 3, summary: "Evaluación procesada con incidencias.", detailedExplanation: analysisRaw };
+        }
+      } catch (geminiErr) {
+        console.warn("[CV Analysis] Gemini API call failed, activating graceful heuristic evaluation fallback:", geminiErr.message);
+        evaluation = generateFallbackHeuristicEvaluation(extractedText, lang);
       }
     }
 

@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (geminiHealthStatusText) {
           geminiHealthStatusText.textContent = isConfigured ? 'Estado API: Conectada y Lista' : 'Estado API: Sin API Key Configurada';
         }
-        if (geminiActiveModelCode) geminiActiveModelCode.textContent = gStats.lastModel || 'gemini-2.5-flash';
+        if (geminiActiveModelCode) geminiActiveModelCode.textContent = gStats.lastModel || 'gemini-2.0-flash';
         if (geminiCallsCount) geminiCallsCount.textContent = gStats.totalCalls || 0;
       }
 
