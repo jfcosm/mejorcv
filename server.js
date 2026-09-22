@@ -154,15 +154,8 @@ async function saveAnalysisDoc(logEntry) {
     try {
       const cleanData = JSON.parse(JSON.stringify(logEntry));
       const setPromise = dbFs.collection('analyses').doc(logEntry.id).set(cleanData);
-      const ratingVal = typeof logEntry.rating === 'number' && logEntry.rating > 0 ? logEntry.rating : 4;
-      const statsPromise = dbFs.collection('app_stats').doc('general').set({
-        totalAnalyses: FieldValue.increment(1),
-        ratingsSum: FieldValue.increment(ratingVal),
-        ratingsCount: FieldValue.increment(1)
-      }, { merge: true });
-
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
-      Promise.race([Promise.all([setPromise, statsPromise]), timeoutPromise]).catch(err => {
+      Promise.race([setPromise, timeoutPromise]).catch(err => {
         console.warn("Firestore saveAnalysisDoc background error:", err.message);
       });
     } catch (err) {
@@ -205,7 +198,6 @@ async function getAnalysisDoc(analysisId) {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
       const doc = await Promise.race([getPromise, timeoutPromise]);
       if (doc && doc.exists) {
-        lastFirebaseError = null;
         return doc.data();
       }
     } catch (err) {
@@ -231,9 +223,7 @@ async function deleteAnalysisDoc(analysisId) {
       await dbFs.collection('app_stats').doc('tombstones').set({
         deletedIds: FieldValue.arrayUnion(analysisId)
       }, { merge: true });
-      lastFirebaseError = null;
     } catch (err) {
-      lastFirebaseError = err.message;
       console.error("Firestore deleteAnalysisDoc error:", err.message);
     }
   }
@@ -286,10 +276,7 @@ async function getAdminData(config) {
           tombDoc.data().deletedIds.forEach(id => map.delete(id));
         }
       } catch (tombErr) {}
-
-      lastFirebaseError = null;
     } catch (err) {
-      lastFirebaseError = err.message;
       console.error("Firestore getAdminData error, using local fallback:", err.message);
     }
   }
@@ -408,34 +395,19 @@ async function getGeminiStats(config) {
   return stats;
 }
 
-// Batched visits counter to prevent excessive Firestore write operations
-let pendingVisits = 0;
-let lastVisitFlush = 0;
-const VISIT_FLUSH_INTERVAL = 30 * 1000; // 30 seconds
-
 async function incrementVisitsCounter() {
-  pendingVisits++;
-  const now = Date.now();
-  if (pendingVisits >= 10 || (now - lastVisitFlush > VISIT_FLUSH_INTERVAL)) {
-    const toFlush = pendingVisits;
-    pendingVisits = 0;
-    lastVisitFlush = now;
+  const db = readDb();
+  db.visits = (db.visits || 0) + 1;
+  writeDb(db);
 
-    const db = readDb();
-    db.visits = (db.visits || 0) + toFlush;
-    writeDb(db);
-
-    const dbFs = initFirebase();
-    if (dbFs) {
-      try {
-        await dbFs.collection('app_stats').doc('general').set({
-          visits: FieldValue.increment(toFlush)
-        }, { merge: true });
-        lastFirebaseError = null;
-      } catch (err) {
-        lastFirebaseError = err.message;
-        console.error("Firestore incrementVisits error:", err.message);
-      }
+  const dbFs = initFirebase();
+  if (dbFs) {
+    try {
+      await dbFs.collection('app_stats').doc('general').set({
+        visits: FieldValue.increment(1)
+      }, { merge: true });
+    } catch (err) {
+      console.error("Firestore incrementVisits error:", err.message);
     }
   }
 }
@@ -474,8 +446,8 @@ function readConfig() {
 
 async function writeConfig(data) {
   inMemoryConfig = data;
-  cachedConfig = data;
-  lastConfigFetch = Date.now();
+  cachedConfigDoc = { ...(cachedConfigDoc || {}), ...data };
+  lastConfigDocFetch = Date.now();
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
@@ -485,9 +457,7 @@ async function writeConfig(data) {
   if (dbFs) {
     try {
       await dbFs.collection('app_config').doc('settings').set(data, { merge: true });
-      lastFirebaseError = null;
     } catch (err) {
-      lastFirebaseError = err.message;
       console.error("Firestore writeConfig error:", err.message);
     }
   }
@@ -524,15 +494,14 @@ function verifyAdminToken(token) {
   return false;
 }
 
-// Cache in memory for config to reduce Firestore document reads by >95%
-let cachedConfig = null;
-let lastConfigFetch = 0;
-const CONFIG_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+let cachedConfigDoc = null;
+let lastConfigDocFetch = 0;
+const CONFIG_DOC_CACHE_TTL = 60 * 1000; // 60s cache
 
-async function getConfigDoc(forceRefresh = false) {
+async function getConfigDoc() {
   const now = Date.now();
-  if (!forceRefresh && cachedConfig && (now - lastConfigFetch < CONFIG_CACHE_TTL)) {
-    return cachedConfig;
+  if (cachedConfigDoc && (now - lastConfigDocFetch < CONFIG_DOC_CACHE_TTL)) {
+    return cachedConfigDoc;
   }
 
   const fileConfig = readConfig();
@@ -544,24 +513,16 @@ async function getConfigDoc(forceRefresh = false) {
       const doc = await Promise.race([getPromise, timeoutPromise]);
       if (doc && doc.exists) {
         const firestoreData = doc.data() || {};
-        cachedConfig = { ...fileConfig, ...firestoreData };
-        lastConfigFetch = now;
-        lastFirebaseError = null;
-        return cachedConfig;
-      } else if (doc) {
-        dbFs.collection('app_config').doc('settings').set(fileConfig).catch(() => {});
-        cachedConfig = fileConfig;
-        lastConfigFetch = now;
-        lastFirebaseError = null;
-        return fileConfig;
+        cachedConfigDoc = { ...fileConfig, ...firestoreData };
+        lastConfigDocFetch = now;
+        return cachedConfigDoc;
       }
     } catch (err) {
-      lastFirebaseError = err.message;
-      console.warn("Firestore getConfigDoc error/timeout, falling back to local:", err.message);
+      console.warn("Firestore getConfigDoc error/timeout, using local config:", err.message);
     }
   }
-  cachedConfig = fileConfig;
-  lastConfigFetch = now;
+  cachedConfigDoc = fileConfig;
+  lastConfigDocFetch = now;
   return fileConfig;
 }
 
@@ -2263,10 +2224,10 @@ app.post('/api/payment/simulate', async (req, res) => {
   }
 });
 
-// Compute public statistics with in-memory TTL caching and O(1) single-document read
+// Compute public statistics for live ticker banner with in-memory caching (0ms response)
 let cachedPublicStats = null;
 let lastPublicStatsFetch = 0;
-const PUBLIC_STATS_CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache
+const PUBLIC_STATS_CACHE_TTL = 120 * 1000; // 2 minutes cache
 
 async function getPublicStats() {
   const now = Date.now();
@@ -2275,55 +2236,53 @@ async function getPublicStats() {
   }
 
   try {
-    const dbFs = initFirebase();
-    if (dbFs) {
-      const getPromise = dbFs.collection('app_stats').doc('general').get();
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 1500));
-      const generalDoc = await Promise.race([getPromise, timeoutPromise]);
-      if (generalDoc && generalDoc.exists) {
-        const gData = generalDoc.data() || {};
-        const total = typeof gData.totalAnalyses === 'number' ? gData.totalAnalyses : null;
-        const rSum = typeof gData.ratingsSum === 'number' ? gData.ratingsSum : 0;
-        const rCount = typeof gData.ratingsCount === 'number' ? gData.ratingsCount : 0;
-        const avg = rCount > 0 ? (rSum / rCount).toFixed(1) : "4.8";
-
-        if (total !== null && total > 0) {
-          cachedPublicStats = {
-            totalAnalyses: total,
-            avgRating: avg
-          };
-          lastPublicStatsFetch = now;
-          return cachedPublicStats;
+    const localDb = readDb();
+    const count = (localDb.analyses && Array.isArray(localDb.analyses)) ? localDb.analyses.length : 0;
+    let sum = 0;
+    let validRatings = 0;
+    if (localDb.analyses) {
+      localDb.analyses.forEach(d => {
+        if (d && typeof d.rating === 'number' && d.rating > 0) {
+          sum += d.rating;
+          validRatings++;
         }
-      }
+      });
     }
 
-    // Local fallback
-    const localDb = readDb();
-    const totalCount = localDb.analyses ? localDb.analyses.length : 0;
     cachedPublicStats = {
-      totalAnalyses: totalCount || 850,
-      avgRating: "4.8"
+      totalAnalyses: count > 0 ? count : 124,
+      avgRating: validRatings > 0 ? (sum / validRatings).toFixed(1) : "4.8"
     };
     lastPublicStatsFetch = now;
+
+    // Refresh count from Firestore asynchronously in background without blocking
+    const dbFs = initFirebase();
+    if (dbFs) {
+      dbFs.collection('analyses').count().get().then(snap => {
+        const total = snap.data().count;
+        if (total > 0 && cachedPublicStats) {
+          cachedPublicStats.totalAnalyses = total;
+        }
+      }).catch(() => {});
+    }
+
     return cachedPublicStats;
   } catch (statsErr) {
-    console.warn("Public stats compute fallback:", statsErr.message);
     return {
-      totalAnalyses: 850,
+      totalAnalyses: 124,
       avgRating: "4.8"
     };
   }
 }
 
-// Public settings and live statistics endpoint (Cached at Vercel CDN Edge)
+// Public settings and live statistics endpoint
 app.get('/api/config', async (req, res) => {
   incrementVisitsCounter().catch(() => {});
   const config = await getConfigDoc();
   const publicStats = await getPublicStats();
 
-  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
   res.json({
+    maintenanceMode: Boolean(config.maintenanceMode),
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     optCoverLetterEnabled: config.hasOwnProperty('optCoverLetterEnabled') ? !!config.optCoverLetterEnabled : true,
@@ -2972,43 +2931,6 @@ app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
   }
 });
 
-// Test Firestore Database connectivity and latency
-app.get('/api/admin/test-firestore', requireAdminAuth, async (req, res) => {
-  try {
-    const dbFs = initFirebase();
-    if (!dbFs) {
-      return res.status(500).json({
-        success: false,
-        error: lastFirebaseError || "Firebase no está inicializado (falta variable FIREBASE_SERVICE_ACCOUNT)."
-      });
-    }
-
-    const start = Date.now();
-    // Real ping: Read general stats document
-    const doc = await dbFs.collection('app_stats').doc('general').get();
-    const latencyMs = Date.now() - start;
-    const statsData = doc.exists ? doc.data() : {};
-
-    lastFirebaseError = null;
-    res.json({
-      success: true,
-      message: "Conexión exitosa y lectura confirmada en Cloud Firestore.",
-      latencyMs: latencyMs,
-      projectId: firebaseProjectId,
-      docExists: doc.exists,
-      stats: statsData
-    });
-  } catch (err) {
-    lastFirebaseError = err.message;
-    console.error("Firestore test-firestore error:", err.message);
-    res.status(500).json({
-      success: false,
-      error: err.message,
-      projectId: firebaseProjectId
-    });
-  }
-});
-
 // Mark expert review as completed
 app.post('/api/admin/expert-complete', requireAdminAuth, async (req, res) => {
   const { analysisId } = req.body;
@@ -3209,7 +3131,7 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
   // Omit password from responses for safety
   delete secureConfig.adminPassword;
 
-  const isConnected = Boolean(initFirebase()) && !lastFirebaseError;
+  const isConnected = Boolean(initFirebase());
   secureConfig.firestoreConnected = isConnected;
   secureConfig.firestoreError = lastFirebaseError;
   secureConfig.firestoreProjectId = firebaseProjectId;
@@ -3221,7 +3143,7 @@ app.get('/api/admin/settings', requireAdminAuth, async (req, res) => {
 app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
   try {
     const newSettings = req.body;
-    const config = await getConfigDoc(true);
+    const config = await getConfigDoc();
 
     // Validate and update fields
     if (newSettings.hasOwnProperty('geminiApiKey')) {
@@ -3238,22 +3160,23 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
     if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 6000;
+    if (newSettings.hasOwnProperty('maintenanceMode')) config.maintenanceMode = !!newSettings.maintenanceMode;
+    if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
+    if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
+    if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = !!newSettings.optCoverLetterEnabled;
+    if (newSettings.hasOwnProperty('optHeadshotsEnabled')) config.optHeadshotsEnabled = !!newSettings.optHeadshotsEnabled;
     if (newSettings.hasOwnProperty('headshotsPackSize')) config.headshotsPackSize = parseInt(newSettings.headshotsPackSize, 10) || 20;
-    if (newSettings.hasOwnProperty('headshotsResolution')) config.headshotsResolution = newSettings.headshotsResolution || '1:1 (480x480)';
-    if (newSettings.hasOwnProperty('headshotsCatCorp')) config.headshotsCatCorp = Boolean(newSettings.headshotsCatCorp);
-    if (newSettings.hasOwnProperty('headshotsCatCasual')) config.headshotsCatCasual = Boolean(newSettings.headshotsCatCasual);
-    if (newSettings.hasOwnProperty('headshotsCatTech')) config.headshotsCatTech = Boolean(newSettings.headshotsCatTech);
-    if (newSettings.hasOwnProperty('headshotsCatEdit')) config.headshotsCatEdit = Boolean(newSettings.headshotsCatEdit);
-    if (newSettings.hasOwnProperty('headshotsPrompt')) config.headshotsPrompt = newSettings.headshotsPrompt.trim();
-    if (newSettings.hasOwnProperty('rateLimitPerHour')) config.rateLimitPerHour = parseInt(newSettings.rateLimitPerHour, 10) || 20;
-    if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = Boolean(newSettings.optAiEnabled);
-    if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = Boolean(newSettings.optCoverLetterEnabled);
-    if (newSettings.hasOwnProperty('optHeadshotsEnabled')) config.optHeadshotsEnabled = Boolean(newSettings.optHeadshotsEnabled);
-    if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = Boolean(newSettings.optExpertEnabled);
-    if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = Boolean(newSettings.captchaEnabled);
-    if (newSettings.hasOwnProperty('evaluationPrompt')) config.evaluationPrompt = newSettings.evaluationPrompt.trim();
-    if (newSettings.hasOwnProperty('optimizationPrompt')) config.optimizationPrompt = newSettings.optimizationPrompt.trim();
-    if (newSettings.hasOwnProperty('coverLetterPrompt')) config.coverLetterPrompt = newSettings.coverLetterPrompt.trim();
+    if (newSettings.hasOwnProperty('headshotsResolution')) config.headshotsResolution = String(newSettings.headshotsResolution);
+    if (newSettings.hasOwnProperty('headshotsCatCorp')) config.headshotsCatCorp = !!newSettings.headshotsCatCorp;
+    if (newSettings.hasOwnProperty('headshotsCatCasual')) config.headshotsCatCasual = !!newSettings.headshotsCatCasual;
+    if (newSettings.hasOwnProperty('headshotsCatTech')) config.headshotsCatTech = !!newSettings.headshotsCatTech;
+    if (newSettings.hasOwnProperty('headshotsCatEdit')) config.headshotsCatEdit = !!newSettings.headshotsCatEdit;
+    if (newSettings.hasOwnProperty('headshotsPrompt')) config.headshotsPrompt = String(newSettings.headshotsPrompt);
+    if (newSettings.hasOwnProperty('captchaEnabled')) config.captchaEnabled = !!newSettings.captchaEnabled;
+    if (newSettings.hasOwnProperty('rateLimitPerHour')) config.rateLimitPerHour = parseInt(newSettings.rateLimitPerHour, 10) || 5;
+    if (newSettings.evaluationPrompt) config.evaluationPrompt = newSettings.evaluationPrompt;
+    if (newSettings.optimizationPrompt) config.optimizationPrompt = newSettings.optimizationPrompt;
+    if (newSettings.coverLetterPrompt) config.coverLetterPrompt = newSettings.coverLetterPrompt;
 
     await writeConfig(config);
     res.json({ success: true, message: "Parámetros guardados correctamente." });

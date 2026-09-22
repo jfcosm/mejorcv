@@ -955,6 +955,28 @@
         <div id="settingsMessage" class="error-banner" style="display: none; background-color: var(--color-mint-light); border-color: rgba(16, 185, 129, 0.2); color: var(--color-mint-hover);"></div>
         
         <form id="settingsForm">
+          <!-- Maintenance Mode Control Card -->
+          <div class="form-group" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; border-radius: var(--border-radius-sm); padding: 18px 20px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(217,119,6,0.08);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+              <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="font-size: 26px; line-height: 1; margin-top: 2px;">🚧</div>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <strong style="font-size: 15px; color: #92400e;">Modo Mantenimiento en Cintia.pro</strong>
+                    <span id="maintenanceBadgeStatus" class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; font-size: 11px;">Activo</span>
+                  </div>
+                  <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #78350f; max-width: 620px; line-height: 1.45;">
+                    Al activar este selector, los visitantes que ingresen a Cintia.pro verán un modal explicativo informando que el sistema está en mantenimiento y volverá a operar en breve.
+                  </p>
+                </div>
+              </div>
+              <label style="display: flex; align-items: center; cursor: pointer; gap: 10px; margin: 0; user-select: none; background: #ffffff; padding: 10px 16px; border-radius: 10px; border: 1.5px solid #fbbf24; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <input type="checkbox" id="setMaintenanceMode" style="width: 20px; height: 20px; accent-color: #d97706; cursor: pointer;">
+                <span style="font-size: 13.5px; font-weight: 700; color: #92400e;">Activar Mantenimiento</span>
+              </label>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="setGeminiKey">Gemini API Key</label>
             <input type="password" id="setGeminiKey" class="form-control" placeholder="Configura tu clave para usar Gemini">

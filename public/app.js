@@ -298,7 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
       headshotsEmptyPhotoWarning: "Por favor, sube una foto de tu rostro antes de generar tus fotos de estudio.",
       headshotsLoadingStatus: "Cintia está creando tus 20 retratos de estudio en alta resolución...",
       faqQ10: "¿Cómo funciona el Pack de 20 Fotos de Estudio con IA para LinkedIn y CV?",
-      faqA10: "Subes una foto nítida de tu rostro (selfie o retrato). Cintia analiza tu perfil profesional e industria y genera <strong>20 retratos fotográficos de calidad de estudio profesional (óptica 85mm f/1.4)</strong>, combinando vestimentas ejecutivas, iluminación de tres puntos y fondos corporativos modernos. Puedes descargar cada retrato individualmente o descargar el pack completo en un archivo <strong>.ZIP</strong> listo para subir a LinkedIn, tu currículum o conferencias."
+      faqA10: "Subes una foto nítida de tu rostro (selfie o retrato). Cintia analiza tu perfil profesional e industria y genera <strong>20 retratos fotográficos de calidad de estudio profesional (óptica 85mm f/1.4)</strong>, combinando vestimentas ejecutivas, iluminación de tres puntos y fondos corporativos modernos. Puedes descargar cada retrato individualmente o descargar el pack completo en un archivo <strong>.ZIP</strong> listo para subir a LinkedIn, tu currículum o conferencias.",
+      maintenanceModalTitle: "Cintia.pro en Mantenimiento Programado",
+      maintenanceModalDesc: "Estamos realizando ajustes técnicos y mejoras en nuestra infraestructura de Inteligencia Artificial para brindarte un servicio aún más rápido, confiable y de máxima calidad. Muy pronto estaremos operando con normalidad.",
+      maintenanceModalBadge: "Plataforma en optimización",
+      maintenanceModalStatusLabel: "Estado actual:",
+      maintenanceModalStatusVal: "⚡ Ajuste de Servidores & IA",
+      maintenanceModalEtaLabel: "Retorno estimado:",
+      maintenanceModalEtaVal: "🚀 Próximamente disponible",
+      maintenanceModalCloseBtn: "Entendido"
     },
     en: {
       navHome: "Home",
@@ -456,7 +464,15 @@ document.addEventListener('DOMContentLoaded', () => {
       copyCoverLetterBtnText: "Copy Letter",
       downloadCoverLetterBtnText: "Download .txt",
       coverLetterEmptyWarning: "Please paste the job offer description before generating your cover letter (minimum 20 characters).",
-      coverLetterLoadingStatus: "Cintia is crafting your tailored cover letter..."
+      coverLetterLoadingStatus: "Cintia is crafting your tailored cover letter...",
+      maintenanceModalTitle: "Cintia.pro Under Scheduled Maintenance",
+      maintenanceModalDesc: "We are currently performing technical upgrades on our Artificial Intelligence infrastructure to provide you with an even faster, more reliable, and higher quality experience. We will be back up and running very soon.",
+      maintenanceModalBadge: "Platform undergoing optimization",
+      maintenanceModalStatusLabel: "Current status:",
+      maintenanceModalStatusVal: "⚡ Server & AI Optimization",
+      maintenanceModalEtaLabel: "Estimated return:",
+      maintenanceModalEtaVal: "🚀 Available very soon",
+      maintenanceModalCloseBtn: "Got it"
     }
   };
 
@@ -613,6 +629,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notCvModalHintEl) notCvModalHintEl.innerHTML = t.notCvModalHint;
     const notCvModalCloseBtnEl = document.getElementById('notCvModalCloseBtn');
     if (notCvModalCloseBtnEl) notCvModalCloseBtnEl.textContent = t.notCvModalCloseBtn;
+
+    const maintenanceModalTitleEl = document.getElementById('maintenanceModalTitle');
+    if (maintenanceModalTitleEl && t.maintenanceModalTitle) maintenanceModalTitleEl.textContent = t.maintenanceModalTitle;
+    const maintenanceModalDescEl = document.getElementById('maintenanceModalDesc');
+    if (maintenanceModalDescEl && t.maintenanceModalDesc) maintenanceModalDescEl.textContent = t.maintenanceModalDesc;
+    const maintenanceModalBadgeEl = document.getElementById('maintenanceModalBadge');
+    if (maintenanceModalBadgeEl && t.maintenanceModalBadge) maintenanceModalBadgeEl.textContent = t.maintenanceModalBadge;
+    const maintenanceModalStatusLabelEl = document.getElementById('maintenanceModalStatusLabel');
+    if (maintenanceModalStatusLabelEl && t.maintenanceModalStatusLabel) maintenanceModalStatusLabelEl.textContent = t.maintenanceModalStatusLabel;
+    const maintenanceModalStatusValEl = document.getElementById('maintenanceModalStatusVal');
+    if (maintenanceModalStatusValEl && t.maintenanceModalStatusVal) maintenanceModalStatusValEl.textContent = t.maintenanceModalStatusVal;
+    const maintenanceModalEtaLabelEl = document.getElementById('maintenanceModalEtaLabel');
+    if (maintenanceModalEtaLabelEl && t.maintenanceModalEtaLabel) maintenanceModalEtaLabelEl.textContent = t.maintenanceModalEtaLabel;
+    const maintenanceModalEtaValEl = document.getElementById('maintenanceModalEtaVal');
+    if (maintenanceModalEtaValEl && t.maintenanceModalEtaVal) maintenanceModalEtaValEl.textContent = t.maintenanceModalEtaVal;
+    const maintenanceModalCloseBtnEl = document.getElementById('maintenanceModalCloseBtn');
+    if (maintenanceModalCloseBtnEl && t.maintenanceModalCloseBtn) maintenanceModalCloseBtnEl.textContent = t.maintenanceModalCloseBtn;
     
     const submitBtnEl = document.getElementById('submitBtn');
     if (submitBtnEl) submitBtnEl.textContent = t.submitBtn;
@@ -1070,6 +1103,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vDisplay) vDisplay.textContent = currentAppVersion;
       }
       applyConfigToUi();
+
+      // Show maintenance notice modal if maintenanceMode is active
+      if (data.maintenanceMode) {
+        showMaintenanceModal();
+      }
 
       // Load PayPal SDK dynamically once we have the client ID
       if (data.paypalClientId) {
@@ -1634,6 +1672,11 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     hideError();
 
+    if (appConfig && appConfig.maintenanceMode) {
+      showMaintenanceModal();
+      return;
+    }
+
     if (consentCheckbox && !consentCheckbox.checked) {
       showError(currentLanguage === 'en'
         ? 'Please accept the temporary processing of this document to proceed.'
@@ -1804,6 +1847,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedFileContainer) selectedFileContainer.style.display = 'none';
         if (dropZone) dropZone.style.display = 'block';
         updateSubmitBtnState();
+      };
+    }
+  }
+
+  function showMaintenanceModal() {
+    const maintenanceModal = document.getElementById('maintenanceModal');
+    const maintenanceModalCloseBtn = document.getElementById('maintenanceModalCloseBtn');
+
+    if (maintenanceModal) {
+      if (!maintenanceModal.open) {
+        try {
+          maintenanceModal.showModal();
+        } catch (e) {
+          maintenanceModal.setAttribute('open', '');
+        }
+      }
+    }
+
+    if (maintenanceModalCloseBtn) {
+      maintenanceModalCloseBtn.onclick = () => {
+        if (maintenanceModal) {
+          if (typeof maintenanceModal.close === 'function') {
+            maintenanceModal.close();
+          } else {
+            maintenanceModal.removeAttribute('open');
+          }
+        }
       };
     }
   }
