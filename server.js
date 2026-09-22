@@ -724,8 +724,12 @@ function parseOdt(buffer) {
 
 // Gemini API Key Resolver Helper (reads from config doc or environment variables)
 function getGeminiApiKey(config) {
-  if (config && config.geminiApiKey && typeof config.geminiApiKey === 'string' && config.geminiApiKey.trim() !== '' && !config.geminiApiKey.startsWith('••••••••')) {
-    return config.geminiApiKey.trim();
+  if (config && typeof config.geminiApiKey === 'string') {
+    const key = config.geminiApiKey.trim();
+    if (key.startsWith('••••••••')) {
+      return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+    }
+    return key;
   }
   return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
 }
@@ -841,7 +845,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(12000)
+          signal: AbortSignal.timeout(9000)
         });
 
         if (!response.ok) {
@@ -851,6 +855,10 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
           }
           console.warn(`Gemini model ${model} (${ver}) returned code ${response.status}:`, errorText);
           lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
+          // If auth, quota or bad request, don't waste time looping other versions/models
+          if (response.status === 400 || response.status === 401 || response.status === 403 || response.status === 429) {
+            throw lastError;
+          }
           continue;
         }
 
@@ -875,7 +883,13 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
       } catch (err) {
         console.warn(`Attempt with Gemini model ${model} (${ver}) failed:`, err.message);
         lastError = err;
+        if (err.message && (err.message.includes("400") || err.message.includes("401") || err.message.includes("403") || err.message.includes("429"))) {
+          break;
+        }
       }
+    }
+    if (lastError && (lastError.message.includes("400") || lastError.message.includes("401") || lastError.message.includes("403") || lastError.message.includes("429"))) {
+      break;
     }
   }
 
@@ -1073,12 +1087,10 @@ function generateFallbackHeuristicEvaluation(extractedText, lang = 'es') {
   }
 }
 
-// AI Optimization Generator Helper
-async function generateAiOptimization(filename, extractedText, lang, config) {
-  const key = getGeminiApiKey(config);
-  if (!key) {
-    if (lang === 'en') {
-      return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
+// AI Optimization Static Template Helper
+function getAiOptimizationTemplate(filename, lang = 'es') {
+  if (lang === 'en') {
+    return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZED BY CINTIA
 
 ## Professional Summary
 Results-driven Software Engineer with proven expertise in building scalable web architectures and robust backend services. Experienced in delivering high-impact solutions, improving system performance by up to 30%, and leading collaborative engineering teams.
@@ -1109,8 +1121,8 @@ Results-driven Software Engineer with proven expertise in building scalable web 
 ---
 > [!NOTE]
 > *This document has been strategically rewritten with active impact verbs, ATS keyword injection, and quantifiable metrics.*`;
-    } else {
-      return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZADO POR CINTIA
+  } else {
+    return `# ${filename.replace(/\.[^/.]+$/, "").toUpperCase()} - OPTIMIZADO POR CINTIA
 
 ## Resumen Profesional
 Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas escalables con más de 5 años de trayectoria en el ciclo completo de software. Experto en optimización de rendimiento, diseño de arquitecturas robustas y liderazgo técnico de equipos de desarrollo.
@@ -1142,7 +1154,14 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
 ---
 > [!NOTE]
 > *Este documento ha sido optimizado con inyección de palabras clave activas e impacto directo para filtros ATS (Applicant Tracking Systems) y está formateado en markdown para su fácil edición.*`;
-    }
+  }
+}
+
+// AI Optimization Generator Helper
+async function generateAiOptimization(filename, extractedText, lang, config) {
+  const key = getGeminiApiKey(config);
+  if (!key) {
+    return getAiOptimizationTemplate(filename, lang);
   }
 
   // Real Gemini AI Generation
@@ -1169,7 +1188,7 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
     );
   } catch (err) {
     console.warn("generateAiOptimization Gemini API error, falling back to template:", err.message);
-    return await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+    return getAiOptimizationTemplate(filename, lang);
   }
 
   let cleanedResult = (rawResult || "").trim();
@@ -1178,7 +1197,58 @@ Ingeniero de Software y especialista en desarrollo de soluciones tecnológicas e
   } else if (cleanedResult.startsWith('```')) {
     cleanedResult = cleanedResult.replace(/^```\s*/, '').replace(/\s*```$/, '');
   }
-  return cleanedResult.trim();
+  return cleanedResult.trim() || getAiOptimizationTemplate(filename, lang);
+}
+
+// AI Cover Letter Static Template Helper
+function getCoverLetterTemplate(filename, lang = 'es') {
+  if (lang === 'en') {
+    return cleanPlainTextCoverLetter(`COVER LETTER - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+
+Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+Position: Candidate for Job Opening
+
+Dear Hiring Team,
+
+I am writing to express my strong interest in the opportunity advertised. With a solid professional background, proven technical competencies, and a track record of delivering measurable outcomes, I am confident that my experience aligns seamlessly with the requirements of your team.
+
+Throughout my career, I have specialized in executing high-impact initiatives, streamlining workflows, and driving continuous improvement. Reviewing your job description, I was particularly inspired by your commitment to innovation and high standards. My background directly equips me to tackle the key challenges of this role from day one.
+
+Key highlights I bring to your organization include:
+• Demonstrated Impact: A history of exceeding core performance benchmarks and optimizing processes with quantifiable efficiency gains.
+• Relevant Skill Set: Hands-on experience with the exact toolsets, methodologies, and cross-functional collaboration required for this vacancy.
+• Proactive Problem Solving: A proactive approach to overcoming complex operational challenges and delivering reliable results under tight deadlines.
+
+I would welcome the opportunity to discuss in greater detail how my background and qualifications will contribute to the continued success of your organization. Thank you for your time and consideration.
+
+Sincerely,
+
+${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
+Contact details available in resume profile`);
+  } else {
+    return cleanPlainTextCoverLetter(`CARTA DE PRESENTACIÓN - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
+
+Fecha: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+Referencia: Postulación a Vacante Laboral
+
+Estimado(a) Encargado(a) de Selección y Equipo de Contratación:
+
+Por medio de la presente, deseo expresar mi firme interés en postular a la vacante laboral disponible en su organización. Al analizar en detalle los requisitos y desafíos del cargo, confío en que mi trayectoria profesional, competencias técnicas y compromiso con la excelencia aportarán un valor significativo e inmediato a su equipo.
+
+A lo largo de mi experiencia laboral, me he destacado por resolver desafíos complejos, optimizar procesos de trabajo y alcanzar metas concretas con un enfoque orientado a resultados. La descripción de su oferta laboral resuena profundamente con mis fortalezas profesionales y metas de desarrollo.
+
+Entre los principales aportes que pongo a su disposición destacan:
+• Experiencia y Resultados Comprobados: Capacidad demostrada para liderar tareas críticas, superando estándares de calidad y optimizando recursos.
+• Alineación de Competencias: Dominio de las herramientas, habilidades y metodologías requeridas para el desempeño exitoso del puesto.
+• Compromiso y Trabajo Colaborativo: Habilidad para integrarme de manera ágil a equipos multidisciplinarios y promover soluciones eficientes y constructivas.
+
+Agradezco de antemano el tiempo dedicado a revisar mis antecedentes y quedo a su entera disposición para profundizar en una entrevista laboral sobre cómo mi experiencia puede contribuir al éxito de sus proyectos.
+
+Atentamente,
+
+${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
+Datos de contacto disponibles en el currículum vitae`);
+  }
 }
 
 // AI Cover Letter Generator Helper
@@ -1212,54 +1282,7 @@ function cleanPlainTextCoverLetter(text) {
 async function generateCoverLetter(filename, cvText, jobOfferText, lang, config) {
   const key = getGeminiApiKey(config);
   if (!key) {
-    // Fallback template when no API key configured
-    if (lang === 'en') {
-      return cleanPlainTextCoverLetter(`COVER LETTER - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
-
-Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-Position: Candidate for Job Opening
-
-Dear Hiring Team,
-
-I am writing to express my strong interest in the opportunity advertised. With a solid professional background, proven technical competencies, and a track record of delivering measurable outcomes, I am confident that my experience aligns seamlessly with the requirements of your team.
-
-Throughout my career, I have specialized in executing high-impact initiatives, streamlining workflows, and driving continuous improvement. Reviewing your job description, I was particularly inspired by your commitment to innovation and high standards. My background directly equips me to tackle the key challenges of this role from day one.
-
-Key highlights I bring to your organization include:
-• Demonstrated Impact: A history of exceeding core performance benchmarks and optimizing processes with quantifiable efficiency gains.
-• Relevant Skill Set: Hands-on experience with the exact toolsets, methodologies, and cross-functional collaboration required for this vacancy.
-• Proactive Problem Solving: A proactive approach to overcoming complex operational challenges and delivering reliable results under tight deadlines.
-
-I would welcome the opportunity to discuss in greater detail how my background and qualifications will contribute to the continued success of your organization. Thank you for your time and consideration.
-
-Sincerely,
-
-${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
-Contact details available in resume profile`);
-    } else {
-      return cleanPlainTextCoverLetter(`CARTA DE PRESENTACIÓN - ${filename.replace(/\.[^/.]+$/, "").toUpperCase()}
-
-Fecha: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
-Referencia: Postulación a Vacante Laboral
-
-Estimado(a) Encargado(a) de Selección y Equipo de Contratación:
-
-Por medio de la presente, deseo expresar mi firme interés en postular a la vacante laboral disponible en su organización. Al analizar en detalle los requisitos y desafíos del cargo, confío en que mi trayectoria profesional, competencias técnicas y compromiso con la excelencia aportarán un valor significativo e inmediato a su equipo.
-
-A lo largo de mi experiencia laboral, me he destacado por resolver desafíos complejos, optimizar procesos de trabajo y alcanzar metas concretas con un enfoque orientado a resultados. La descripción de su oferta laboral resuena profundamente con mis fortalezas profesionales y metas de desarrollo.
-
-Entre los principales aportes que pongo a su disposición destacan:
-• Experiencia y Resultados Comprobados: Capacidad demostrada para liderar tareas críticas, superando estándares de calidad y optimizando recursos.
-• Alineación de Competencias: Dominio de las herramientas, habilidades y metodologías requeridas para el desempeño exitoso del puesto.
-• Compromiso y Trabajo Colaborativo: Habilidad para integrarme de manera ágil a equipos multidisciplinarios y promover soluciones eficientes y constructivas.
-
-Agradezco de antemano el tiempo dedicado a revisar mis antecedentes y quedo a su entera disposición para profundizar en una entrevista laboral sobre cómo mi experiencia puede contribuir al éxito de sus proyectos.
-
-Atentamente,
-
-${filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").toUpperCase()}
-Datos de contacto disponibles en el currículum vitae`);
-    }
+    return getCoverLetterTemplate(filename, lang);
   }
 
   const basePrompt = config.coverLetterPrompt || (
@@ -1287,10 +1310,10 @@ Datos de contacto disponibles en el currículum vitae`);
     );
 
     let cleanedResult = cleanPlainTextCoverLetter(rawResult || "");
-    return cleanedResult;
+    return cleanedResult || getCoverLetterTemplate(filename, lang);
   } catch (err) {
     console.warn("generateCoverLetter Gemini API error, falling back to template:", err.message);
-    return await generateCoverLetter(filename, cvText, jobOfferText, lang, { geminiApiKey: '' });
+    return getCoverLetterTemplate(filename, lang);
   }
 }
 
@@ -2069,7 +2092,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     // 6. Generate high-fidelity blurred AI Optimization teaser preview (instant 0ms response)
     let optimizedText = "";
     if (config.optAiEnabled !== false) {
-      optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
+      optimizedText = getAiOptimizationTemplate(filename, lang);
     }
 
     // 7. Log entry to db
