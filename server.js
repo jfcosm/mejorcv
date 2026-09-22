@@ -446,6 +446,8 @@ function readConfig() {
 
 async function writeConfig(data) {
   inMemoryConfig = data;
+  cachedConfigDoc = { ...(cachedConfigDoc || {}), ...data };
+  lastConfigDocFetch = Date.now();
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
@@ -2280,6 +2282,7 @@ app.get('/api/config', async (req, res) => {
   const publicStats = await getPublicStats();
 
   res.json({
+    maintenanceMode: Boolean(config.maintenanceMode),
     optAiEnabled: config.hasOwnProperty('optAiEnabled') ? !!config.optAiEnabled : true,
     optExpertEnabled: config.hasOwnProperty('optExpertEnabled') ? !!config.optExpertEnabled : true,
     optCoverLetterEnabled: config.hasOwnProperty('optCoverLetterEnabled') ? !!config.optCoverLetterEnabled : true,
@@ -3157,6 +3160,7 @@ app.post('/api/admin/settings', requireAdminAuth, async (req, res) => {
     if (newSettings.hasOwnProperty('priceExpertClp')) config.priceExpertClp = parseInt(newSettings.priceExpertClp, 10) || 25000;
     if (newSettings.hasOwnProperty('priceCoverLetterClp')) config.priceCoverLetterClp = parseInt(newSettings.priceCoverLetterClp, 10) || 2000;
     if (newSettings.hasOwnProperty('priceHeadshotsClp')) config.priceHeadshotsClp = parseInt(newSettings.priceHeadshotsClp, 10) || 6000;
+    if (newSettings.hasOwnProperty('maintenanceMode')) config.maintenanceMode = !!newSettings.maintenanceMode;
     if (newSettings.hasOwnProperty('optAiEnabled')) config.optAiEnabled = !!newSettings.optAiEnabled;
     if (newSettings.hasOwnProperty('optExpertEnabled')) config.optExpertEnabled = !!newSettings.optExpertEnabled;
     if (newSettings.hasOwnProperty('optCoverLetterEnabled')) config.optCoverLetterEnabled = !!newSettings.optCoverLetterEnabled;

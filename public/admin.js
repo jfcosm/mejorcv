@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Settings Form
   const settingsForm = document.getElementById('settingsForm');
+  const setMaintenanceMode = document.getElementById('setMaintenanceMode');
+  const maintenanceBadgeStatus = document.getElementById('maintenanceBadgeStatus');
   const setGeminiKey = document.getElementById('setGeminiKey');
   const setPriceAi = document.getElementById('setPriceAi');
   const setPriceCoverLetter = document.getElementById('setPriceCoverLetter');
@@ -1981,6 +1983,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       setGeminiKey.value = '';
 
+      if (setMaintenanceMode) {
+        const isMaint = settings.maintenanceMode === true;
+        setMaintenanceMode.checked = isMaint;
+        if (maintenanceBadgeStatus) {
+          maintenanceBadgeStatus.textContent = isMaint ? 'Activo' : 'Desactivado';
+          maintenanceBadgeStatus.style.background = isMaint ? '#fef3c7' : '#f3f4f6';
+          maintenanceBadgeStatus.style.color = isMaint ? '#b45309' : '#6b7280';
+          maintenanceBadgeStatus.style.border = isMaint ? '1px solid #fcd34d' : '1px solid #e5e7eb';
+        }
+      }
+
       setPriceAi.value = settings.priceAi !== undefined ? settings.priceAi : 2.0;
       if (setPriceCoverLetter) setPriceCoverLetter.value = settings.priceCoverLetter !== undefined ? settings.priceCoverLetter : 2.0;
       if (setPriceHeadshots) setPriceHeadshots.value = settings.priceHeadshots !== undefined ? settings.priceHeadshots : 6.0;
@@ -2022,11 +2035,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  if (setMaintenanceMode) {
+    setMaintenanceMode.addEventListener('change', () => {
+      const isMaint = setMaintenanceMode.checked;
+      if (maintenanceBadgeStatus) {
+        maintenanceBadgeStatus.textContent = isMaint ? 'Activo' : 'Desactivado';
+        maintenanceBadgeStatus.style.background = isMaint ? '#fef3c7' : '#f3f4f6';
+        maintenanceBadgeStatus.style.color = isMaint ? '#b45309' : '#6b7280';
+        maintenanceBadgeStatus.style.border = isMaint ? '1px solid #fcd34d' : '1px solid #e5e7eb';
+      }
+    });
+  }
+
   settingsForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     settingsMessage.style.display = 'none';
 
     const payload = {
+      maintenanceMode: setMaintenanceMode ? setMaintenanceMode.checked : false,
       priceAi: parseFloat(setPriceAi.value),
       priceCoverLetter: setPriceCoverLetter ? parseFloat(setPriceCoverLetter.value) : 2.0,
       priceHeadshots: setPriceHeadshots ? parseFloat(setPriceHeadshots.value) : 6.0,

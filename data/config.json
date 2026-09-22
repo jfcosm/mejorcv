@@ -1,6 +1,7 @@
 {
   "adminPassword": "",
   "geminiApiKey": "",
+  "maintenanceMode": true,
   "priceAi": 2,
   "priceExpert": 25,
   "priceCoverLetter": 2,
