@@ -153,20 +153,20 @@ async function saveAnalysisDoc(logEntry) {
   if (dbFs) {
     try {
       const cleanData = JSON.parse(JSON.stringify(logEntry));
-      await dbFs.collection('analyses').doc(logEntry.id).set(cleanData);
-
-      // Increment aggregate public stats directly in O(1) without scanning collection
+      const setPromise = dbFs.collection('analyses').doc(logEntry.id).set(cleanData);
       const ratingVal = typeof logEntry.rating === 'number' && logEntry.rating > 0 ? logEntry.rating : 4;
-      await dbFs.collection('app_stats').doc('general').set({
+      const statsPromise = dbFs.collection('app_stats').doc('general').set({
         totalAnalyses: FieldValue.increment(1),
         ratingsSum: FieldValue.increment(ratingVal),
         ratingsCount: FieldValue.increment(1)
       }, { merge: true });
 
-      lastFirebaseError = null;
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
+      Promise.race([Promise.all([setPromise, statsPromise]), timeoutPromise]).catch(err => {
+        console.warn("Firestore saveAnalysisDoc background error:", err.message);
+      });
     } catch (err) {
-      lastFirebaseError = err.message;
-      console.error("Firestore saveAnalysisDoc error:", err.message);
+      console.warn("Firestore saveAnalysisDoc error:", err.message);
     }
   }
 }
@@ -186,11 +186,13 @@ async function updateAnalysisDoc(analysisId, updateData) {
   if (dbFs) {
     try {
       const cleanUpdate = JSON.parse(JSON.stringify(updateData));
-      await dbFs.collection('analyses').doc(analysisId).set(cleanUpdate, { merge: true });
-      lastFirebaseError = null;
+      const setPromise = dbFs.collection('analyses').doc(analysisId).set(cleanUpdate, { merge: true });
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
+      Promise.race([setPromise, timeoutPromise]).catch(err => {
+        console.warn("Firestore updateAnalysisDoc background error:", err.message);
+      });
     } catch (err) {
-      lastFirebaseError = err.message;
-      console.error("Firestore updateAnalysisDoc error:", err.message);
+      console.warn("Firestore updateAnalysisDoc error:", err.message);
     }
   }
 }
@@ -199,14 +201,15 @@ async function getAnalysisDoc(analysisId) {
   const dbFs = initFirebase();
   if (dbFs) {
     try {
-      const doc = await dbFs.collection('analyses').doc(analysisId).get();
-      if (doc.exists) {
+      const getPromise = dbFs.collection('analyses').doc(analysisId).get();
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
+      const doc = await Promise.race([getPromise, timeoutPromise]);
+      if (doc && doc.exists) {
         lastFirebaseError = null;
         return doc.data();
       }
     } catch (err) {
-      lastFirebaseError = err.message;
-      console.error("Firestore getAnalysisDoc error:", err.message);
+      console.warn("Firestore getAnalysisDoc error/timeout:", err.message);
     }
   }
   const db = readDb();
@@ -532,19 +535,21 @@ async function getConfigDoc(forceRefresh = false) {
     return cachedConfig;
   }
 
-  const dbFs = initFirebase();
   const fileConfig = readConfig();
+  const dbFs = initFirebase();
   if (dbFs) {
     try {
-      const doc = await dbFs.collection('app_config').doc('settings').get();
-      if (doc.exists) {
+      const getPromise = dbFs.collection('app_config').doc('settings').get();
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 1500));
+      const doc = await Promise.race([getPromise, timeoutPromise]);
+      if (doc && doc.exists) {
         const firestoreData = doc.data() || {};
         cachedConfig = { ...fileConfig, ...firestoreData };
         lastConfigFetch = now;
         lastFirebaseError = null;
         return cachedConfig;
-      } else {
-        await dbFs.collection('app_config').doc('settings').set(fileConfig);
+      } else if (doc) {
+        dbFs.collection('app_config').doc('settings').set(fileConfig).catch(() => {});
         cachedConfig = fileConfig;
         lastConfigFetch = now;
         lastFirebaseError = null;
@@ -552,7 +557,7 @@ async function getConfigDoc(forceRefresh = false) {
       }
     } catch (err) {
       lastFirebaseError = err.message;
-      console.error("Firestore getConfigDoc error, falling back to local:", err.message);
+      console.warn("Firestore getConfigDoc error/timeout, falling back to local:", err.message);
     }
   }
   cachedConfig = fileConfig;
@@ -806,8 +811,8 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
     throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
 
-  const candidateModels = await getAvailableGeminiModels(key);
-  const modelsToTry = candidateModels.slice(0, 2);
+  // Fast direct model priority: gemini-2.0-flash (fastest ~1s), then gemini-1.5-flash
+  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
   let lastError = null;
 
   for (const model of modelsToTry) {
@@ -845,7 +850,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(9000)
+          signal: AbortSignal.timeout(5500)
         });
 
         if (!response.ok) {
@@ -2225,8 +2230,10 @@ async function getPublicStats() {
   try {
     const dbFs = initFirebase();
     if (dbFs) {
-      const generalDoc = await dbFs.collection('app_stats').doc('general').get();
-      if (generalDoc.exists) {
+      const getPromise = dbFs.collection('app_stats').doc('general').get();
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 1500));
+      const generalDoc = await Promise.race([getPromise, timeoutPromise]);
+      if (generalDoc && generalDoc.exists) {
         const gData = generalDoc.data() || {};
         const total = typeof gData.totalAnalyses === 'number' ? gData.totalAnalyses : null;
         const rSum = typeof gData.ratingsSum === 'number' ? gData.ratingsSum : 0;
