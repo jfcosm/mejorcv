@@ -1703,7 +1703,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: AbortSignal.timeout(35000)
       });
 
       const data = await response.json();

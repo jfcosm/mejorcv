@@ -779,7 +779,7 @@ async function getAvailableGeminiModels(apiKey) {
   for (const ver of apiVersions) {
     try {
       const url = `https://generativelanguage.googleapis.com/${ver}/models?key=${key}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(4000) });
       if (response.ok) {
         const data = await response.json();
         if (data && Array.isArray(data.models)) {
@@ -857,7 +857,8 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(12000)
         });
 
         if (!response.ok) {
@@ -1554,7 +1555,8 @@ Respond ONLY with a valid JSON array of 20 objects:
             generationConfig: {
               responseMimeType: "application/json"
             }
-          })
+          }),
+          signal: AbortSignal.timeout(12000)
         });
 
         if (resp.ok) {
@@ -2081,15 +2083,10 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       });
     }
 
-    // 6. Generate AI Optimization preview simultaneously (if enabled)
+    // 6. Generate high-fidelity blurred AI Optimization teaser preview (instant 0ms response)
     let optimizedText = "";
     if (config.optAiEnabled !== false) {
-      try {
-        optimizedText = await generateAiOptimization(filename, extractedText, lang, config);
-      } catch (optErr) {
-        console.warn("Could not generate instant AI optimization during analyze, using fallback template:", optErr.message);
-        optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
-      }
+      optimizedText = await generateAiOptimization(filename, extractedText, lang, { geminiApiKey: '' });
     }
 
     // 7. Log entry to db
