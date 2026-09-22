@@ -820,9 +820,11 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
   }
 
   const candidateModels = await getAvailableGeminiModels(key);
+  // Prioritize top 2 models to avoid cumulative latency
+  const modelsToTry = candidateModels.slice(0, 2);
   let lastError = null;
 
-  for (const model of candidateModels) {
+  for (const model of modelsToTry) {
     const apiVersions = ['v1beta', 'v1'];
     for (const ver of apiVersions) {
       try {
@@ -858,7 +860,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(12000)
+          signal: AbortSignal.timeout(18000)
         });
 
         if (!response.ok) {

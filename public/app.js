@@ -1704,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
-        signal: AbortSignal.timeout(35000)
+        signal: AbortSignal.timeout(45000)
       });
 
       const data = await response.json();
@@ -1764,7 +1764,14 @@ document.addEventListener('DOMContentLoaded', () => {
       loadingWrapper.style.display = 'none';
       uploadWrapper.style.display = 'block';
       loadCaptcha();
-      showError(err.message);
+
+      let userFriendlyError = err.message;
+      if (err.name === 'TimeoutError' || err.name === 'AbortError' || /timed out|timeout/i.test(err.message)) {
+        userFriendlyError = currentLanguage === 'en'
+          ? 'The analysis took longer than usual. Please click "Analyze Free CV" again to retry.'
+          : 'El análisis tardó más tiempo del esperado debido a la saturación de la red. Por favor, vuelve a hacer clic en "Analizar CV Gratis".';
+      }
+      showError(userFriendlyError);
       
       // Re-enable language selection on error fallback
       const langContainer = document.querySelector('.lang-selector-container');
