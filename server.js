@@ -946,6 +946,53 @@ app.get('/api/captcha', (req, res) => {
   res.json({ enabled: true, svg: captcha.svg, token: captcha.token });
 });
 
+// Diagnostic Health & Latency Endpoint
+app.get('/api/debug/ping', async (req, res) => {
+  const start = Date.now();
+  const config = await getConfigDoc();
+  const configDuration = Date.now() - start;
+
+  const statsStart = Date.now();
+  const stats = await getPublicStats();
+  const statsDuration = Date.now() - statsStart;
+
+  const key = getGeminiApiKey(config);
+
+  res.json({
+    ok: true,
+    configDurationMs: configDuration,
+    statsDurationMs: statsDuration,
+    hasGeminiKey: Boolean(key),
+    geminiKeyPrefix: key ? key.slice(0, 6) + '...' : 'none',
+    firebaseStatus: firestoreDb ? 'connected' : (lastFirebaseError || 'null'),
+    totalDurationMs: Date.now() - start
+  });
+});
+
+// Diagnostic Gemini Live Check Endpoint
+app.get('/api/debug/gemini-check', async (req, res) => {
+  const start = Date.now();
+  try {
+    const config = await getConfigDoc();
+    const key = getGeminiApiKey(config);
+    if (!key) {
+      return res.json({ ok: false, error: "No Gemini API key configured" });
+    }
+    const testResult = await callGemini(key, "You are a test helper.", "Respond with: OK", false);
+    res.json({
+      ok: true,
+      durationMs: Date.now() - start,
+      output: testResult
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      durationMs: Date.now() - start,
+      error: err.message
+    });
+  }
+});
+
 // Language detection helper using grammatical function words (stopwords)
 function detectLanguage(text, clientPreference = 'es') {
   if (!text || typeof text !== 'string') return clientPreference || 'es';
