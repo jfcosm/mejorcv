@@ -3198,8 +3198,19 @@ app.get('/terminos', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'terminos.html'));
 });
 
+// Global Express Error Handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error in Express pipeline:", err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({
+    error: err.message || "Error procesando la solicitud."
+  });
+});
+
 // Start Server
-if (process.env.NODE_ENV !== 'test') {
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
   });
