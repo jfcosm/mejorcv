@@ -685,12 +685,14 @@ function getGeminiApiKey(config) {
 // Dynamic Gemini Model Discovery & Resolution with In-Memory Caching
 let cachedGeminiModels = null;
 let lastGeminiModelsFetch = 0;
-const GEMINI_MODELS_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const GEMINI_MODELS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 async function getAvailableGeminiModels(apiKey) {
   const key = apiKey || getGeminiApiKey();
+  const staticFallback = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite"];
+
   if (!key) {
-    return ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro"];
+    return staticFallback;
   }
 
   const now = Date.now();
@@ -698,73 +700,54 @@ async function getAvailableGeminiModels(apiKey) {
     return cachedGeminiModels;
   }
 
-  const staticFallback = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-flash-002",
-    "gemini-1.5-flash-001",
-    "gemini-1.5-pro",
-    "gemini-2.5-flash",
-    "gemini-pro"
-  ];
-
   // Priority order for candidate ranking
   const modelPriority = [
     "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
+    "gemini-2.0-flash-lite",
     "gemini-1.5-flash-latest",
     "gemini-1.5-flash-002",
     "gemini-1.5-flash-001",
     "gemini-1.5-flash-8b",
-    "gemini-2.0-pro-exp-02-05",
-    "gemini-1.5-pro",
-    "gemini-1.5-pro-latest",
-    "gemini-1.5-pro-002",
     "gemini-2.5-flash",
+    "gemini-1.5-pro",
     "gemini-pro"
   ];
 
-  const apiVersions = ['v1beta', 'v1'];
-  for (const ver of apiVersions) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/${ver}/models?key=${key}`;
-      const response = await fetch(url, { signal: AbortSignal.timeout(4000) });
-      if (response.ok) {
-        const data = await response.json();
-        if (data && Array.isArray(data.models)) {
-          const validModels = data.models
-            .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
-            .map(m => m.name.replace(/^models\//, ''));
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+    const response = await fetch(url, { signal: AbortSignal.timeout(2500) });
+    if (response.ok) {
+      const data = await response.json();
+      if (data && Array.isArray(data.models)) {
+        const validModels = data.models
+          .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+          .map(m => m.name.replace(/^models\//, ''));
 
-          if (validModels.length > 0) {
-            validModels.sort((a, b) => {
-              const idxA = modelPriority.indexOf(a);
-              const idxB = modelPriority.indexOf(b);
-              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-              if (idxA !== -1) return -1;
-              if (idxB !== -1) return 1;
-              return a.localeCompare(b);
-            });
+        if (validModels.length > 0) {
+          validModels.sort((a, b) => {
+            const idxA = modelPriority.indexOf(a);
+            const idxB = modelPriority.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b);
+          });
 
-            cachedGeminiModels = validModels;
-            lastGeminiModelsFetch = now;
-            console.log(`[Gemini API] Discovered ${validModels.length} active models via ${ver} endpoint. Preferred: ${validModels[0]}`);
-            return validModels;
-          }
+          cachedGeminiModels = validModels;
+          lastGeminiModelsFetch = now;
+          return validModels;
         }
       }
-    } catch (err) {
-      console.warn(`[Gemini API] Dynamic models discovery failed on ${ver}:`, err.message);
     }
+  } catch (err) {
+    // Non-blocking fallback
   }
 
   return staticFallback;
 }
 
-// Gemini API integration with dynamic model discovery and dual endpoint fallback (v1beta / v1)
+// Gemini API integration with multi-model fallback (gemini-2.0-flash, gemini-1.5-flash)
 async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
   const key = apiKey || getGeminiApiKey();
   if (!key) {
@@ -772,13 +755,11 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
   }
 
   const candidateModels = await getAvailableGeminiModels(key);
-  // Prioritize top 2 models to avoid cumulative latency
   const modelsToTry = candidateModels.slice(0, 2);
   let lastError = null;
 
   for (const model of modelsToTry) {
-    const apiVersions = ['v1beta', 'v1'];
-    for (const ver of apiVersions) {
+    for (const ver of ['v1beta', 'v1']) {
       try {
         const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${key}`;
 
@@ -812,13 +793,12 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(18000)
+          signal: AbortSignal.timeout(12000)
         });
 
         if (!response.ok) {
           const errorText = await response.text();
           if (response.status === 404) {
-            // Model not available on this API version, try next version or model
             continue;
           }
           console.warn(`Gemini model ${model} (${ver}) returned code ${response.status}:`, errorText);
@@ -1981,9 +1961,10 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
         : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en ESPAÑOL. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL. Aunque el currículum contenga títulos de cargos en inglés, certificaciones internacionales o terminología tecnológica anglosajona (ej. 'Project Manager', 'Scrum Alliance', 'Full Stack', etc.), TODAS tus explicaciones, diagnósticos, resúmenes y retroalimentaciones deben estar 100% en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
 
       const systemInstruction = config.evaluationPrompt + languagePrompt;
+      const cvTextToAnalyze = extractedText.length > 10000 ? extractedText.substring(0, 10000) : extractedText;
       const userContent = lang === 'en'
-        ? `[DOCUMENT REFERENCE DATE: ${currentDateFormatted}]\n\nRESUME CONTENT TO EVALUATE:\n\n${extractedText}`
-        : `[FECHA DE REFERENCIA: ${currentDateFormatted}]\n\nCURRÍCULUM A EVALUAR:\n\n${extractedText}`;
+        ? `[DOCUMENT REFERENCE DATE: ${currentDateFormatted}]\n\nRESUME CONTENT TO EVALUATE:\n\n${cvTextToAnalyze}`
+        : `[FECHA DE REFERENCIA: ${currentDateFormatted}]\n\nCURRÍCULUM A EVALUAR:\n\n${cvTextToAnalyze}`;
 
       try {
         const analysisRaw = await callGemini(geminiApiKey, systemInstruction, userContent, true);
