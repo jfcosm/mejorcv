@@ -793,6 +793,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
         const payload = {
           contents: [
             {
+              role: "user",
               parts: [
                 { text: promptContent }
               ]
@@ -810,7 +811,9 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
 
         if (responseJson) {
           payload.generationConfig = {
-            responseMimeType: "application/json"
+            responseMimeType: "application/json",
+            temperature: 0.2,
+            maxOutputTokens: 4096
           };
         }
 
@@ -820,7 +823,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(8000)
+          signal: AbortSignal.timeout(35000)
         });
 
         if (!response.ok) {
@@ -845,9 +848,8 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
 
         const responseData = await response.json();
         if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
-          let outputText = responseData.candidates[0].content.parts[0].text;
-          if (responseJson && outputText) {
-            outputText = outputText.trim();
+          let outputText = responseData.candidates[0].content.parts.map(p => p.text || '').join('').trim();
+          if (outputText) {
             if (outputText.startsWith('```json')) {
               outputText = outputText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
             } else if (outputText.startsWith('```')) {
