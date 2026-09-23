@@ -706,7 +706,7 @@ const GEMINI_MODELS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 async function getAvailableGeminiModels(apiKey) {
   const key = apiKey || getGeminiApiKey();
-  const staticFallback = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite"];
+  const staticFallback = ["gemini-3.6-flash", "gemini-3-flash-preview", "gemini-3-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite"];
 
   if (!key) {
     return staticFallback;
@@ -719,6 +719,9 @@ async function getAvailableGeminiModels(apiKey) {
 
   // Priority order for candidate ranking
   const modelPriority = [
+    "gemini-3.6-flash",
+    "gemini-3-flash",
+    "gemini-3-flash-preview",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-2.0-flash-lite",
@@ -727,13 +730,14 @@ async function getAvailableGeminiModels(apiKey) {
     "gemini-1.5-flash-001",
     "gemini-1.5-flash-8b",
     "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-1.5-pro",
     "gemini-pro"
   ];
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
-    const response = await fetch(url, { signal: AbortSignal.timeout(2500) });
+    const response = await fetch(url, { signal: AbortSignal.timeout(3500) });
     if (response.ok) {
       const data = await response.json();
       if (data && Array.isArray(data.models)) {
@@ -764,7 +768,7 @@ async function getAvailableGeminiModels(apiKey) {
   return staticFallback;
 }
 
-// Gemini API integration with multi-model fallback (gemini-2.0-flash, gemini-1.5-flash, gemini-2.0-flash-lite, gemini-2.5-flash)
+// Gemini API integration with multi-model fallback
 async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
   let key = apiKey;
   if (!key) {
@@ -775,8 +779,10 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
     throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
 
-  // Fast direct model priority list
-  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
+  // Discover supported models or use modern fallback list
+  const discovered = await getAvailableGeminiModels(key);
+  const fallbackList = ["gemini-3.6-flash", "gemini-3-flash-preview", "gemini-3-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite"];
+  const modelsToTry = (discovered && discovered.length > 0) ? Array.from(new Set([...discovered, ...fallbackList])) : fallbackList;
   let lastError = null;
 
   for (const model of modelsToTry) {
