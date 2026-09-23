@@ -268,7 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
       geminiTestOutput.textContent = 'Enviando petición de diagnóstico a Google Gemini API...';
 
       try {
-        const response = await fetch('/api/admin/test-gemini', {
+        const keyInput = setGeminiKey ? setGeminiKey.value.trim() : '';
+        const url = keyInput ? `/api/admin/test-gemini?key=${encodeURIComponent(keyInput)}` : '/api/admin/test-gemini';
+        const response = await fetch(url, {
           headers: { 'Authorization': adminToken }
         });
         const data = await response.json();
@@ -277,7 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
           geminiTestOutput.style.background = '#d1fae5';
           geminiTestOutput.style.color = '#065f46';
           geminiTestOutput.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-          geminiTestOutput.innerHTML = `✓ <strong>${data.message}</strong> (Latencia: <strong>${data.latencyMs} ms</strong>, Respuesta: "<code>${data.responsePreview}</code>")`;
+          geminiTestOutput.innerHTML = `<div>✓ <strong>${data.message}</strong></div>
+            <div style="font-size:12px; margin-top:4px; opacity:0.9;">
+              Clave probada: <code>${data.maskedKey || ''}</code> (${escapeHtml(data.keySource || 'Activa')}) · Latencia: <strong>${data.latencyMs} ms</strong>
+            </div>`;
           
           if (geminiHealthDotWidget) geminiHealthDotWidget.style.background = '#10b981';
           if (geminiHealthStatusText) geminiHealthStatusText.textContent = 'Estado API: Conectada y Operativa';
@@ -286,7 +291,15 @@ document.addEventListener('DOMContentLoaded', () => {
           geminiTestOutput.style.background = '#fee2e2';
           geminiTestOutput.style.color = '#991b1b';
           geminiTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-          geminiTestOutput.innerHTML = `✕ <strong>Fallo en la prueba:</strong> ${data.error || 'No se pudo conectar con Gemini.'}`;
+          
+          let hintHtml = '';
+          if (data.hint) {
+            hintHtml = `<div style="margin-top:8px; padding:8px 10px; background:rgba(255,255,255,0.7); border-radius:6px; font-size:12px; color:#7f1d1d;">
+              💡 <strong>Sugerencia:</strong> ${escapeHtml(data.hint)}
+            </div>`;
+          }
+
+          geminiTestOutput.innerHTML = `<div>✕ <strong>Fallo en la prueba:</strong> ${escapeHtml(data.error || 'No se pudo conectar con Gemini.')}</div>${hintHtml}`;
           
           if (geminiHealthDotWidget) geminiHealthDotWidget.style.background = '#ef4444';
           if (geminiHealthStatusText) geminiHealthStatusText.textContent = 'Estado API: Error en conexión';
@@ -296,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         geminiTestOutput.style.background = '#fee2e2';
         geminiTestOutput.style.color = '#991b1b';
         geminiTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-        geminiTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${err.message}`;
+        geminiTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${escapeHtml(err.message)}`;
       } finally {
         testGeminiBtn.disabled = false;
         testGeminiBtn.innerHTML = originalHtml;

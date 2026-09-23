@@ -692,12 +692,11 @@ function parseOdt(buffer) {
 function getGeminiApiKey(config) {
   if (config && typeof config.geminiApiKey === 'string') {
     const key = config.geminiApiKey.trim();
-    if (key.startsWith('••••••••')) {
-      return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+    if (key && !key.startsWith('••••••••')) {
+      return key;
     }
-    return key;
   }
-  return process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '';
+  return (process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '').trim();
 }
 
 // Dynamic Gemini Model Discovery & Resolution with In-Memory Caching
@@ -765,15 +764,19 @@ async function getAvailableGeminiModels(apiKey) {
   return staticFallback;
 }
 
-// Gemini API integration with multi-model fallback (gemini-2.0-flash, gemini-1.5-flash)
+// Gemini API integration with multi-model fallback (gemini-2.0-flash, gemini-1.5-flash, gemini-2.0-flash-lite, gemini-2.5-flash)
 async function callGemini(apiKey, systemInstruction, promptContent, responseJson = false) {
-  const key = apiKey || getGeminiApiKey();
+  let key = apiKey;
+  if (!key) {
+    const config = await getConfigDoc();
+    key = getGeminiApiKey(config);
+  }
   if (!key) {
     throw new Error("Falta la configuración de Gemini API Key en el servidor (GEMINI_API_KEY).");
   }
 
-  // Fast direct model priority: gemini-2.0-flash (fastest ~1s), then gemini-1.5-flash
-  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
+  // Fast direct model priority list
+  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
   let lastError = null;
 
   for (const model of modelsToTry) {
@@ -811,17 +814,23 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(5500)
+          signal: AbortSignal.timeout(8000)
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          if (response.status === 404) {
-            continue;
-          }
-          console.warn(`Gemini model ${model} (${ver}) returned code ${response.status}:`, errorText);
-          lastError = new Error(`Gemini API (${model}) error ${response.status}: ${errorText}`);
-          // If auth, quota or bad request, don't waste time looping other versions/models
+          let detail = errorText;
+          try {
+            const errObj = JSON.parse(errorText);
+            if (errObj && errObj.error && errObj.error.message) {
+              detail = `${errObj.error.message} (status: ${errObj.error.status || response.status})`;
+            }
+          } catch (_) {}
+
+          console.warn(`Gemini model ${model} (${ver}) returned code ${response.status}:`, detail);
+          lastError = new Error(`Google API (${model} ${ver}) [${response.status}]: ${detail}`);
+
+          // If auth, quota or bad request, record error and break to avoid redundant attempts
           if (response.status === 400 || response.status === 401 || response.status === 403 || response.status === 429) {
             throw lastError;
           }
@@ -839,7 +848,7 @@ async function callGemini(apiKey, systemInstruction, promptContent, responseJson
               outputText = outputText.replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
             }
           }
-          await recordGeminiCall(responseJson ? "evaluations" : "optimizations", model);
+          await recordGeminiCall(responseJson ? "evaluations" : "optimizations", `${model} (${ver})`);
           return outputText;
         }
 
@@ -2905,13 +2914,19 @@ app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
 app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
   try {
     const config = await getConfigDoc();
-    const key = getGeminiApiKey(config);
+    const queryKey = req.query.key ? String(req.query.key).trim() : '';
+    const key = queryKey || getGeminiApiKey(config);
     if (!key) {
       return res.status(400).json({
         success: false,
-        error: "No se encontró Gemini API Key configurada ni en el panel ni en variables de entorno (GEMINI_API_KEY)."
+        error: "No se encontró Gemini API Key configurada ni en el campo de texto, ni en el panel, ni en variables de entorno (GEMINI_API_KEY)."
       });
     }
+
+    const keySource = queryKey 
+      ? "Clave ingresada en el campo de texto" 
+      : (config.geminiApiKey && !config.geminiApiKey.startsWith('••••••••') ? "Guardada en Panel Admin / Firestore" : "Variable de entorno (Vercel)");
+    const maskedKey = key.length > 8 ? `${key.slice(0, 6)}••••••••${key.slice(-4)}` : '••••••••';
 
     const start = Date.now();
     const responseText = await callGemini(key, null, "Responde únicamente con la palabra OK.", false);
@@ -2920,13 +2935,27 @@ app.get('/api/admin/test-gemini', requireAdminAuth, async (req, res) => {
     res.json({
       success: true,
       message: "Conexión exitosa con la API de Google Gemini.",
-      latencyMs: latencyMs,
+      keySource,
+      maskedKey,
+      latencyMs,
       responsePreview: responseText ? responseText.trim() : "OK"
     });
   } catch (err) {
+    let hint = "";
+    const msg = err.message || "";
+    if (msg.includes("400") || msg.includes("INVALID_ARGUMENT") || msg.includes("API key not valid")) {
+      hint = "La API Key no es válida o pertenece a un servicio distinto. Genera una nueva API Key en Google AI Studio (aistudio.google.com).";
+    } else if (msg.includes("403") || msg.includes("PERMISSION_DENIED") || msg.includes("SERVICE_DISABLED")) {
+      hint = "La API 'Generative Language API' no está habilitada en tu proyecto de Google Cloud (console.cloud.google.com/apis/library/generativelanguage.googleapis.com).";
+    } else if (msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota")) {
+      hint = "Cuota excedida o saldo prepago no asignado a la API Key. Verifica tu cuenta de facturación en console.cloud.google.com/billing.";
+    }
+
     res.status(500).json({
       success: false,
-      error: `Error de conexión con Gemini: ${err.message}`
+      error: `Error de conexión con Gemini: ${err.message}`,
+      hint,
+      errorDetails: err.message
     });
   }
 });
