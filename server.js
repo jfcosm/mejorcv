@@ -2119,10 +2119,19 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
       });
     }
 
-    // 6. Generate high-fidelity blurred AI Optimization teaser preview (instant 0ms response)
+    // 6. Generate real AI Optimization with Gemini if key is available
     let optimizedText = "";
     if (config.optAiEnabled !== false) {
-      optimizedText = getAiOptimizationTemplate(filename, lang);
+      if (geminiApiKey) {
+        try {
+          optimizedText = await generateAiOptimization(filename, extractedText, lang, config);
+        } catch (optErr) {
+          console.warn("[CV Analysis] generateAiOptimization error during upload:", optErr.message);
+          optimizedText = getAiOptimizationTemplate(filename, lang);
+        }
+      } else {
+        optimizedText = getAiOptimizationTemplate(filename, lang);
+      }
     }
 
     // 7. Log entry to db
@@ -3249,6 +3258,77 @@ app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => 
     optimizedText: analysis.optimizedText || "",
     evaluation: analysis.evaluation
   });
+});
+
+// Admin endpoint: Re-process CV to regenerate optimized text & evaluation with real Gemini AI
+app.post('/api/admin/reprocess-cv/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const analysisId = req.params.id;
+    const analysis = await getAnalysisDoc(analysisId);
+    if (!analysis) {
+      return res.status(404).json({ error: "Currículum no encontrado." });
+    }
+
+    if (!analysis.originalText || analysis.originalText.trim().length === 0) {
+      return res.status(400).json({ error: "El registro no contiene el texto original del currículum." });
+    }
+
+    const config = await getConfigDoc();
+    const lang = analysis.lang || detectLanguage(analysis.originalText, 'es');
+    const filename = analysis.filename || "cv.pdf";
+
+    // 1. Re-generate real customized AI optimization
+    const optimizedText = await generateAiOptimization(filename, analysis.originalText, lang, config);
+
+    // 2. Also re-evaluate with Gemini to refresh scores if desired
+    let evaluation = analysis.evaluation;
+    const geminiApiKey = getGeminiApiKey(config);
+    if (geminiApiKey && (req.body?.reEvaluate || !evaluation || evaluation.stars === 4 && evaluation.summary?.includes("excelente"))) {
+      try {
+        const currentDateFormatted = lang === 'en'
+          ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        const languagePrompt = lang === 'en'
+          ? `\n\nCRITICAL INSTRUCTIONS:\n1. LANGUAGE: The resume is in English. You MUST write ALL JSON fields (summary, feedback, detailedExplanation) strictly and exclusively in ENGLISH. Do not include any Spanish words or phrases.\n2. DATES & TIMELINE: Today's reference date is ${currentDateFormatted} (Year ${new Date().getFullYear()}). Dates like 2024, 2025, 2026, or 'Present' are completely valid and normal for current roles or recent certifications. Do NOT penalize or flag recent or current experiences as future dates. Never quote internal system terms or variable names.`
+          : `\n\nINSTRUCCIÓN CRÍTICA DE IDIOMA Y FECHAS:\n1. IDIOMA: El currículum está en ESPAÑOL. Debes redactar todos los campos del JSON (summary, feedback, detailedExplanation) estrictamente en ESPAÑOL. Aunque el currículum contenga títulos de cargos en inglés, certificaciones internacionales o terminología tecnológica anglosajona (ej. 'Project Manager', 'Scrum Alliance', 'Full Stack', etc.), TODAS tus explicaciones, diagnósticos, resúmenes y retroalimentaciones deben estar 100% en ESPAÑOL.\n2. FECHAS: La fecha actual de referencia es ${currentDateFormatted} (Año ${new Date().getFullYear()}). Fechas de 2024, 2025, 2026 o 'Presente / Actualidad' son totalmente válidas para roles actuales o certificaciones recientes. No penalices fechas recientes ni menciones 'fecha del sistema' ni variables internas.`;
+
+        const systemInstruction = config.evaluationPrompt + languagePrompt;
+        const cvTextToAnalyze = analysis.originalText.length > 10000 ? analysis.originalText.substring(0, 10000) : analysis.originalText;
+        const userContent = lang === 'en'
+          ? `[DOCUMENT REFERENCE DATE: ${currentDateFormatted}]\n\nRESUME CONTENT TO EVALUATE:\n\n${cvTextToAnalyze}`
+          : `[FECHA DE REFERENCIA: ${currentDateFormatted}]\n\nCURRÍCULUM A EVALUAR:\n\n${cvTextToAnalyze}`;
+
+        const analysisRaw = await callGemini(geminiApiKey, systemInstruction, userContent, true);
+        const parsedEval = JSON.parse(analysisRaw);
+        if (parsedEval && parsedEval.stars) {
+          evaluation = parsedEval;
+        }
+      } catch (e) {
+        console.warn("Re-evaluation skipped due to error:", e.message);
+      }
+    }
+
+    const updatePayload = {
+      optimizedText: optimizedText,
+      evaluation: evaluation,
+      rating: evaluation?.stars || analysis.rating || 3,
+      reprocessedAt: new Date().toISOString()
+    };
+
+    await updateAnalysisDoc(analysisId, updatePayload);
+
+    res.json({
+      success: true,
+      message: "Currículum re-procesado y optimizado con éxito por Gemini.",
+      optimizedText: optimizedText,
+      evaluation: evaluation,
+      rating: updatePayload.rating
+    });
+  } catch (err) {
+    console.error("Error during /api/admin/reprocess-cv:", err);
+    res.status(500).json({ error: `Error al re-procesar con IA: ${err.message}` });
+  }
 });
 
 // Admin endpoint: download cover letter text

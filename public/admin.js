@@ -131,6 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminHeadshotsContent = document.getElementById('adminHeadshotsContent');
   const adminDownloadZipBtn = document.getElementById('adminDownloadZipBtn');
   const closeTextModalBtn = document.getElementById('closeTextModalBtn');
+  const reprocessModalCvBtn = document.getElementById('reprocessModalCvBtn');
+  const reprocessModalAlert = document.getElementById('reprocessModalAlert');
 
   // Bulk Actions & Modals Elements
   const leadsBulkBar = document.getElementById('leadsBulkBar');
@@ -1502,6 +1504,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. CV Inspection & Full Diagnostic Modal
   async function showCvText(analysisId) {
     try {
+      if (reprocessModalAlert) {
+        reprocessModalAlert.style.display = 'none';
+        reprocessModalAlert.textContent = '';
+      }
+      if (reprocessModalCvBtn) {
+        reprocessModalCvBtn.disabled = false;
+        reprocessModalCvBtn.innerHTML = '⚡ Re-procesar y Optimizar con IA';
+      }
+
       cvModalDocTitle.textContent = 'Inspección de Currículum';
       cvModalDocMeta.textContent = 'Cargando información...';
       if (cvTextContentBox) cvTextContentBox.textContent = 'Cargando contenido...';
@@ -1979,6 +1990,86 @@ document.addEventListener('DOMContentLoaded', () => {
         copyModalTextBtn.textContent = '✅ ¡Copiado!';
         setTimeout(() => { copyModalTextBtn.textContent = orig; }, 1500);
       }).catch(err => alert('No se pudo copiar: ' + err.message));
+    });
+  }
+
+  if (reprocessModalCvBtn) {
+    reprocessModalCvBtn.addEventListener('click', async () => {
+      if (!currentInspectionDoc || !currentInspectionDoc.id) {
+        alert('No hay ningún currículum seleccionado para re-procesar.');
+        return;
+      }
+
+      if (!confirm(`¿Deseas re-procesar con Gemini el currículum "${currentInspectionDoc.filename}" para generar una nueva optimización ATS personalizada y actualizar el diagnóstico?`)) {
+        return;
+      }
+
+      const originalBtnHtml = reprocessModalCvBtn.innerHTML;
+      reprocessModalCvBtn.disabled = true;
+      reprocessModalCvBtn.innerHTML = '⏳ Procesando con Gemini...';
+
+      if (reprocessModalAlert) {
+        reprocessModalAlert.style.display = 'block';
+        reprocessModalAlert.style.background = '#eff6ff';
+        reprocessModalAlert.style.color = '#1d4ed8';
+        reprocessModalAlert.style.border = '1px solid #bfdbfe';
+        reprocessModalAlert.innerHTML = '⚡ <strong>Generando optimización ATS personalizada con IA...</strong> Esto tomará unos 2 a 4 segundos.';
+      }
+
+      try {
+        const response = await fetch(`/api/admin/reprocess-cv/${currentInspectionDoc.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': adminToken
+          },
+          body: JSON.stringify({ reEvaluate: true })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Error al re-procesar el currículum.');
+        }
+
+        // Update local object
+        currentInspectionDoc.optimizedText = data.optimizedText;
+        if (data.evaluation) {
+          currentInspectionDoc.evaluation = data.evaluation;
+          renderAdminEvaluation(data.evaluation);
+        }
+        if (data.rating) {
+          currentInspectionDoc.rating = data.rating;
+        }
+
+        // Show success alert
+        if (reprocessModalAlert) {
+          reprocessModalAlert.style.display = 'block';
+          reprocessModalAlert.style.background = '#f0fdf4';
+          reprocessModalAlert.style.color = '#15803d';
+          reprocessModalAlert.style.border = '1px solid #bbf7d0';
+          reprocessModalAlert.innerHTML = '✅ <strong>¡Optimización generada y guardada con éxito!</strong> El currículum ha sido reescrito con enfoque ATS por Gemini.';
+        }
+
+        // Switch to optimized tab immediately so user sees the new result
+        setInspectionTab('optimized');
+
+        // Refresh stats/table list in background
+        loadStats();
+
+      } catch (err) {
+        if (reprocessModalAlert) {
+          reprocessModalAlert.style.display = 'block';
+          reprocessModalAlert.style.background = '#fef2f2';
+          reprocessModalAlert.style.color = '#b91c1c';
+          reprocessModalAlert.style.border = '1px solid #fecaca';
+          reprocessModalAlert.innerHTML = `❌ <strong>Error:</strong> ${escapeHtml(err.message)}`;
+        } else {
+          alert('Error al re-procesar: ' + err.message);
+        }
+      } finally {
+        reprocessModalCvBtn.disabled = false;
+        reprocessModalCvBtn.innerHTML = originalBtnHtml;
+      }
     });
   }
 

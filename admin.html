@@ -1176,6 +1176,9 @@
         <button class="modal-close" id="closeTextModalBtn" type="button" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-light); line-height: 1;">&times;</button>
       </div>
 
+      <!-- Alert Box for Reprocess Actions -->
+      <div id="reprocessModalAlert" style="display: none; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; line-height: 1.4;"></div>
+
       <!-- Tab Switcher inside Modal -->
       <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-grey); padding-bottom: 10px; flex-wrap: wrap;">
         <button type="button" id="tabBtnEvaluation" class="btn-secondary btn-sm" style="font-weight: 700; padding: 7px 16px;">
@@ -1304,9 +1307,14 @@
 
       <!-- Actions Bar in Modal -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; border-top: 1px solid var(--border-grey); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
-        <button type="button" id="copyModalTextBtn" class="btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-          📋 Copiar Texto
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <button type="button" id="copyModalTextBtn" class="btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+            📋 Copiar Texto
+          </button>
+          <button type="button" id="reprocessModalCvBtn" class="btn btn-sm" style="margin-top: 0; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(99,102,241,0.25);" title="Re-generar con Gemini la optimización ATS y el plan de acción táctico">
+            ⚡ Re-procesar y Optimizar con IA
+          </button>
+        </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <a id="downloadModalOriginalBtn" href="#" class="btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
             ⬇️ Bajar Original (.txt)
