@@ -492,18 +492,18 @@
               </div>
 
               <div class="star-rating-container" id="starRatingContainer" role="radiogroup" aria-label="Calificación de 1 a 5 estrellas">
-                <button type="button" class="star-btn" data-star="1" aria-label="1 estrella">★</button>
-                <button type="button" class="star-btn" data-star="2" aria-label="2 estrellas">★</button>
-                <button type="button" class="star-btn" data-star="3" aria-label="3 estrellas">★</button>
-                <button type="button" class="star-btn" data-star="4" aria-label="4 estrellas">★</button>
-                <button type="button" class="star-btn" data-star="5" aria-label="5 estrellas">★</button>
+                <button type="button" class="star-btn" data-star="1" aria-label="1 estrella"><span class="star-icon">★</span></button>
+                <button type="button" class="star-btn" data-star="2" aria-label="2 estrellas"><span class="star-icon">★</span></button>
+                <button type="button" class="star-btn" data-star="3" aria-label="3 estrellas"><span class="star-icon">★</span></button>
+                <button type="button" class="star-btn" data-star="4" aria-label="4 estrellas"><span class="star-icon">★</span></button>
+                <button type="button" class="star-btn" data-star="5" aria-label="5 estrellas"><span class="star-icon">★</span></button>
               </div>
 
               <div class="user-rating-label" id="userRatingLabel">Haz clic en las estrellas para calificar</div>
 
               <div class="rating-comment-wrap" id="ratingCommentWrap">
-                <input type="text" id="userFeedbackCommentInput" class="rating-comment-input" placeholder="Comentario o sugerencia (opcional)..." maxlength="300">
-                <button type="button" class="btn-submit-rating" id="submitUserRatingBtn">
+                <textarea id="userFeedbackCommentInput" class="rating-comment-input" rows="2" placeholder="Comentario o sugerencia (opcional)..." maxlength="300"></textarea>
+                <button type="button" class="btn-submit-rating" id="submitUserRatingBtn" disabled>
                   <span id="submitUserRatingBtnText">Guardar Valoración</span>
                 </button>
               </div>
@@ -525,7 +525,7 @@
               </div>
 
               <p class="post-eval-text" id="donationCardDesc">
-                Si el diagnóstico te aportó valor, puedes hacer un aporte libre para costear las llamadas a la IA y servidores, sin ningún compromiso.
+                Cintia es gratuita y no exige pagos obligatorios. Si este análisis te aportó valor, puedes colaborar voluntariamente para financiar nuestros servidores e IA.
               </p>
 
               <button type="button" class="btn-donation-cta" id="openDonationModalBtn">
@@ -556,7 +556,7 @@
               </div>
 
               <p class="post-eval-text" id="linkedinCardDesc">
-                Ayuda a que otros profesionales y personas en búsqueda de trabajo conozcan esta herramienta para auditar su currículum.
+                Ayuda a otros profesionales y amigos en búsqueda laboral a auditar su CV sin costo recomendando Cintia.pro en LinkedIn.
               </p>
 
               <button type="button" class="btn-linkedin-share" id="shareLinkedInBtn">
@@ -1228,14 +1228,14 @@
   </dialog>
 
   <!-- Voluntary Contribution Dialog (Donation Modal) -->
-  <dialog id="donationModal" class="cintia-dialog">
+  <dialog id="donationModal" class="cintia-dialog donation-modal-dialog">
     <div class="modal-content donation-modal-content">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 24px; line-height: 1;">☕</span>
           <div>
             <h3 class="modal-title" id="donationModalTitle">Aporte Voluntario a Cintia.pro</h3>
-            <span style="font-size: 11.5px; color: var(--text-light); font-weight: 500;" id="donationModalSubtitle">Apoyo para infraestructura de IA y servidores</span>
+            <span style="font-size: 11.5px; color: var(--text-light); font-weight: 500;" id="donationModalSubtitle">Apoyo para servidores e Inteligencia Artificial</span>
           </div>
         </div>
         <button class="modal-close" id="closeDonationModalBtn" type="button" aria-label="Cerrar modal">&times;</button>
@@ -1243,11 +1243,15 @@
 
       <div class="donation-modal-body" id="donationModalBody">
         <p class="donation-modal-intro" id="donationModalIntro">
-          Cintia.pro es un proyecto abierto y gratuito desarrollado para acompañar a miles de profesionales en su búsqueda de trabajo. Todo aporte, sin importar el monto, nos ayuda a cubrir los costos de los modelos de IA y mantener la plataforma siempre disponible.
+          Cintia.pro es gratuita y abierta. Tu aporte voluntario nos ayuda directamente a cubrir los costos de servidores e Inteligencia Artificial.
         </p>
 
-        <!-- Suggested Amount Preset Chips -->
-        <label class="donation-section-label" id="donationPresetLabel">Selecciona o define el monto de tu aporte:</label>
+        <!-- Suggested Amount Preset Chips (4-grid) -->
+        <div class="donation-chips-header">
+          <label class="donation-section-label" id="donationPresetLabel">Selecciona el monto de tu aporte:</label>
+          <button type="button" class="btn-custom-toggle" id="customAmountToggleBtn">✏️ Otro monto</button>
+        </div>
+
         <div class="donation-amount-chips" id="donationAmountChips">
           <button type="button" class="donation-chip" data-amount="1" data-amount-clp="1000">
             <span class="chip-usd">$1 USD</span>
@@ -1269,10 +1273,6 @@
             <span class="chip-clp">$10.000 CLP</span>
             <span class="chip-tag">⭐ Super sponsor</span>
           </button>
-          <button type="button" class="donation-chip custom-chip" id="customAmountChip">
-            <span class="chip-usd">Otro monto</span>
-            <span class="chip-tag">Personalizado</span>
-          </button>
         </div>
 
         <!-- Custom Amount Input (Collapsible) -->
@@ -1285,29 +1285,29 @@
               <option value="CLP">CLP ($ Pesos Chilenos)</option>
             </select>
           </div>
-          <span class="custom-amount-hint" id="customAmountHint">Ingresa el monto que desees aportar (Mínimo $1 USD o $500 CLP).</span>
+          <span class="custom-amount-hint" id="customAmountHint">Mínimo $1 USD o $500 CLP.</span>
         </div>
 
         <!-- Selected Summary Row -->
         <div class="donation-summary-card">
           <div class="donation-summary-row">
-            <span id="donationSummaryLabel">Monto de tu aporte:</span>
+            <span id="donationSummaryLabel">Monto seleccionado:</span>
             <div style="text-align: right;">
               <span class="donation-total-usd" id="donationTotalUsdDisplay">$3.00 USD</span>
-              <div class="donation-total-clp" id="donationTotalClpDisplay">(~ $3.000 CLP)</div>
+              <span class="donation-total-clp" id="donationTotalClpDisplay">(~ $3.000 CLP)</span>
             </div>
           </div>
         </div>
 
         <!-- Payment Methods View for Donation -->
-        <div class="payment-methods" id="donationPaymentMethodsView" style="margin-top: 16px;">
+        <div class="payment-methods" id="donationPaymentMethodsView" style="margin-top: 12px;">
           <!-- Simulated Payment Button (Test Mode) -->
-          <button type="button" class="payment-btn simulate-btn" id="simulateDonationBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: 1.5px solid #059669; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); width: 100%; transition: all 0.2s ease;">
+          <button type="button" class="payment-btn simulate-btn" id="simulateDonationBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: 1.5px solid #059669; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); width: 100%; transition: all 0.2s ease;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span id="simulateDonationBtnText">🧪 Simular Aporte Aprobado ($0.00 - Modo Test)</span>
+            <span id="simulateDonationBtnText">🧪 Simular Aporte Aprobado (Modo Test)</span>
           </button>
 
-          <div class="payment-divider" style="margin: 4px 0 8px;"><span>o pagar con pasarela real</span></div>
+          <div class="payment-divider" style="margin: 6px 0;"><span>o pagar con pasarela real</span></div>
 
           <!-- Mercado Pago / Webpay (CLP) -->
           <button type="button" class="payment-btn mercadopago" id="mpDonationBtn">
@@ -1315,26 +1315,26 @@
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
             </svg>
             <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left; line-height: 1.25;">
-              <span id="mpDonationBtnTitle" style="font-size: 14px; font-weight: 700;">Aportar con Mercado Pago / Webpay</span>
+              <span id="mpDonationBtnTitle" style="font-size: 13.5px; font-weight: 700;">Aportar con Mercado Pago / Webpay</span>
               <span id="mpDonationBtnSubtitle" style="font-size: 11px; opacity: 0.92; font-weight: 400;">Débito (CuentaRUT/Redcompra), Crédito o Transferencias en CLP</span>
             </div>
           </button>
-          <div id="mpDonationLoadingHint" style="display: none; text-align:center; font-size:12px; color: var(--text-light); margin-top: -6px;">Conectando con Mercado Pago...</div>
+          <div id="mpDonationLoadingHint" style="display: none; text-align:center; font-size:12px; color: var(--text-light); margin-top: -4px;">Conectando con Mercado Pago...</div>
 
-          <div class="payment-divider"><span>o aportar con PayPal (USD)</span></div>
+          <div class="payment-divider" style="margin: 6px 0;"><span>o aportar con PayPal (USD)</span></div>
 
           <!-- PayPal Container for Donations -->
           <div id="paypalDonationButtonContainer"></div>
-          <p class="paypal-loading-hint" id="paypalDonationLoadingHint" style="text-align:center; font-size:13px; color: var(--text-light); margin-top: 4px;">Cargando métodos de pago...</p>
-          <div id="donationInlineError" style="display:none; color: #ef4444; font-size: 13px; text-align: center; margin-top: 8px;"></div>
+          <p class="paypal-loading-hint" id="paypalDonationLoadingHint" style="text-align:center; font-size:12px; color: var(--text-light); margin: 2px 0 0;">Cargando métodos de pago...</p>
+          <div id="donationInlineError" style="display:none; color: #ef4444; font-size: 13px; text-align: center; margin-top: 6px;"></div>
         </div>
 
         <!-- Success View for Donation -->
         <div class="success-view" id="donationSuccessView" style="display: none;">
-          <div style="font-size: 48px; margin-bottom: 12px; animation: bounce 1s ease;">💚✨</div>
-          <h3 id="donationSuccessTitle" style="font-size: 20px; font-weight: 800; color: #059669; margin-bottom: 8px;">¡Muchas Gracias por tu Aporte!</h3>
-          <p id="donationSuccessMessage" style="font-size: 14px; color: var(--text-medium); line-height: 1.6; max-width: 440px; margin: 0 auto 20px;">
-            Tu generosidad nos ayuda directamente a costear los servidores y modelos de Inteligencia Artificial para que Cintia siga siendo una herramienta abierta y útil para toda la comunidad profesional.
+          <div style="font-size: 44px; margin-bottom: 8px; animation: bounce 1s ease;">💚✨</div>
+          <h3 id="donationSuccessTitle" style="font-size: 19px; font-weight: 800; color: #059669; margin-bottom: 6px;">¡Muchas Gracias por tu Aporte!</h3>
+          <p id="donationSuccessMessage" style="font-size: 13.5px; color: var(--text-medium); line-height: 1.5; max-width: 440px; margin: 0 auto 16px;">
+            Tu generosidad nos ayuda directamente a costear los servidores y modelos de Inteligencia Artificial para que Cintia siga siendo una herramienta abierta y útil para todos.
           </p>
           <button type="button" class="btn btn-sm" id="closeDonationSuccessBtn" style="background: var(--color-mint); color: #ffffff; font-weight: 700; padding: 10px 24px; border-radius: 8px;">
             Aceptar

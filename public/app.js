@@ -985,42 +985,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const postEvalSubtitleEl = document.getElementById('postEvalSubtitle');
     if (postEvalSubtitleEl && t.postEvalSubtitle) postEvalSubtitleEl.textContent = t.postEvalSubtitle;
 
-    const ratingCardBadgeEl = document.getElementById('ratingCardBadge');
-    if (ratingCardBadgeEl && t.ratingCardBadge) ratingCardBadgeEl.textContent = t.ratingCardBadge;
     const ratingCardTitleEl = document.getElementById('ratingCardTitle');
     if (ratingCardTitleEl && t.ratingCardTitle) ratingCardTitleEl.textContent = t.ratingCardTitle;
-    const ratingCardDescEl = document.getElementById('ratingCardDesc');
+    const ratingCardDescEl = document.getElementById('ratingCardSubtitle');
     if (ratingCardDescEl && t.ratingCardDesc) ratingCardDescEl.textContent = t.ratingCardDesc;
-    const ratingCommentEl = document.getElementById('ratingComment');
+    const ratingCommentEl = document.getElementById('userFeedbackCommentInput');
     if (ratingCommentEl && t.ratingCommentPlaceholder) ratingCommentEl.placeholder = t.ratingCommentPlaceholder;
-    const submitRatingBtnEl = document.getElementById('submitRatingBtn');
+    const submitRatingBtnEl = document.getElementById('submitUserRatingBtn');
     if (submitRatingBtnEl && t.submitRatingBtn) {
       const span = submitRatingBtnEl.querySelector('span');
       if (span) span.textContent = t.submitRatingBtn;
     }
 
-    const donationCardBadgeEl = document.getElementById('donationCardBadge');
-    if (donationCardBadgeEl && t.donationCardBadge) donationCardBadgeEl.textContent = t.donationCardBadge;
     const donationCardTitleEl = document.getElementById('donationCardTitle');
     if (donationCardTitleEl && t.donationCardTitle) donationCardTitleEl.textContent = t.donationCardTitle;
+    const donationCardSubtitleEl = document.getElementById('donationCardSubtitle');
+    if (donationCardSubtitleEl && t.donationCardSubtitle) donationCardSubtitleEl.textContent = t.donationCardSubtitle;
     const donationCardDescEl = document.getElementById('donationCardDesc');
     if (donationCardDescEl && t.donationCardDesc) donationCardDescEl.textContent = t.donationCardDesc;
-    const openDonationModalBtnEl = document.getElementById('openDonationModalBtn');
-    if (openDonationModalBtnEl && t.openDonationModalBtn) {
-      const span = openDonationModalBtnEl.querySelector('span');
-      if (span) span.textContent = t.openDonationModalBtn;
+    const donationCtaBtnTextEl = document.getElementById('donationCtaBtnText');
+    if (donationCtaBtnTextEl && t.openDonationModalBtn) {
+      donationCtaBtnTextEl.textContent = t.openDonationModalBtn;
     }
 
-    const linkedinCardBadgeEl = document.getElementById('linkedinCardBadge');
-    if (linkedinCardBadgeEl && t.linkedinCardBadge) linkedinCardBadgeEl.textContent = t.linkedinCardBadge;
     const linkedinCardTitleEl = document.getElementById('linkedinCardTitle');
     if (linkedinCardTitleEl && t.linkedinCardTitle) linkedinCardTitleEl.textContent = t.linkedinCardTitle;
+    const linkedinCardSubtitleEl = document.getElementById('linkedinCardSubtitle');
+    if (linkedinCardSubtitleEl && t.linkedinCardSubtitle) linkedinCardSubtitleEl.textContent = t.linkedinCardSubtitle;
     const linkedinCardDescEl = document.getElementById('linkedinCardDesc');
     if (linkedinCardDescEl && t.linkedinCardDesc) linkedinCardDescEl.textContent = t.linkedinCardDesc;
-    const shareLinkedInBtnEl = document.getElementById('shareLinkedInBtn');
-    if (shareLinkedInBtnEl && t.shareLinkedInBtn) {
-      const span = shareLinkedInBtnEl.querySelector('span');
-      if (span) span.textContent = t.shareLinkedInBtn;
+    const linkedinShareBtnTextEl = document.getElementById('linkedinShareBtnText');
+    if (linkedinShareBtnTextEl && t.shareLinkedInBtn) {
+      linkedinShareBtnTextEl.textContent = t.shareLinkedInBtn;
     }
 
     // Donation Modal Translations
@@ -1028,28 +1024,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (donationModalTitleEl && t.donationModalTitle) donationModalTitleEl.textContent = t.donationModalTitle;
     const donationModalSubtitleEl = document.getElementById('donationModalSubtitle');
     if (donationModalSubtitleEl && t.donationModalSubtitle) donationModalSubtitleEl.textContent = t.donationModalSubtitle;
-    const donationPresetTitleEl = document.getElementById('donationPresetTitle');
+    const donationPresetTitleEl = document.getElementById('donationPresetLabel');
     if (donationPresetTitleEl && t.donationPresetTitle) donationPresetTitleEl.textContent = t.donationPresetTitle;
-    const customDonationToggleBtnEl = document.getElementById('customDonationToggleBtn');
-    if (customDonationToggleBtnEl && t.customDonationToggle) customDonationToggleBtnEl.textContent = t.customDonationToggle;
+    const customAmountToggleBtnEl = document.getElementById('customAmountToggleBtn');
+    if (customAmountToggleBtnEl && t.customDonationToggle) customAmountToggleBtnEl.textContent = t.customDonationToggle;
     const donationSummaryLabelEl = document.getElementById('donationSummaryLabel');
     if (donationSummaryLabelEl && t.donationSummaryLabel) donationSummaryLabelEl.textContent = t.donationSummaryLabel;
-    const donationDisclaimerEl = document.getElementById('donationDisclaimer');
-    if (donationDisclaimerEl && t.donationDisclaimer) donationDisclaimerEl.textContent = t.donationDisclaimer;
-    const mpDonationBtnEl = document.getElementById('mpDonationBtn');
-    if (mpDonationBtnEl && t.mpDonationBtn) {
-      const span = mpDonationBtnEl.querySelector('span');
-      if (span) span.textContent = t.mpDonationBtn;
-    }
-    const simulateDonationBtnEl = document.getElementById('simulateDonationBtn');
-    if (simulateDonationBtnEl && t.simulateDonationBtn) {
-      const span = simulateDonationBtnEl.querySelector('span');
-      if (span) span.textContent = t.simulateDonationBtn;
-    }
+    const mpDonationBtnTitleEl = document.getElementById('mpDonationBtnTitle');
+    if (mpDonationBtnTitleEl && t.mpDonationBtn) mpDonationBtnTitleEl.textContent = t.mpDonationBtn;
+    const simulateDonationBtnTextEl = document.getElementById('simulateDonationBtnText');
+    if (simulateDonationBtnTextEl && t.simulateDonationBtn) simulateDonationBtnTextEl.textContent = t.simulateDonationBtn;
     const donationSuccessTitleEl = document.getElementById('donationSuccessTitle');
     if (donationSuccessTitleEl && t.donationSuccessTitle) donationSuccessTitleEl.textContent = t.donationSuccessTitle;
-    const donationSuccessDescEl = document.getElementById('donationSuccessDesc');
-    if (donationSuccessDescEl && t.donationSuccessDesc) donationSuccessDescEl.textContent = t.donationSuccessDesc;
+    const donationSuccessMessageEl = document.getElementById('donationSuccessMessage');
+    if (donationSuccessMessageEl && t.donationSuccessDesc) donationSuccessMessageEl.textContent = t.donationSuccessDesc;
     const closeDonationSuccessBtnEl = document.getElementById('closeDonationSuccessBtn');
     if (closeDonationSuccessBtnEl && t.closeDonationModalBtn) closeDonationSuccessBtnEl.textContent = t.closeDonationModalBtn;
 
@@ -3535,86 +3523,81 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentDonationClp = 3000;
 
   // DOM Elements - Rating Widget
-  const starRatingWidget = document.getElementById('starRatingWidget');
-  const starRatingBtns = document.querySelectorAll('.star-btn');
-  const ratingComment = document.getElementById('ratingComment');
-  const submitRatingBtn = document.getElementById('submitRatingBtn');
+  const starRatingBtns = document.querySelectorAll('#starRatingContainer .star-btn');
+  const userRatingLabel = document.getElementById('userRatingLabel');
+  const userFeedbackCommentInput = document.getElementById('userFeedbackCommentInput');
+  const submitUserRatingBtn = document.getElementById('submitUserRatingBtn');
   const ratingSuccessMsg = document.getElementById('ratingSuccessMsg');
 
-  // DOM Elements - Voluntary Contribution Modal
-  const openDonationModalBtn = document.getElementById('openDonationModalBtn');
-  const donationModal = document.getElementById('donationModal');
-  const closeDonationModalBtn = document.getElementById('closeDonationModalBtn');
-  const closeDonationSuccessBtn = document.getElementById('closeDonationSuccessBtn');
-  const donationPresetChips = document.querySelectorAll('.donation-chip');
-  const customDonationToggleBtn = document.getElementById('customDonationToggleBtn');
-  const customDonationRow = document.getElementById('customDonationRow');
-  const customDonationInput = document.getElementById('customDonationInput');
-  const customDonationCurrency = document.getElementById('customDonationCurrency');
-  const donationSummaryAmountUsd = document.getElementById('donationSummaryAmountUsd');
-  const donationSummaryAmountClp = document.getElementById('donationSummaryAmountClp');
-  const mpDonationBtn = document.getElementById('mpDonationBtn');
-  const mpDonationLoadingHint = document.getElementById('mpDonationLoadingHint');
-  const paypalDonationContainer = document.getElementById('paypalDonationContainer');
-  const paypalDonationLoadingHint = document.getElementById('paypalDonationLoadingHint');
-  const simulateDonationBtn = document.getElementById('simulateDonationBtn');
-  const donationMethodsView = document.getElementById('donationMethodsView');
-  const donationSuccessView = document.getElementById('donationSuccessView');
-  const donationSuccessIcon = document.getElementById('donationSuccessIcon');
-  const donationSuccessSpinner = document.getElementById('donationSuccessSpinner');
-  const donationSuccessTitle = document.getElementById('donationSuccessTitle');
-  const donationSuccessDesc = document.getElementById('donationSuccessDesc');
-  const donationModalError = document.getElementById('donationModalError');
+  // Rating labels dictionary
+  const ratingLabels = {
+    es: {
+      default: 'Haz clic en las estrellas para calificar',
+      1: '⭐ 1/5 - Muy deficiente',
+      2: '⭐⭐ 2/5 - Regular',
+      3: '⭐⭐⭐ 3/5 - Bueno',
+      4: '⭐⭐⭐⭐ 4/5 - Muy bueno',
+      5: '⭐⭐⭐⭐⭐ 5/5 - ¡Excelente!'
+    },
+    en: {
+      default: 'Click on the stars to rate',
+      1: '⭐ 1/5 - Poor',
+      2: '⭐⭐ 2/5 - Regular',
+      3: '⭐⭐⭐ 3/5 - Good',
+      4: '⭐⭐⭐⭐ 4/5 - Very Good',
+      5: '⭐⭐⭐⭐⭐ 5/5 - Excellent!'
+    }
+  };
 
-  // DOM Elements - LinkedIn Sharing
-  const shareLinkedInBtn = document.getElementById('shareLinkedInBtn');
-  const linkedinShareSuccessMsg = document.getElementById('linkedinShareSuccessMsg');
-
-  // 1. Star Rating Interactions
-  function highlightStars(count) {
+  function updateRatingVisuals(highlightUpTo) {
     starRatingBtns.forEach(btn => {
-      const val = parseInt(btn.getAttribute('data-value'), 10);
+      const val = parseInt(btn.getAttribute('data-star'), 10);
       const starSpan = btn.querySelector('.star-icon');
-      if (val <= count) {
+      if (val <= highlightUpTo) {
         btn.classList.add('active');
         if (starSpan) starSpan.textContent = '★';
       } else {
         btn.classList.remove('active');
-        if (starSpan) starSpan.textContent = '☆';
+        if (starSpan) starSpan.textContent = '★';
       }
     });
+
+    const langDict = ratingLabels[currentLanguage] || ratingLabels.es;
+    if (userRatingLabel) {
+      userRatingLabel.textContent = highlightUpTo > 0 ? (langDict[highlightUpTo] || langDict.default) : langDict.default;
+    }
   }
 
   starRatingBtns.forEach(btn => {
     btn.addEventListener('mouseenter', () => {
-      const val = parseInt(btn.getAttribute('data-value'), 10);
-      highlightStars(val);
+      const val = parseInt(btn.getAttribute('data-star'), 10);
+      updateRatingVisuals(val);
     });
 
     btn.addEventListener('mouseleave', () => {
-      highlightStars(selectedUserRating);
+      updateRatingVisuals(selectedUserRating);
     });
 
     btn.addEventListener('click', () => {
-      selectedUserRating = parseInt(btn.getAttribute('data-value'), 10);
-      highlightStars(selectedUserRating);
-      if (submitRatingBtn) submitRatingBtn.disabled = false;
+      selectedUserRating = parseInt(btn.getAttribute('data-star'), 10);
+      updateRatingVisuals(selectedUserRating);
+      if (submitUserRatingBtn) submitUserRatingBtn.disabled = false;
     });
   });
 
-  if (submitRatingBtn) {
-    submitRatingBtn.addEventListener('click', async () => {
+  if (submitUserRatingBtn) {
+    submitUserRatingBtn.addEventListener('click', async () => {
       if (!selectedUserRating || selectedUserRating < 1) {
         alert(currentLanguage === 'en' ? 'Please select a star rating first.' : 'Por favor selecciona una calificación de estrellas.');
         return;
       }
 
-      submitRatingBtn.disabled = true;
-      const origText = submitRatingBtn.innerHTML;
-      submitRatingBtn.innerHTML = `<span>${currentLanguage === 'en' ? 'Submitting...' : 'Enviando...'}</span>`;
+      submitUserRatingBtn.disabled = true;
+      const origText = submitUserRatingBtn.innerHTML;
+      submitUserRatingBtn.innerHTML = `<span>${currentLanguage === 'en' ? 'Saving...' : 'Guardando...'}</span>`;
 
       try {
-        const commentVal = ratingComment ? ratingComment.value.trim() : '';
+        const commentVal = userFeedbackCommentInput ? userFeedbackCommentInput.value.trim() : '';
         const resp = await fetch('/api/feedback/rate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3628,40 +3611,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Error al guardar la valoración.');
 
-        // Success message
-        if (ratingSuccessMsg) {
-          ratingSuccessMsg.style.display = 'block';
-          ratingSuccessMsg.textContent = currentLanguage === 'en'
-            ? '✓ Thank you so much for rating Cintia!'
-            : '✓ ¡Muchas gracias por calificar a Cintia!';
-        }
-        submitRatingBtn.style.display = 'none';
-        if (ratingComment) ratingComment.disabled = true;
+        // Show success state
+        if (ratingSuccessMsg) ratingSuccessMsg.style.display = 'flex';
+        submitUserRatingBtn.style.display = 'none';
+        if (userFeedbackCommentInput) userFeedbackCommentInput.disabled = true;
         starRatingBtns.forEach(b => b.style.pointerEvents = 'none');
 
       } catch (err) {
-        submitRatingBtn.disabled = false;
-        submitRatingBtn.innerHTML = origText;
+        submitUserRatingBtn.disabled = false;
+        submitUserRatingBtn.innerHTML = origText;
         alert('❌ ' + err.message);
       }
     });
   }
 
+  // DOM Elements - Voluntary Contribution Modal
+  const openDonationModalBtn = document.getElementById('openDonationModalBtn');
+  const donationModal = document.getElementById('donationModal');
+  const closeDonationModalBtn = document.getElementById('closeDonationModalBtn');
+  const closeDonationSuccessBtn = document.getElementById('closeDonationSuccessBtn');
+  const donationPresetChips = document.querySelectorAll('#donationAmountChips .donation-chip');
+  const customAmountToggleBtn = document.getElementById('customAmountToggleBtn');
+  const customAmountWrapper = document.getElementById('customAmountWrapper');
+  const customDonationInput = document.getElementById('customDonationInput');
+  const customDonationCurrency = document.getElementById('customDonationCurrency');
+  const donationTotalUsdDisplay = document.getElementById('donationTotalUsdDisplay');
+  const donationTotalClpDisplay = document.getElementById('donationTotalClpDisplay');
+  const mpDonationBtn = document.getElementById('mpDonationBtn');
+  const mpDonationLoadingHint = document.getElementById('mpDonationLoadingHint');
+  const paypalDonationButtonContainer = document.getElementById('paypalDonationButtonContainer');
+  const paypalDonationLoadingHint = document.getElementById('paypalDonationLoadingHint');
+  const simulateDonationBtn = document.getElementById('simulateDonationBtn');
+  const donationPaymentMethodsView = document.getElementById('donationPaymentMethodsView');
+  const donationSuccessView = document.getElementById('donationSuccessView');
+  const donationSuccessBadge = document.getElementById('donationSuccessBadge');
+  const donationInlineError = document.getElementById('donationInlineError');
+
+  // DOM Elements - LinkedIn Sharing
+  const shareLinkedInBtn = document.getElementById('shareLinkedInBtn');
+  const linkedinSuccessBadge = document.getElementById('linkedinSuccessBadge');
+
   // 2. LinkedIn Sharing Action
   if (shareLinkedInBtn) {
     shareLinkedInBtn.addEventListener('click', async () => {
-      // Pre-filled recommendation text for LinkedIn
       const shareUrl = 'https://cintia.pro';
       const shareLinkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 
-      // Open sharing dialog in popup window
       const popupWidth = 600;
       const popupHeight = 600;
       const left = (window.innerWidth - popupWidth) / 2;
       const top = (window.innerHeight - popupHeight) / 2;
       window.open(shareLinkedInUrl, 'linkedin_share', `width=${popupWidth},height=${popupHeight},top=${top},left=${left},toolbar=0,menubar=0,location=0`);
 
-      // Track LinkedIn sharing in database
       try {
         if (currentAnalysisId) {
           await fetch('/api/feedback/share-linkedin', {
@@ -3674,34 +3675,30 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Could not record LinkedIn share event:', e);
       }
 
-      if (linkedinShareSuccessMsg) {
-        linkedinShareSuccessMsg.style.display = 'block';
-        linkedinShareSuccessMsg.textContent = currentLanguage === 'en'
-          ? '✓ Thank you for sharing Cintia on LinkedIn!'
-          : '✓ ¡Muchas gracias por compartir Cintia en LinkedIn!';
+      if (linkedinSuccessBadge) {
+        linkedinSuccessBadge.style.display = 'flex';
       }
     });
   }
 
   // 3. Voluntary Contribution Modal Handling
   function updateDonationSummary() {
-    if (donationSummaryAmountUsd) {
-      donationSummaryAmountUsd.textContent = `$${currentDonationUsd.toFixed(2)} USD`;
+    if (donationTotalUsdDisplay) {
+      donationTotalUsdDisplay.textContent = `$${currentDonationUsd.toFixed(2)} USD`;
     }
-    if (donationSummaryAmountClp) {
-      donationSummaryAmountClp.textContent = `(~ $${currentDonationClp.toLocaleString('es-CL')} CLP)`;
+    if (donationTotalClpDisplay) {
+      donationTotalClpDisplay.textContent = `(~ $${currentDonationClp.toLocaleString('es-CL')} CLP)`;
     }
-    // Re-initialize PayPal smart buttons for this dynamic amount
     initDonationPayPalButtons(currentDonationUsd);
   }
 
   if (openDonationModalBtn && donationModal) {
     openDonationModalBtn.addEventListener('click', () => {
-      if (donationModalError) {
-        donationModalError.style.display = 'none';
-        donationModalError.textContent = '';
+      if (donationInlineError) {
+        donationInlineError.style.display = 'none';
+        donationInlineError.textContent = '';
       }
-      if (donationMethodsView) donationMethodsView.style.display = 'block';
+      if (donationPaymentMethodsView) donationPaymentMethodsView.style.display = 'block';
       if (donationSuccessView) donationSuccessView.style.display = 'none';
       if (mpDonationBtn) mpDonationBtn.disabled = false;
       if (mpDonationLoadingHint) mpDonationLoadingHint.style.display = 'none';
@@ -3729,12 +3726,12 @@ document.addEventListener('DOMContentLoaded', () => {
       donationPresetChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
 
-      const usd = parseFloat(chip.getAttribute('data-usd')) || 3;
-      const clp = parseInt(chip.getAttribute('data-clp'), 10) || 3000;
+      const usd = parseFloat(chip.getAttribute('data-amount')) || 3;
+      const clp = parseInt(chip.getAttribute('data-amount-clp'), 10) || 3000;
       currentDonationUsd = usd;
       currentDonationClp = clp;
 
-      if (customDonationRow) customDonationRow.style.display = 'none';
+      if (customAmountWrapper) customAmountWrapper.style.display = 'none';
       if (customDonationInput) customDonationInput.value = '';
 
       updateDonationSummary();
@@ -3742,11 +3739,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Custom amount toggle & input
-  if (customDonationToggleBtn) {
-    customDonationToggleBtn.addEventListener('click', () => {
-      if (customDonationRow) {
-        const isHidden = customDonationRow.style.display === 'none' || customDonationRow.style.display === '';
-        customDonationRow.style.display = isHidden ? 'flex' : 'none';
+  if (customAmountToggleBtn) {
+    customAmountToggleBtn.addEventListener('click', () => {
+      if (customAmountWrapper) {
+        const isHidden = customAmountWrapper.style.display === 'none' || customAmountWrapper.style.display === '';
+        customAmountWrapper.style.display = isHidden ? 'block' : 'none';
         if (isHidden && customDonationInput) {
           customDonationInput.focus();
           donationPresetChips.forEach(c => c.classList.remove('active'));
@@ -3784,9 +3781,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (mpDonationBtn) {
     mpDonationBtn.addEventListener('click', async () => {
       if (!currentAnalysisId) {
-        if (donationModalError) {
-          donationModalError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
-          donationModalError.style.display = 'block';
+        if (donationInlineError) {
+          donationInlineError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
+          donationInlineError.style.display = 'block';
         }
         return;
       }
@@ -3822,9 +3819,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         mpDonationBtn.disabled = false;
         if (mpDonationLoadingHint) mpDonationLoadingHint.style.display = 'none';
-        if (donationModalError) {
-          donationModalError.textContent = '❌ ' + err.message;
-          donationModalError.style.display = 'block';
+        if (donationInlineError) {
+          donationInlineError.textContent = '❌ ' + err.message;
+          donationInlineError.style.display = 'block';
         }
       }
     });
@@ -3832,24 +3829,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 5. PayPal Voluntary Contribution Smart Buttons
   async function initDonationPayPalButtons(amountUsd) {
-    if (!paypalDonationContainer) return;
-    paypalDonationContainer.innerHTML = '';
+    if (!paypalDonationButtonContainer) return;
+    paypalDonationButtonContainer.innerHTML = '';
     if (paypalDonationLoadingHint) paypalDonationLoadingHint.style.display = 'block';
+
+    if (typeof loadPaypalSdk === 'function') {
+      try {
+        await loadPaypalSdk();
+      } catch (e) {}
+    }
 
     if (typeof paypal === 'undefined') {
       await new Promise(resolve => {
         const check = setInterval(() => {
           if (typeof paypal !== 'undefined') { clearInterval(check); resolve(); }
         }, 150);
-        setTimeout(() => { clearInterval(check); resolve(); }, 6000);
+        setTimeout(() => { clearInterval(check); resolve(); }, 4000);
       });
     }
 
     if (typeof paypal === 'undefined') {
       if (paypalDonationLoadingHint) {
         paypalDonationLoadingHint.textContent = currentLanguage === 'en'
-          ? '⚠️ Could not load PayPal. Check your connection.'
-          : '⚠️ No se pudo cargar PayPal. Revisa tu conexión.';
+          ? 'PayPal payment available in production mode.'
+          : 'Pasarela PayPal disponible en producción.';
       }
       return;
     }
@@ -3860,7 +3863,7 @@ document.addEventListener('DOMContentLoaded', () => {
       paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'donate' },
         createOrder: async () => {
-          if (donationModalError) donationModalError.style.display = 'none';
+          if (donationInlineError) donationInlineError.style.display = 'none';
           const resp = await fetch('/api/paypal/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3874,22 +3877,17 @@ document.addEventListener('DOMContentLoaded', () => {
           const data = await resp.json();
           if (!resp.ok) {
             const msg = data.error || (currentLanguage === 'en' ? 'Could not create contribution order.' : 'No se pudo crear la orden de aporte.');
-            if (donationModalError) {
-              donationModalError.textContent = '❌ ' + msg;
-              donationModalError.style.display = 'block';
+            if (donationInlineError) {
+              donationInlineError.textContent = '❌ ' + msg;
+              donationInlineError.style.display = 'block';
             }
             throw new Error(msg);
           }
           return data.orderID;
         },
         onApprove: async (data) => {
-          if (donationMethodsView) donationMethodsView.style.display = 'none';
-          if (donationSuccessView) donationSuccessView.style.display = 'flex';
-          if (donationSuccessIcon) donationSuccessIcon.style.display = 'none';
-          if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'block';
-          if (donationSuccessTitle) {
-            donationSuccessTitle.textContent = currentLanguage === 'en' ? 'Confirming contribution...' : 'Confirmando tu aporte...';
-          }
+          if (donationPaymentMethodsView) donationPaymentMethodsView.style.display = 'none';
+          if (donationSuccessView) donationSuccessView.style.display = 'block';
 
           try {
             const resp = await fetch('/api/paypal/capture-order', {
@@ -3904,29 +3902,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await resp.json();
             if (!resp.ok) throw new Error(result.error || 'Error al capturar el aporte en PayPal.');
 
-            if (donationSuccessIcon) donationSuccessIcon.style.display = 'block';
-            if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'none';
-            if (donationSuccessTitle) {
-              donationSuccessTitle.textContent = currentLanguage === 'en' ? '¡Thank you so much for your contribution!' : '¡Muchísimas gracias por tu aporte!';
-            }
-            if (donationSuccessDesc) {
-              donationSuccessDesc.textContent = currentLanguage === 'en'
-                ? `Your contribution of $${amountUsd.toFixed(2)} USD was received successfully.`
-                : `Tu aporte voluntario de $${amountUsd.toFixed(2)} USD ha sido procesado con éxito.`;
-            }
+            if (donationSuccessBadge) donationSuccessBadge.style.display = 'flex';
           } catch (err) {
-            if (donationMethodsView) donationMethodsView.style.display = 'block';
+            if (donationPaymentMethodsView) donationPaymentMethodsView.style.display = 'block';
             if (donationSuccessView) donationSuccessView.style.display = 'none';
-            if (donationModalError) {
-              donationModalError.textContent = '❌ ' + err.message;
-              donationModalError.style.display = 'block';
+            if (donationInlineError) {
+              donationInlineError.textContent = '❌ ' + err.message;
+              donationInlineError.style.display = 'block';
             }
           }
         },
         onError: (err) => {
           console.warn('PayPal Donation error:', err);
         }
-      }).render('#paypalDonationContainer');
+      }).render('#paypalDonationButtonContainer');
     } catch (e) {
       console.warn('Could not render PayPal donation buttons:', e);
     }
@@ -3936,20 +3925,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (simulateDonationBtn) {
     simulateDonationBtn.addEventListener('click', async () => {
       if (!currentAnalysisId) {
-        if (donationModalError) {
-          donationModalError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
-          donationModalError.style.display = 'block';
+        if (donationInlineError) {
+          donationInlineError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
+          donationInlineError.style.display = 'block';
         }
         return;
       }
 
-      if (donationMethodsView) donationMethodsView.style.display = 'none';
-      if (donationSuccessView) donationSuccessView.style.display = 'flex';
-      if (donationSuccessIcon) donationSuccessIcon.style.display = 'none';
-      if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'block';
-      if (donationSuccessTitle) {
-        donationSuccessTitle.textContent = currentLanguage === 'en' ? 'Simulating contribution...' : 'Simulando aporte voluntario...';
-      }
+      simulateDonationBtn.disabled = true;
+      const origText = simulateDonationBtn.innerHTML;
+      simulateDonationBtn.innerHTML = `<span>${currentLanguage === 'en' ? 'Simulating...' : 'Simulando...'}</span>`;
 
       try {
         const resp = await fetch('/api/payment/simulate', {
@@ -3967,23 +3952,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await resp.json();
         if (!resp.ok) throw new Error(result.error || 'Error al simular el aporte.');
 
-        if (donationSuccessIcon) donationSuccessIcon.style.display = 'block';
-        if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'none';
-        if (donationSuccessTitle) {
-          donationSuccessTitle.textContent = currentLanguage === 'en' ? '¡Thank you so much for your contribution!' : '¡Muchísimas gracias por tu aporte!';
-        }
-        if (donationSuccessDesc) {
-          donationSuccessDesc.textContent = currentLanguage === 'en'
-            ? `Your test contribution of $${currentDonationUsd.toFixed(2)} USD was approved successfully.`
-            : `Tu aporte simulado de $${currentDonationUsd.toFixed(2)} USD fue registrado con éxito.`;
-        }
+        if (donationPaymentMethodsView) donationPaymentMethodsView.style.display = 'none';
+        if (donationSuccessView) donationSuccessView.style.display = 'block';
+        if (donationSuccessBadge) donationSuccessBadge.style.display = 'flex';
 
       } catch (err) {
-        if (donationMethodsView) donationMethodsView.style.display = 'block';
-        if (donationSuccessView) donationSuccessView.style.display = 'none';
-        if (donationModalError) {
-          donationModalError.textContent = '❌ ' + err.message;
-          donationModalError.style.display = 'block';
+        simulateDonationBtn.disabled = false;
+        simulateDonationBtn.innerHTML = origText;
+        if (donationInlineError) {
+          donationInlineError.textContent = '❌ ' + err.message;
+          donationInlineError.style.display = 'block';
         }
       }
     });
