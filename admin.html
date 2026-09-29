@@ -665,6 +665,21 @@
           <div class="stat-label">Expertos Pendientes</div>
           <div class="stat-val" id="statExpertPending">0</div>
         </div>
+        <div class="stat-card" style="border-color: rgba(245, 158, 11, 0.35);">
+          <div class="stat-label" style="color: #d97706;">⭐ Valoración Usuarios</div>
+          <div class="stat-val" id="statAvgRating" style="color: #d97706;">-</div>
+          <div id="statRatingCount" style="font-size: 11px; color: var(--text-medium); margin-top: 4px;">0 calificaciones</div>
+        </div>
+        <div class="stat-card" style="border-color: rgba(16, 185, 129, 0.35);">
+          <div class="stat-label" style="color: #059669;">💚 Aportes Voluntarios</div>
+          <div class="stat-val" id="statDonations" style="color: #059669;">$0.00 USD</div>
+          <div id="statDonationsSub" style="font-size: 11px; color: var(--text-medium); margin-top: 4px;">0 aportes ($0 CLP)</div>
+        </div>
+        <div class="stat-card" style="border-color: rgba(10, 102, 194, 0.35);">
+          <div class="stat-label" style="color: #0a66c2;">🔗 Compartidos LinkedIn</div>
+          <div class="stat-val" id="statLinkedInShares" style="color: #0a66c2;">0</div>
+          <div style="font-size: 11px; color: var(--text-medium); margin-top: 4px;">Difusión comunitaria</div>
+        </div>
         <div class="stat-card">
           <div class="stat-label">Ingresos Totales</div>
           <div class="stat-val" id="statRevenue">$0.00 USD</div>
@@ -1196,6 +1211,9 @@
         <button type="button" id="tabBtnHeadshots" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
           📸 Retratos de Estudio
         </button>
+        <button type="button" id="tabBtnFeedback" class="btn-secondary btn-sm" style="font-weight: 600; padding: 7px 14px;">
+          💬 Feedback & Donación
+        </button>
       </div>
 
       <!-- TAB 1: Evaluation View (Identical to User Experience) -->
@@ -1301,6 +1319,57 @@
           </div>
           <div class="headshots-grid" id="adminHeadshotsGrid">
             <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Post-Evaluation Feedback & Donation View -->
+      <div id="cvFeedbackContainer" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <!-- Feedback rating card -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-grey); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <span style="font-size: 20px;">⭐</span>
+              <strong style="font-size: 14px; color: var(--text-dark);">Valoración del Servicio</strong>
+            </div>
+            <div id="adminFeedbackRatingDisplay" style="font-size: 22px; color: #f59e0b; margin-bottom: 6px;">
+              Sin calificación
+            </div>
+            <div id="adminFeedbackAtDisplay" style="font-size: 12px; color: var(--text-light); margin-bottom: 8px;">
+              -
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-medium); margin-bottom: 4px;">Comentario del usuario:</div>
+            <div id="adminFeedbackCommentDisplay" style="font-size: 13px; color: var(--text-dark); background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid var(--border-grey); min-height: 48px; font-style: italic;">
+              Sin comentarios adicionales.
+            </div>
+          </div>
+
+          <!-- Voluntary Donation card -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-grey); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <span style="font-size: 20px;">💚</span>
+              <strong style="font-size: 14px; color: #059669;">Aporte Voluntario</strong>
+            </div>
+            <div id="adminDonationStatusDisplay" style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+              No registrado
+            </div>
+            <div id="adminDonationDetailsDisplay" style="font-size: 12.5px; color: var(--text-medium); line-height: 1.5;">
+              Este usuario no ha realizado un aporte voluntario.
+            </div>
+          </div>
+
+          <!-- LinkedIn Share card -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-grey); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <span style="font-size: 20px;">🔗</span>
+              <strong style="font-size: 14px; color: #0a66c2;">Difusión en LinkedIn</strong>
+            </div>
+            <div id="adminLinkedInShareDisplay" style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+              No compartido
+            </div>
+            <div id="adminLinkedInShareAtDisplay" style="font-size: 12.5px; color: var(--text-medium);">
+              -
+            </div>
           </div>
         </div>
       </div>

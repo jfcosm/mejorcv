@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const statPaidHeadshots = document.getElementById('statPaidHeadshots');
   const statExpertPending = document.getElementById('statExpertPending');
   const statRevenue = document.getElementById('statRevenue');
+  const statAvgRating = document.getElementById('statAvgRating');
+  const statRatingCount = document.getElementById('statRatingCount');
+  const statDonations = document.getElementById('statDonations');
+  const statDonationsSub = document.getElementById('statDonationsSub');
+  const statLinkedInShares = document.getElementById('statLinkedInShares');
   const statGeminiCalls = document.getElementById('statGeminiCalls');
   const statGeminiSub = document.getElementById('statGeminiSub');
   const geminiHealthDot = document.getElementById('geminiHealthDot');
@@ -118,9 +123,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabBtnOptimized = document.getElementById('tabBtnOptimized');
   const tabBtnCoverLetter = document.getElementById('tabBtnCoverLetter');
   const tabBtnHeadshots = document.getElementById('tabBtnHeadshots');
+  const tabBtnFeedback = document.getElementById('tabBtnFeedback');
   const cvEvaluationContainer = document.getElementById('cvEvaluationContainer');
   const cvTextContainer = document.getElementById('cvTextContainer');
   const cvHeadshotsContainer = document.getElementById('cvHeadshotsContainer');
+  const cvFeedbackContainer = document.getElementById('cvFeedbackContainer');
+  const adminFeedbackRatingDisplay = document.getElementById('adminFeedbackRatingDisplay');
+  const adminFeedbackAtDisplay = document.getElementById('adminFeedbackAtDisplay');
+  const adminFeedbackCommentDisplay = document.getElementById('adminFeedbackCommentDisplay');
+  const adminDonationStatusDisplay = document.getElementById('adminDonationStatusDisplay');
+  const adminDonationDetailsDisplay = document.getElementById('adminDonationDetailsDisplay');
+  const adminLinkedInShareDisplay = document.getElementById('adminLinkedInShareDisplay');
+  const adminLinkedInShareAtDisplay = document.getElementById('adminLinkedInShareAtDisplay');
   const cvTextContentBox = document.getElementById('cvTextContentBox');
   const copyModalTextBtn = document.getElementById('copyModalTextBtn');
   const downloadModalOriginalBtn = document.getElementById('downloadModalOriginalBtn');
@@ -478,6 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statPaidCoverLetter) statPaidCoverLetter.textContent = data.stats.paidCoverLetter || 0;
       if (statPaidHeadshots) statPaidHeadshots.textContent = data.stats.paidHeadshots || 0;
       statExpertPending.textContent = data.stats.paidExpertPending;
+      if (statAvgRating) statAvgRating.textContent = stats.avgUserRating ? `⭐ ${stats.avgUserRating} / 5` : '-';
+      if (statRatingCount) statRatingCount.textContent = `${stats.totalUserRatings || 0} calificaciones`;
+      if (statDonations) statDonations.textContent = `$${(stats.totalDonationUsd || 0).toFixed(2)} USD`;
+      if (statDonationsSub) statDonationsSub.textContent = `${stats.totalDonations || 0} aportes ($${(stats.totalDonationClp || 0).toLocaleString('es-CL')} CLP)`;
+      if (statLinkedInShares) statLinkedInShares.textContent = stats.totalLinkedInShares || 0;
       statRevenue.textContent = `$${data.stats.totalRevenue.toFixed(2)} USD`;
 
       // Set Gemini usage statistics
@@ -632,8 +651,15 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </td>
             <td>${formatDate(row.uploadedAt)}</td>
-            <td><span style="color:#f59e0b; font-size:13px; letter-spacing:1px;">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</span></td>
-            <td>${getPaymentBadge(row.paymentStatus)}</td>
+            <td>
+              <span style="color:#f59e0b; font-size:13px; letter-spacing:1px;" title="Puntaje IA">${'★'.repeat(row.rating)}${'☆'.repeat(5 - row.rating)}</span>
+              ${row.userRating ? `<div style="font-size:11px; color:#b45309; margin-top:2px;" title="Calificación dada por el usuario al servicio">User: ${'★'.repeat(row.userRating)}${'☆'.repeat(5 - row.userRating)}</div>` : ''}
+            </td>
+            <td>
+              ${getPaymentBadge(row.paymentStatus)}
+              ${row.hasDonated || row.donationAmount ? `<div style="margin-top:3px;"><span class="badge" style="background:#d1fae5; color:#065f46; font-size:10px; font-weight:700;">💚 Aporte ${row.donationCurrency === 'CLP' ? '$' + Number(row.donationAmount || 0).toLocaleString('es-CL') : '$' + Number(row.donationAmount || 0).toFixed(0)}</span></div>` : ''}
+              ${row.sharedLinkedIn ? `<div style="margin-top:2px;"><span class="badge" style="background:#eff6ff; color:#1d4ed8; font-size:10px; font-weight:600;">🔗 LinkedIn</span></div>` : ''}
+            </td>
             <td>${contact}</td>
             <td><code style="font-size:11px; color:var(--text-medium);">${row.ip}</code></td>
             <td style="text-align:right;">
@@ -726,6 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (isExpertDone) {
           statusBadges.push('<span class="badge completed" style="background-color: #d1fae5; color: #065f46; border: 1px solid rgba(6, 95, 70, 0.2); font-weight:600;">Experto: Entregado</span>');
+        }
+        if (row.hasDonated || row.donationAmount) {
+          statusBadges.push('<span class="badge" style="background-color: #ecfdf5; color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); font-weight:600;">💚 Aporte Voluntario</span>');
+        }
+        if (row.userRating) {
+          statusBadges.push(`<span class="badge" style="background-color: #fffbeb; color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3); font-weight:600;">⭐ Feedback ${row.userRating}/5</span>`);
+        }
+        if (row.sharedLinkedIn) {
+          statusBadges.push('<span class="badge" style="background-color: #eff6ff; color: #1d4ed8; border: 1px solid rgba(59, 130, 246, 0.3); font-weight:600;">🔗 Compartido LinkedIn</span>');
         }
         if (statusBadges.length === 0 || (statusBadges.length === 1 && row.archived)) {
           statusBadges.push('<span class="badge free" style="background-color:#f1f5f9; color:#475569; font-weight:600;">Evaluación Gratuita</span>');
@@ -1569,7 +1604,8 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'original', btn: tabBtnOriginal, cont: cvTextContainer },
       { id: 'optimized', btn: tabBtnOptimized, cont: cvTextContainer },
       { id: 'cover_letter', btn: tabBtnCoverLetter, cont: cvTextContainer },
-      { id: 'headshots', btn: tabBtnHeadshots, cont: cvHeadshotsContainer }
+      { id: 'headshots', btn: tabBtnHeadshots, cont: cvHeadshotsContainer },
+      { id: 'feedback', btn: tabBtnFeedback, cont: cvFeedbackContainer }
     ];
 
     allTabs.forEach(t => {
@@ -1591,6 +1627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cvEvaluationContainer) cvEvaluationContainer.style.display = tab === 'evaluation' ? 'block' : 'none';
     if (cvTextContainer) cvTextContainer.style.display = (tab === 'original' || tab === 'optimized' || tab === 'cover_letter') ? 'block' : 'none';
     if (cvHeadshotsContainer) cvHeadshotsContainer.style.display = tab === 'headshots' ? 'block' : 'none';
+    if (cvFeedbackContainer) cvFeedbackContainer.style.display = tab === 'feedback' ? 'block' : 'none';
 
     if (downloadModalCoverLetterBtn) {
       downloadModalCoverLetterBtn.style.display = tab === 'cover_letter' ? 'inline-flex' : 'none';
@@ -1611,6 +1648,68 @@ document.addEventListener('DOMContentLoaded', () => {
           downloadCvFile(`/api/admin/download-cover-letter/${currentInspectionDoc.id}`, `carta_presentacion_${currentInspectionDoc.filename}.txt`);
         };
       }
+    } else if (tab === 'feedback') {
+      renderAdminFeedback(currentInspectionDoc);
+    }
+  }
+
+  function renderAdminFeedback(doc) {
+    if (!doc) return;
+    const rating = doc.userRating || (doc.feedback && doc.feedback.rating);
+    const comment = doc.userFeedback || (doc.feedback && doc.feedback.comment);
+    const ratedAt = doc.userRatedAt || (doc.feedback && doc.feedback.createdAt);
+
+    if (adminFeedbackRatingDisplay) {
+      if (rating) {
+        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        adminFeedbackRatingDisplay.innerHTML = `<span style="color:#f59e0b; font-size:18px; letter-spacing:2px;">${stars}</span> <strong>(${rating} de 5 estrellas)</strong>`;
+      } else {
+        adminFeedbackRatingDisplay.innerHTML = `<span style="color:var(--text-light); font-style:italic;">Sin valoración del usuario registrada aún</span>`;
+      }
+    }
+
+    if (adminFeedbackCommentDisplay) {
+      adminFeedbackCommentDisplay.textContent = comment ? `"${comment}"` : '(Sin comentarios adicionales proporcionados por el usuario)';
+      adminFeedbackCommentDisplay.style.fontStyle = comment ? 'italic' : 'normal';
+      adminFeedbackCommentDisplay.style.color = comment ? 'var(--text-dark)' : 'var(--text-light)';
+    }
+
+    if (adminFeedbackAtDisplay) {
+      adminFeedbackAtDisplay.textContent = ratedAt ? `Fecha valoración: ${formatDate(ratedAt)}` : '';
+    }
+
+    // Donation details
+    const hasDonated = doc.hasDonated || Boolean(doc.donationAmount);
+    if (adminDonationStatusDisplay) {
+      if (hasDonated) {
+        const curr = doc.donationCurrency || 'USD';
+        const formattedAmount = curr === 'CLP'
+          ? `$${Number(doc.donationAmount || 0).toLocaleString('es-CL')} CLP`
+          : `$${Number(doc.donationAmount || 0).toFixed(2)} USD`;
+        adminDonationStatusDisplay.innerHTML = `<span class="badge" style="background:#d1fae5; color:#065f46; font-size:13px; font-weight:700;">💚 Aporte Realizado: ${formattedAmount}</span>`;
+      } else {
+        adminDonationStatusDisplay.innerHTML = `<span class="badge" style="background:#f1f5f9; color:#64748b; font-size:13px;">Sin aporte monetario voluntario</span>`;
+      }
+    }
+
+    if (adminDonationDetailsDisplay) {
+      if (hasDonated) {
+        const method = doc.donationPaymentMethod || 'No especificado';
+        const paidAt = doc.donationPaidAt ? formatDate(doc.donationPaidAt) : '(Fecha no registrada)';
+        adminDonationDetailsDisplay.innerHTML = `<strong>Pasarela:</strong> ${escapeHtml(method)} &nbsp;|&nbsp; <strong>Fecha de pago:</strong> ${paidAt}`;
+      } else {
+        adminDonationDetailsDisplay.textContent = '';
+      }
+    }
+
+    // LinkedIn share
+    if (adminLinkedInShareDisplay) {
+      if (doc.sharedLinkedIn) {
+        const shareDate = doc.sharedLinkedInAt ? ` el ${formatDate(doc.sharedLinkedInAt)}` : '';
+        adminLinkedInShareDisplay.innerHTML = `<span class="badge" style="background:#eff6ff; color:#1d4ed8; font-size:13px; font-weight:700;">✓ Compartido en LinkedIn${shareDate}</span>`;
+      } else {
+        adminLinkedInShareDisplay.innerHTML = `<span class="badge" style="background:#f1f5f9; color:#64748b; font-size:13px;">No compartido en LinkedIn</span>`;
+      }
     }
   }
 
@@ -1619,6 +1718,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabBtnOptimized) tabBtnOptimized.addEventListener('click', () => setInspectionTab('optimized'));
   if (tabBtnCoverLetter) tabBtnCoverLetter.addEventListener('click', () => setInspectionTab('cover_letter'));
   if (tabBtnHeadshots) tabBtnHeadshots.addEventListener('click', () => setInspectionTab('headshots'));
+  if (tabBtnFeedback) tabBtnFeedback.addEventListener('click', () => setInspectionTab('feedback'));
 
   // Render full evaluation dashboard inside Admin inspection modal
   function renderAdminEvaluation(evalData) {

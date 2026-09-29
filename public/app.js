@@ -306,7 +306,35 @@ document.addEventListener('DOMContentLoaded', () => {
       maintenanceModalStatusVal: "⚡ Ajuste de Servidores & IA",
       maintenanceModalEtaLabel: "Retorno estimado:",
       maintenanceModalEtaVal: "🚀 Próximamente disponible",
-      maintenanceModalCloseBtn: "Entendido"
+      maintenanceModalCloseBtn: "Entendido",
+      postEvalTitle: "¿Qué te pareció el diagnóstico gratuito de Cintia?",
+      postEvalSubtitle: "Tu opinión y apoyo nos ayudan a mantener Cintia.pro accesible para miles de personas en búsqueda laboral.",
+      ratingCardBadge: "TU EXPERIENCIA",
+      ratingCardTitle: "Evalúa nuestro servicio",
+      ratingCardDesc: "¿Cómo calificarías la precisión y utilidad del análisis?",
+      ratingCommentPlaceholder: "Cuéntanos qué te pareció o qué podríamos mejorar (opcional)...",
+      submitRatingBtn: "Enviar Valoración",
+      ratingSuccessMsg: "¡Muchas gracias por tu valoración!",
+      donationCardBadge: "APOYA EL PROYECTO",
+      donationCardTitle: "Aporte Voluntario",
+      donationCardDesc: "Cintia es gratuita y no exige pagos obligatorios. Si este análisis te aportó valor, puedes colaborar voluntariamente para financiar nuestros servidores e IA.",
+      openDonationModalBtn: "Déjanos tu aporte acá",
+      linkedinCardBadge: "COMUNIDAD",
+      linkedinCardTitle: "Comparte en LinkedIn",
+      linkedinCardDesc: "Ayuda a otros profesionales y amigos en búsqueda laboral a auditar su CV sin costo.",
+      shareLinkedInBtn: "Compartir en LinkedIn",
+      linkedinShareSuccessMsg: "¡Gracias por compartir Cintia.pro en LinkedIn!",
+      donationModalTitle: "Aporte Voluntario para Cintia.pro",
+      donationModalSubtitle: "Tu contribución voluntaria nos ayuda directamente a cubrir los costos de servidores, infraestructura y modelos de Inteligencia Artificial.",
+      donationPresetTitle: "Selecciona o ingresa tu monto:",
+      customDonationToggle: "O ingresa un monto personalizado",
+      donationSummaryLabel: "Monto seleccionado:",
+      donationDisclaimer: "Este aporte es 100% voluntario y no condiciona el uso gratuito de las herramientas de Cintia. ¡Muchas gracias por tu apoyo!",
+      mpDonationBtn: "Aportar con Mercado Pago",
+      simulateDonationBtn: "Simular Aporte (Modo Pruebas)",
+      donationSuccessTitle: "¡Muchísimas gracias por tu aporte!",
+      donationSuccessDesc: "Tu generosidad nos impulsa a seguir democratizando el acceso a herramientas de IA para la búsqueda laboral de calidad.",
+      closeDonationModalBtn: "Cerrar"
     },
     en: {
       navHome: "Home",
@@ -472,7 +500,35 @@ document.addEventListener('DOMContentLoaded', () => {
       maintenanceModalStatusVal: "⚡ Server & AI Optimization",
       maintenanceModalEtaLabel: "Estimated return:",
       maintenanceModalEtaVal: "🚀 Available very soon",
-      maintenanceModalCloseBtn: "Got it"
+      maintenanceModalCloseBtn: "Got it",
+      postEvalTitle: "How was your free Cintia diagnostic?",
+      postEvalSubtitle: "Your feedback and support help us keep Cintia.pro accessible for thousands of job seekers.",
+      ratingCardBadge: "YOUR EXPERIENCE",
+      ratingCardTitle: "Rate our service",
+      ratingCardDesc: "How would you rate the accuracy and usefulness of the audit?",
+      ratingCommentPlaceholder: "Tell us what you liked or how we can improve (optional)...",
+      submitRatingBtn: "Submit Rating",
+      ratingSuccessMsg: "Thank you so much for your feedback!",
+      donationCardBadge: "SUPPORT THE PROJECT",
+      donationCardTitle: "Voluntary Contribution",
+      donationCardDesc: "Cintia is free and does not demand required payments. If this audit helped you, you can voluntarily support our server and AI costs.",
+      openDonationModalBtn: "Leave a contribution here",
+      linkedinCardBadge: "COMMUNITY",
+      linkedinCardTitle: "Share on LinkedIn",
+      linkedinCardDesc: "Help other professionals and friends in their job search audit their resumes for free.",
+      shareLinkedInBtn: "Share on LinkedIn",
+      linkedinShareSuccessMsg: "Thank you for sharing Cintia.pro on LinkedIn!",
+      donationModalTitle: "Voluntary Contribution for Cintia.pro",
+      donationModalSubtitle: "Your voluntary support directly helps cover our AI models and cloud server infrastructure.",
+      donationPresetTitle: "Select or enter your contribution amount:",
+      customDonationToggle: "Or enter a custom amount",
+      donationSummaryLabel: "Selected amount:",
+      donationDisclaimer: "This contribution is 100% voluntary and never restricts free access to Cintia's core audit tools. Thank you so much for your support!",
+      mpDonationBtn: "Contribute with Mercado Pago",
+      simulateDonationBtn: "Simulate Contribution (Test Mode)",
+      donationSuccessTitle: "Thank you so much for your contribution!",
+      donationSuccessDesc: "Your generosity fuels our mission to keep AI-powered career tools accessible to everyone.",
+      closeDonationModalBtn: "Close"
     }
   };
 
@@ -922,6 +978,80 @@ document.addEventListener('DOMContentLoaded', () => {
       const span = mCta.querySelector('span');
       if (span) span.textContent = lang === 'en' ? 'Start Free (Audit CV)' : 'Comenzar Gratis (Auditar CV)';
     }
+
+    // Post-Evaluation Box Translations
+    const postEvalTitleEl = document.getElementById('postEvalTitle');
+    if (postEvalTitleEl && t.postEvalTitle) postEvalTitleEl.textContent = t.postEvalTitle;
+    const postEvalSubtitleEl = document.getElementById('postEvalSubtitle');
+    if (postEvalSubtitleEl && t.postEvalSubtitle) postEvalSubtitleEl.textContent = t.postEvalSubtitle;
+
+    const ratingCardBadgeEl = document.getElementById('ratingCardBadge');
+    if (ratingCardBadgeEl && t.ratingCardBadge) ratingCardBadgeEl.textContent = t.ratingCardBadge;
+    const ratingCardTitleEl = document.getElementById('ratingCardTitle');
+    if (ratingCardTitleEl && t.ratingCardTitle) ratingCardTitleEl.textContent = t.ratingCardTitle;
+    const ratingCardDescEl = document.getElementById('ratingCardDesc');
+    if (ratingCardDescEl && t.ratingCardDesc) ratingCardDescEl.textContent = t.ratingCardDesc;
+    const ratingCommentEl = document.getElementById('ratingComment');
+    if (ratingCommentEl && t.ratingCommentPlaceholder) ratingCommentEl.placeholder = t.ratingCommentPlaceholder;
+    const submitRatingBtnEl = document.getElementById('submitRatingBtn');
+    if (submitRatingBtnEl && t.submitRatingBtn) {
+      const span = submitRatingBtnEl.querySelector('span');
+      if (span) span.textContent = t.submitRatingBtn;
+    }
+
+    const donationCardBadgeEl = document.getElementById('donationCardBadge');
+    if (donationCardBadgeEl && t.donationCardBadge) donationCardBadgeEl.textContent = t.donationCardBadge;
+    const donationCardTitleEl = document.getElementById('donationCardTitle');
+    if (donationCardTitleEl && t.donationCardTitle) donationCardTitleEl.textContent = t.donationCardTitle;
+    const donationCardDescEl = document.getElementById('donationCardDesc');
+    if (donationCardDescEl && t.donationCardDesc) donationCardDescEl.textContent = t.donationCardDesc;
+    const openDonationModalBtnEl = document.getElementById('openDonationModalBtn');
+    if (openDonationModalBtnEl && t.openDonationModalBtn) {
+      const span = openDonationModalBtnEl.querySelector('span');
+      if (span) span.textContent = t.openDonationModalBtn;
+    }
+
+    const linkedinCardBadgeEl = document.getElementById('linkedinCardBadge');
+    if (linkedinCardBadgeEl && t.linkedinCardBadge) linkedinCardBadgeEl.textContent = t.linkedinCardBadge;
+    const linkedinCardTitleEl = document.getElementById('linkedinCardTitle');
+    if (linkedinCardTitleEl && t.linkedinCardTitle) linkedinCardTitleEl.textContent = t.linkedinCardTitle;
+    const linkedinCardDescEl = document.getElementById('linkedinCardDesc');
+    if (linkedinCardDescEl && t.linkedinCardDesc) linkedinCardDescEl.textContent = t.linkedinCardDesc;
+    const shareLinkedInBtnEl = document.getElementById('shareLinkedInBtn');
+    if (shareLinkedInBtnEl && t.shareLinkedInBtn) {
+      const span = shareLinkedInBtnEl.querySelector('span');
+      if (span) span.textContent = t.shareLinkedInBtn;
+    }
+
+    // Donation Modal Translations
+    const donationModalTitleEl = document.getElementById('donationModalTitle');
+    if (donationModalTitleEl && t.donationModalTitle) donationModalTitleEl.textContent = t.donationModalTitle;
+    const donationModalSubtitleEl = document.getElementById('donationModalSubtitle');
+    if (donationModalSubtitleEl && t.donationModalSubtitle) donationModalSubtitleEl.textContent = t.donationModalSubtitle;
+    const donationPresetTitleEl = document.getElementById('donationPresetTitle');
+    if (donationPresetTitleEl && t.donationPresetTitle) donationPresetTitleEl.textContent = t.donationPresetTitle;
+    const customDonationToggleBtnEl = document.getElementById('customDonationToggleBtn');
+    if (customDonationToggleBtnEl && t.customDonationToggle) customDonationToggleBtnEl.textContent = t.customDonationToggle;
+    const donationSummaryLabelEl = document.getElementById('donationSummaryLabel');
+    if (donationSummaryLabelEl && t.donationSummaryLabel) donationSummaryLabelEl.textContent = t.donationSummaryLabel;
+    const donationDisclaimerEl = document.getElementById('donationDisclaimer');
+    if (donationDisclaimerEl && t.donationDisclaimer) donationDisclaimerEl.textContent = t.donationDisclaimer;
+    const mpDonationBtnEl = document.getElementById('mpDonationBtn');
+    if (mpDonationBtnEl && t.mpDonationBtn) {
+      const span = mpDonationBtnEl.querySelector('span');
+      if (span) span.textContent = t.mpDonationBtn;
+    }
+    const simulateDonationBtnEl = document.getElementById('simulateDonationBtn');
+    if (simulateDonationBtnEl && t.simulateDonationBtn) {
+      const span = simulateDonationBtnEl.querySelector('span');
+      if (span) span.textContent = t.simulateDonationBtn;
+    }
+    const donationSuccessTitleEl = document.getElementById('donationSuccessTitle');
+    if (donationSuccessTitleEl && t.donationSuccessTitle) donationSuccessTitleEl.textContent = t.donationSuccessTitle;
+    const donationSuccessDescEl = document.getElementById('donationSuccessDesc');
+    if (donationSuccessDescEl && t.donationSuccessDesc) donationSuccessDescEl.textContent = t.donationSuccessDesc;
+    const closeDonationSuccessBtnEl = document.getElementById('closeDonationSuccessBtn');
+    if (closeDonationSuccessBtnEl && t.closeDonationModalBtn) closeDonationSuccessBtnEl.textContent = t.closeDonationModalBtn;
 
     // Apply configuration UI overrides
     applyConfigToUi();
@@ -3397,5 +3527,465 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/__([^_]+)__/g, '<strong>$1</strong>')
       .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
       .replace(/_([^_\n]+)_/g, '<em>$1</em>');
+  }
+
+  // ─── 8. Post-Evaluation Card & Voluntary Contribution Logic ───────────────────
+  let selectedUserRating = 0;
+  let currentDonationUsd = 3;
+  let currentDonationClp = 3000;
+
+  // DOM Elements - Rating Widget
+  const starRatingWidget = document.getElementById('starRatingWidget');
+  const starRatingBtns = document.querySelectorAll('.star-btn');
+  const ratingComment = document.getElementById('ratingComment');
+  const submitRatingBtn = document.getElementById('submitRatingBtn');
+  const ratingSuccessMsg = document.getElementById('ratingSuccessMsg');
+
+  // DOM Elements - Voluntary Contribution Modal
+  const openDonationModalBtn = document.getElementById('openDonationModalBtn');
+  const donationModal = document.getElementById('donationModal');
+  const closeDonationModalBtn = document.getElementById('closeDonationModalBtn');
+  const closeDonationSuccessBtn = document.getElementById('closeDonationSuccessBtn');
+  const donationPresetChips = document.querySelectorAll('.donation-chip');
+  const customDonationToggleBtn = document.getElementById('customDonationToggleBtn');
+  const customDonationRow = document.getElementById('customDonationRow');
+  const customDonationInput = document.getElementById('customDonationInput');
+  const customDonationCurrency = document.getElementById('customDonationCurrency');
+  const donationSummaryAmountUsd = document.getElementById('donationSummaryAmountUsd');
+  const donationSummaryAmountClp = document.getElementById('donationSummaryAmountClp');
+  const mpDonationBtn = document.getElementById('mpDonationBtn');
+  const mpDonationLoadingHint = document.getElementById('mpDonationLoadingHint');
+  const paypalDonationContainer = document.getElementById('paypalDonationContainer');
+  const paypalDonationLoadingHint = document.getElementById('paypalDonationLoadingHint');
+  const simulateDonationBtn = document.getElementById('simulateDonationBtn');
+  const donationMethodsView = document.getElementById('donationMethodsView');
+  const donationSuccessView = document.getElementById('donationSuccessView');
+  const donationSuccessIcon = document.getElementById('donationSuccessIcon');
+  const donationSuccessSpinner = document.getElementById('donationSuccessSpinner');
+  const donationSuccessTitle = document.getElementById('donationSuccessTitle');
+  const donationSuccessDesc = document.getElementById('donationSuccessDesc');
+  const donationModalError = document.getElementById('donationModalError');
+
+  // DOM Elements - LinkedIn Sharing
+  const shareLinkedInBtn = document.getElementById('shareLinkedInBtn');
+  const linkedinShareSuccessMsg = document.getElementById('linkedinShareSuccessMsg');
+
+  // 1. Star Rating Interactions
+  function highlightStars(count) {
+    starRatingBtns.forEach(btn => {
+      const val = parseInt(btn.getAttribute('data-value'), 10);
+      const starSpan = btn.querySelector('.star-icon');
+      if (val <= count) {
+        btn.classList.add('active');
+        if (starSpan) starSpan.textContent = '★';
+      } else {
+        btn.classList.remove('active');
+        if (starSpan) starSpan.textContent = '☆';
+      }
+    });
+  }
+
+  starRatingBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const val = parseInt(btn.getAttribute('data-value'), 10);
+      highlightStars(val);
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      highlightStars(selectedUserRating);
+    });
+
+    btn.addEventListener('click', () => {
+      selectedUserRating = parseInt(btn.getAttribute('data-value'), 10);
+      highlightStars(selectedUserRating);
+      if (submitRatingBtn) submitRatingBtn.disabled = false;
+    });
+  });
+
+  if (submitRatingBtn) {
+    submitRatingBtn.addEventListener('click', async () => {
+      if (!selectedUserRating || selectedUserRating < 1) {
+        alert(currentLanguage === 'en' ? 'Please select a star rating first.' : 'Por favor selecciona una calificación de estrellas.');
+        return;
+      }
+
+      submitRatingBtn.disabled = true;
+      const origText = submitRatingBtn.innerHTML;
+      submitRatingBtn.innerHTML = `<span>${currentLanguage === 'en' ? 'Submitting...' : 'Enviando...'}</span>`;
+
+      try {
+        const commentVal = ratingComment ? ratingComment.value.trim() : '';
+        const resp = await fetch('/api/feedback/rate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            rating: selectedUserRating,
+            comment: commentVal
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Error al guardar la valoración.');
+
+        // Success message
+        if (ratingSuccessMsg) {
+          ratingSuccessMsg.style.display = 'block';
+          ratingSuccessMsg.textContent = currentLanguage === 'en'
+            ? '✓ Thank you so much for rating Cintia!'
+            : '✓ ¡Muchas gracias por calificar a Cintia!';
+        }
+        submitRatingBtn.style.display = 'none';
+        if (ratingComment) ratingComment.disabled = true;
+        starRatingBtns.forEach(b => b.style.pointerEvents = 'none');
+
+      } catch (err) {
+        submitRatingBtn.disabled = false;
+        submitRatingBtn.innerHTML = origText;
+        alert('❌ ' + err.message);
+      }
+    });
+  }
+
+  // 2. LinkedIn Sharing Action
+  if (shareLinkedInBtn) {
+    shareLinkedInBtn.addEventListener('click', async () => {
+      // Pre-filled recommendation text for LinkedIn
+      const shareUrl = 'https://cintia.pro';
+      const shareLinkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+
+      // Open sharing dialog in popup window
+      const popupWidth = 600;
+      const popupHeight = 600;
+      const left = (window.innerWidth - popupWidth) / 2;
+      const top = (window.innerHeight - popupHeight) / 2;
+      window.open(shareLinkedInUrl, 'linkedin_share', `width=${popupWidth},height=${popupHeight},top=${top},left=${left},toolbar=0,menubar=0,location=0`);
+
+      // Track LinkedIn sharing in database
+      try {
+        if (currentAnalysisId) {
+          await fetch('/api/feedback/share-linkedin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysisId: currentAnalysisId })
+          });
+        }
+      } catch (e) {
+        console.warn('Could not record LinkedIn share event:', e);
+      }
+
+      if (linkedinShareSuccessMsg) {
+        linkedinShareSuccessMsg.style.display = 'block';
+        linkedinShareSuccessMsg.textContent = currentLanguage === 'en'
+          ? '✓ Thank you for sharing Cintia on LinkedIn!'
+          : '✓ ¡Muchas gracias por compartir Cintia en LinkedIn!';
+      }
+    });
+  }
+
+  // 3. Voluntary Contribution Modal Handling
+  function updateDonationSummary() {
+    if (donationSummaryAmountUsd) {
+      donationSummaryAmountUsd.textContent = `$${currentDonationUsd.toFixed(2)} USD`;
+    }
+    if (donationSummaryAmountClp) {
+      donationSummaryAmountClp.textContent = `(~ $${currentDonationClp.toLocaleString('es-CL')} CLP)`;
+    }
+    // Re-initialize PayPal smart buttons for this dynamic amount
+    initDonationPayPalButtons(currentDonationUsd);
+  }
+
+  if (openDonationModalBtn && donationModal) {
+    openDonationModalBtn.addEventListener('click', () => {
+      if (donationModalError) {
+        donationModalError.style.display = 'none';
+        donationModalError.textContent = '';
+      }
+      if (donationMethodsView) donationMethodsView.style.display = 'block';
+      if (donationSuccessView) donationSuccessView.style.display = 'none';
+      if (mpDonationBtn) mpDonationBtn.disabled = false;
+      if (mpDonationLoadingHint) mpDonationLoadingHint.style.display = 'none';
+
+      updateDonationSummary();
+      donationModal.showModal();
+    });
+  }
+
+  if (closeDonationModalBtn && donationModal) {
+    closeDonationModalBtn.addEventListener('click', () => donationModal.close());
+  }
+  if (closeDonationSuccessBtn && donationModal) {
+    closeDonationSuccessBtn.addEventListener('click', () => donationModal.close());
+  }
+  if (donationModal) {
+    donationModal.addEventListener('click', (e) => {
+      if (e.target === donationModal) donationModal.close();
+    });
+  }
+
+  // Preset chips click handler
+  donationPresetChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      donationPresetChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      const usd = parseFloat(chip.getAttribute('data-usd')) || 3;
+      const clp = parseInt(chip.getAttribute('data-clp'), 10) || 3000;
+      currentDonationUsd = usd;
+      currentDonationClp = clp;
+
+      if (customDonationRow) customDonationRow.style.display = 'none';
+      if (customDonationInput) customDonationInput.value = '';
+
+      updateDonationSummary();
+    });
+  });
+
+  // Custom amount toggle & input
+  if (customDonationToggleBtn) {
+    customDonationToggleBtn.addEventListener('click', () => {
+      if (customDonationRow) {
+        const isHidden = customDonationRow.style.display === 'none' || customDonationRow.style.display === '';
+        customDonationRow.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden && customDonationInput) {
+          customDonationInput.focus();
+          donationPresetChips.forEach(c => c.classList.remove('active'));
+        }
+      }
+    });
+  }
+
+  if (customDonationInput) {
+    customDonationInput.addEventListener('input', () => {
+      donationPresetChips.forEach(c => c.classList.remove('active'));
+      const val = parseFloat(customDonationInput.value) || 0;
+      const curr = customDonationCurrency ? customDonationCurrency.value : 'USD';
+
+      if (curr === 'CLP') {
+        currentDonationClp = Math.max(500, Math.round(val));
+        currentDonationUsd = Math.max(0.5, Math.round((currentDonationClp / 1000) * 100) / 100);
+      } else {
+        currentDonationUsd = Math.max(0.5, Math.round(val * 100) / 100);
+        currentDonationClp = Math.max(500, Math.round(currentDonationUsd * 1000));
+      }
+      updateDonationSummary();
+    });
+  }
+
+  if (customDonationCurrency) {
+    customDonationCurrency.addEventListener('change', () => {
+      if (customDonationInput && customDonationInput.value) {
+        customDonationInput.dispatchEvent(new Event('input'));
+      }
+    });
+  }
+
+  // 4. Mercado Pago Voluntary Contribution Button
+  if (mpDonationBtn) {
+    mpDonationBtn.addEventListener('click', async () => {
+      if (!currentAnalysisId) {
+        if (donationModalError) {
+          donationModalError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
+          donationModalError.style.display = 'block';
+        }
+        return;
+      }
+
+      mpDonationBtn.disabled = true;
+      if (mpDonationLoadingHint) {
+        mpDonationLoadingHint.style.display = 'block';
+        mpDonationLoadingHint.textContent = currentLanguage === 'en' ? 'Connecting to Mercado Pago...' : 'Conectando con Mercado Pago...';
+      }
+
+      try {
+        const resp = await fetch('/api/mercadopago/create-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            tier: 'donation',
+            donationAmount: currentDonationClp,
+            donationCurrency: 'CLP'
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.error || (currentLanguage === 'en' ? 'Could not initiate contribution.' : 'No se pudo iniciar el aporte.'));
+        }
+
+        const targetUrl = data.initPoint || data.sandboxInitPoint;
+        if (!targetUrl) throw new Error('No se recibió la URL de pago de Mercado Pago.');
+
+        window.location.href = targetUrl;
+
+      } catch (err) {
+        mpDonationBtn.disabled = false;
+        if (mpDonationLoadingHint) mpDonationLoadingHint.style.display = 'none';
+        if (donationModalError) {
+          donationModalError.textContent = '❌ ' + err.message;
+          donationModalError.style.display = 'block';
+        }
+      }
+    });
+  }
+
+  // 5. PayPal Voluntary Contribution Smart Buttons
+  async function initDonationPayPalButtons(amountUsd) {
+    if (!paypalDonationContainer) return;
+    paypalDonationContainer.innerHTML = '';
+    if (paypalDonationLoadingHint) paypalDonationLoadingHint.style.display = 'block';
+
+    if (typeof paypal === 'undefined') {
+      await new Promise(resolve => {
+        const check = setInterval(() => {
+          if (typeof paypal !== 'undefined') { clearInterval(check); resolve(); }
+        }, 150);
+        setTimeout(() => { clearInterval(check); resolve(); }, 6000);
+      });
+    }
+
+    if (typeof paypal === 'undefined') {
+      if (paypalDonationLoadingHint) {
+        paypalDonationLoadingHint.textContent = currentLanguage === 'en'
+          ? '⚠️ Could not load PayPal. Check your connection.'
+          : '⚠️ No se pudo cargar PayPal. Revisa tu conexión.';
+      }
+      return;
+    }
+
+    if (paypalDonationLoadingHint) paypalDonationLoadingHint.style.display = 'none';
+
+    try {
+      paypal.Buttons({
+        style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'donate' },
+        createOrder: async () => {
+          if (donationModalError) donationModalError.style.display = 'none';
+          const resp = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              analysisId: currentAnalysisId,
+              tier: 'donation',
+              donationAmount: amountUsd,
+              donationCurrency: 'USD'
+            })
+          });
+          const data = await resp.json();
+          if (!resp.ok) {
+            const msg = data.error || (currentLanguage === 'en' ? 'Could not create contribution order.' : 'No se pudo crear la orden de aporte.');
+            if (donationModalError) {
+              donationModalError.textContent = '❌ ' + msg;
+              donationModalError.style.display = 'block';
+            }
+            throw new Error(msg);
+          }
+          return data.orderID;
+        },
+        onApprove: async (data) => {
+          if (donationMethodsView) donationMethodsView.style.display = 'none';
+          if (donationSuccessView) donationSuccessView.style.display = 'flex';
+          if (donationSuccessIcon) donationSuccessIcon.style.display = 'none';
+          if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'block';
+          if (donationSuccessTitle) {
+            donationSuccessTitle.textContent = currentLanguage === 'en' ? 'Confirming contribution...' : 'Confirmando tu aporte...';
+          }
+
+          try {
+            const resp = await fetch('/api/paypal/capture-order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderID: data.orderID,
+                analysisId: currentAnalysisId,
+                tier: 'donation'
+              })
+            });
+            const result = await resp.json();
+            if (!resp.ok) throw new Error(result.error || 'Error al capturar el aporte en PayPal.');
+
+            if (donationSuccessIcon) donationSuccessIcon.style.display = 'block';
+            if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'none';
+            if (donationSuccessTitle) {
+              donationSuccessTitle.textContent = currentLanguage === 'en' ? '¡Thank you so much for your contribution!' : '¡Muchísimas gracias por tu aporte!';
+            }
+            if (donationSuccessDesc) {
+              donationSuccessDesc.textContent = currentLanguage === 'en'
+                ? `Your contribution of $${amountUsd.toFixed(2)} USD was received successfully.`
+                : `Tu aporte voluntario de $${amountUsd.toFixed(2)} USD ha sido procesado con éxito.`;
+            }
+          } catch (err) {
+            if (donationMethodsView) donationMethodsView.style.display = 'block';
+            if (donationSuccessView) donationSuccessView.style.display = 'none';
+            if (donationModalError) {
+              donationModalError.textContent = '❌ ' + err.message;
+              donationModalError.style.display = 'block';
+            }
+          }
+        },
+        onError: (err) => {
+          console.warn('PayPal Donation error:', err);
+        }
+      }).render('#paypalDonationContainer');
+    } catch (e) {
+      console.warn('Could not render PayPal donation buttons:', e);
+    }
+  }
+
+  // 6. Simulated Voluntary Contribution Button (Test Mode)
+  if (simulateDonationBtn) {
+    simulateDonationBtn.addEventListener('click', async () => {
+      if (!currentAnalysisId) {
+        if (donationModalError) {
+          donationModalError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
+          donationModalError.style.display = 'block';
+        }
+        return;
+      }
+
+      if (donationMethodsView) donationMethodsView.style.display = 'none';
+      if (donationSuccessView) donationSuccessView.style.display = 'flex';
+      if (donationSuccessIcon) donationSuccessIcon.style.display = 'none';
+      if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'block';
+      if (donationSuccessTitle) {
+        donationSuccessTitle.textContent = currentLanguage === 'en' ? 'Simulating contribution...' : 'Simulando aporte voluntario...';
+      }
+
+      try {
+        const resp = await fetch('/api/payment/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            tier: 'donation',
+            donationAmount: currentDonationUsd,
+            donationCurrency: 'USD',
+            paymentMethod: 'simulated'
+          })
+        });
+
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || 'Error al simular el aporte.');
+
+        if (donationSuccessIcon) donationSuccessIcon.style.display = 'block';
+        if (donationSuccessSpinner) donationSuccessSpinner.style.display = 'none';
+        if (donationSuccessTitle) {
+          donationSuccessTitle.textContent = currentLanguage === 'en' ? '¡Thank you so much for your contribution!' : '¡Muchísimas gracias por tu aporte!';
+        }
+        if (donationSuccessDesc) {
+          donationSuccessDesc.textContent = currentLanguage === 'en'
+            ? `Your test contribution of $${currentDonationUsd.toFixed(2)} USD was approved successfully.`
+            : `Tu aporte simulado de $${currentDonationUsd.toFixed(2)} USD fue registrado con éxito.`;
+        }
+
+      } catch (err) {
+        if (donationMethodsView) donationMethodsView.style.display = 'block';
+        if (donationSuccessView) donationSuccessView.style.display = 'none';
+        if (donationModalError) {
+          donationModalError.textContent = '❌ ' + err.message;
+          donationModalError.style.display = 'block';
+        }
+      }
+    });
   }
 });

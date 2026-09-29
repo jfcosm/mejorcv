@@ -292,7 +292,27 @@ async function getAdminData(config) {
   const paidExpertPending = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'pending') || a.paymentStatus === 'pending_expert' || a.paymentStatus === 'paid_expert' || (a.expertContact && a.expertStatus !== 'completed')).length;
   const paidExpertCompleted = analysesList.filter(a => (a.hasExpertPaid && a.expertStatus === 'completed') || a.paymentStatus === 'completed_expert').length;
   const paidExpert = paidExpertPending + paidExpertCompleted;
-  const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidHeadshots * priceHeadshots) + (paidExpert * priceExpert);
+  const userRatingsList = analysesList.filter(a => typeof a.userFeedbackRating === 'number' && a.userFeedbackRating >= 1 && a.userFeedbackRating <= 5);
+  const totalUserRatings = userRatingsList.length;
+  const avgUserRating = totalUserRatings > 0 
+    ? (userRatingsList.reduce((acc, curr) => acc + curr.userFeedbackRating, 0) / totalUserRatings).toFixed(1) 
+    : null;
+
+  const donationList = analysesList.filter(a => Boolean(a.hasDonated || a.voluntaryDonation?.hasDonated));
+  const totalDonations = donationList.length;
+  let totalDonationUsd = 0;
+  let totalDonationClp = 0;
+  donationList.forEach(d => {
+    const amt = Number(d.donationAmount || d.voluntaryDonation?.amount || 0);
+    const curr = (d.donationCurrency || d.voluntaryDonation?.currency || 'USD').toUpperCase();
+    if (curr === 'CLP') {
+      totalDonationClp += amt;
+    } else {
+      totalDonationUsd += amt;
+    }
+  });
+
+  const totalLinkedInShares = analysesList.filter(a => Boolean(a.sharedLinkedIn)).length;
 
   const documentLog = analysesList.map(a => {
     const hasAiPaid = Boolean(a.hasAiPaid === true || a.paymentStatus === 'completed_ai');
@@ -320,6 +340,16 @@ async function getAdminData(config) {
       coverLetterText: a.coverLetterText || '',
       userPhotoData: a.userPhotoData || null,
       headshotsCount: Array.isArray(a.headshotImages) ? a.headshotImages.length : 0,
+      userFeedbackRating: typeof a.userFeedbackRating === 'number' ? a.userFeedbackRating : null,
+      userFeedbackComment: a.userFeedbackComment || '',
+      userFeedbackAt: a.userFeedbackAt || null,
+      hasDonated: Boolean(a.hasDonated || a.voluntaryDonation?.hasDonated),
+      donationAmount: Number(a.donationAmount || a.voluntaryDonation?.amount || 0),
+      donationCurrency: a.donationCurrency || a.voluntaryDonation?.currency || 'USD',
+      donationPaidAt: a.donationPaidAt || a.voluntaryDonation?.donatedAt || null,
+      donationPaymentMethod: a.donationPaymentMethod || a.voluntaryDonation?.method || null,
+      sharedLinkedIn: Boolean(a.sharedLinkedIn),
+      sharedLinkedInAt: a.sharedLinkedInAt || null,
       archived: Boolean(a.archived),
       archivedAt: a.archivedAt || null
     };
@@ -335,6 +365,12 @@ async function getAdminData(config) {
       paidExpertPending: Number(paidExpertPending) || 0,
       paidExpertCompleted: Number(paidExpertCompleted) || 0,
       totalRevenue: Number(totalRevenue) || 0,
+      totalDonations,
+      totalDonationUsd,
+      totalDonationClp,
+      totalUserRatings,
+      avgUserRating,
+      totalLinkedInShares,
       geminiStats
     },
     documentLog
@@ -2240,6 +2276,18 @@ app.post('/api/payment/simulate', async (req, res) => {
         transactionId: `sim_hs_${Date.now()}`
       });
       res.json(result);
+    } else if (tier === 'donation') {
+      const donationAmount = Number(req.body.amount || req.body.donationAmount || 3);
+      const donationCurrency = req.body.currency || 'USD';
+      const result = await processSuccessfulPayment({
+        analysisId,
+        tier: 'donation',
+        paymentMethod: paymentMethod || 'simulate',
+        transactionId: `sim_don_${Date.now()}`,
+        amount: donationAmount,
+        currency: donationCurrency
+      });
+      res.json(result);
     } else {
       res.status(400).json({ error: "Tier de pago inválido." });
     }
@@ -2363,7 +2411,7 @@ app.post('/api/expert-request', async (req, res) => {
 
 // ─── Unified Payment Processing Helper ────────────────────────────────────
 
-async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mercadopago', transactionId = '', orderId = '', contact = null }) {
+async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mercadopago', transactionId = '', orderId = '', contact = null, amount = null, currency = null }) {
   let analysis = await getAnalysisDoc(analysisId);
   if (!analysis) {
     analysis = {
@@ -2502,6 +2550,24 @@ async function processSuccessfulPayment({ analysisId, tier, paymentMethod = 'mer
     await updateAnalysisDoc(analysisId, updatePayload);
     recordGeminiCall('optimizations');
     return { success: true, tier: 'headshots', headshots };
+  } else if (tier === 'donation') {
+    const donationAmount = Number(amount || 0);
+    const donationCurrency = currency || (paymentMethod === 'mercadopago' ? 'CLP' : 'USD');
+    const updatePayload = {
+      hasDonated: true,
+      donationAmount,
+      donationCurrency,
+      donationPaidAt: new Date().toISOString(),
+      donationPaymentMethod: paymentMethod,
+      donationOrderId: orderId || transactionId,
+      donationTransactionId: transactionId
+    };
+    await updateAnalysisDoc(analysisId, updatePayload);
+    return {
+      success: true,
+      tier: 'donation',
+      message: '¡Muchas gracias por tu aporte voluntario a Cintia.pro!'
+    };
   } else {
     throw new Error('Tier de pago inválido.');
   }
@@ -2566,6 +2632,10 @@ app.post('/api/paypal/create-order', async (req, res) => {
     } else if (tier === 'headshots') {
       amount = (config.priceHeadshots || 6.0).toFixed(2);
       description = 'Cintia - Pack 20 Fotos de Estudio para LinkedIn';
+    } else if (tier === 'donation') {
+      const customVal = parseFloat(req.body.amount || req.body.donationAmount || 3.0);
+      amount = (isNaN(customVal) || customVal < 1 ? 1.0 : customVal).toFixed(2);
+      description = 'Cintia - Aporte Voluntario de Apoyo';
     }
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
@@ -2597,7 +2667,7 @@ app.post('/api/paypal/create-order', async (req, res) => {
     }
 
     const orderData = await orderResponse.json();
-    paypalOrderCache.set(orderData.id, { analysisId, tier });
+    paypalOrderCache.set(orderData.id, { analysisId, tier, amount: parseFloat(amount) });
 
     res.json({ id: orderData.id });
 
@@ -2649,6 +2719,7 @@ app.post('/api/paypal/capture-order', async (req, res) => {
     paypalOrderCache.delete(orderID);
 
     const transactionId = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id || orderID;
+    const captureAmount = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || cached.amount || 0;
 
     const result = await processSuccessfulPayment({
       analysisId: targetAnalysisId,
@@ -2656,7 +2727,9 @@ app.post('/api/paypal/capture-order', async (req, res) => {
       paymentMethod: 'paypal',
       transactionId,
       orderId: orderID,
-      contact
+      contact,
+      amount: captureAmount,
+      currency: 'USD'
     });
 
     res.json(result);
@@ -2706,6 +2779,10 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
     } else if (tier === 'headshots') {
       amountClp = Number(config.priceHeadshotsClp || 6000);
       description = 'Cintia - Pack 20 Fotos de Estudio para LinkedIn';
+    } else if (tier === 'donation') {
+      const customClp = Number(req.body.amountClp || req.body.donationAmountClp || 3000);
+      amountClp = isNaN(customClp) || customClp < 500 ? 500 : customClp;
+      description = 'Cintia - Aporte Voluntario de Apoyo';
     }
 
     const origin = req.headers.origin || `${req.protocol}://${req.get('host')}`;
@@ -2715,7 +2792,8 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
     const externalRefObj = {
       analysisId,
       tier,
-      contact: contact || null
+      contact: contact || null,
+      amountClp
     };
 
     const preferenceData = {
@@ -2744,7 +2822,7 @@ app.post('/api/mercadopago/create-preference', async (req, res) => {
 
     const created = await preference.create({ body: preferenceData });
 
-    mpPreferenceCache.set(created.id, { analysisId, tier, contact });
+    mpPreferenceCache.set(created.id, { analysisId, tier, contact, amountClp });
     if (mpPreferenceCache.size > 200) {
       const firstKey = mpPreferenceCache.keys().next().value;
       mpPreferenceCache.delete(firstKey);
@@ -2791,6 +2869,7 @@ app.post('/api/mercadopago/check-status', async (req, res) => {
     const targetAnalysisId = analysisId || extData.analysisId;
     const targetTier = tier || extData.tier || 'ai';
     const targetContact = contact || extData.contact;
+    const targetAmount = paymentData.transaction_amount || extData.amountClp || 0;
 
     if (!targetAnalysisId) {
       return res.status(400).json({ error: 'No se pudo identificar el análisis asociado al pago.' });
@@ -2802,7 +2881,9 @@ app.post('/api/mercadopago/check-status', async (req, res) => {
       paymentMethod: 'mercadopago',
       transactionId: String(paymentData.id),
       orderId: String(paymentData.order?.id || paymentData.id),
-      contact: targetContact
+      contact: targetContact,
+      amount: targetAmount,
+      currency: 'CLP'
     });
 
     res.json({
@@ -2862,6 +2943,53 @@ app.post('/api/mercadopago/webhook', async (req, res) => {
 });
 
 // ─── End Mercado Pago Integration ──────────────────────────────────────────
+
+// ─── Post-Evaluation Feedback & LinkedIn Sharing ────────────────────────────
+
+// POST /api/feedback/rate
+app.post('/api/feedback/rate', async (req, res) => {
+  try {
+    const { analysisId, rating, comment } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: 'Falta analysisId.' });
+    }
+    const numRating = parseInt(rating, 10);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ error: 'La calificación debe ser un número entero entre 1 y 5.' });
+    }
+    
+    await updateAnalysisDoc(analysisId, {
+      userFeedbackRating: numRating,
+      userFeedbackComment: typeof comment === 'string' ? comment.trim().slice(0, 500) : '',
+      userFeedbackAt: new Date().toISOString()
+    });
+
+    res.json({ success: true, message: 'Valoración guardada correctamente.' });
+  } catch (err) {
+    console.error('Error in /api/feedback/rate:', err);
+    res.status(500).json({ error: 'Error al guardar la valoración.' });
+  }
+});
+
+// POST /api/feedback/share-linkedin
+app.post('/api/feedback/share-linkedin', async (req, res) => {
+  try {
+    const { analysisId } = req.body;
+    if (!analysisId) {
+      return res.status(400).json({ error: 'Falta analysisId.' });
+    }
+
+    await updateAnalysisDoc(analysisId, {
+      sharedLinkedIn: true,
+      sharedLinkedInAt: new Date().toISOString()
+    });
+
+    res.json({ success: true, message: 'Acción de compartir en LinkedIn registrada.' });
+  } catch (err) {
+    console.error('Error in /api/feedback/share-linkedin:', err);
+    res.status(500).json({ error: 'Error al registrar la acción.' });
+  }
+});
 
 // Retrieve optimized CV for completed AI sessions (useful on refresh/recovery)
 app.get('/api/analysis/:id', async (req, res) => {
@@ -3256,7 +3384,17 @@ app.get('/api/admin/analysis-detail/:id', requireAdminAuth, async (req, res) => 
     headshotImages: analysis.headshotImages || [],
     originalText: analysis.originalText || "",
     optimizedText: analysis.optimizedText || "",
-    evaluation: analysis.evaluation
+    evaluation: analysis.evaluation,
+    userFeedbackRating: typeof analysis.userFeedbackRating === 'number' ? analysis.userFeedbackRating : null,
+    userFeedbackComment: analysis.userFeedbackComment || "",
+    userFeedbackAt: analysis.userFeedbackAt || null,
+    hasDonated: Boolean(analysis.hasDonated || analysis.voluntaryDonation?.hasDonated),
+    donationAmount: Number(analysis.donationAmount || analysis.voluntaryDonation?.amount || 0),
+    donationCurrency: analysis.donationCurrency || analysis.voluntaryDonation?.currency || 'USD',
+    donationPaymentMethod: analysis.donationPaymentMethod || analysis.voluntaryDonation?.method || null,
+    donationPaidAt: analysis.donationPaidAt || analysis.voluntaryDonation?.donatedAt || null,
+    sharedLinkedIn: Boolean(analysis.sharedLinkedIn),
+    sharedLinkedInAt: analysis.sharedLinkedInAt || null
   });
 });
 
