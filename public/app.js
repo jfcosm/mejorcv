@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
       shareLinkedInBtn: "Compartir en LinkedIn",
       linkedinShareSuccessMsg: "¡Gracias por compartir Cintia.pro en LinkedIn!",
       donationModalTitle: "Aporte Voluntario para Cintia.pro",
-      donationModalSubtitle: "Tu contribución voluntaria nos ayuda directamente a cubrir los costos de servidores, infraestructura y modelos de Inteligencia Artificial.",
+      donationModalIntro: "Cintia.pro es gratuita y abierta. Tu aporte voluntario nos ayuda directamente a cubrir los costos de servidores, infraestructura y modelos de Inteligencia Artificial.",
       donationPresetTitle: "Selecciona o ingresa tu monto:",
       customDonationToggle: "O ingresa un monto personalizado",
       donationSummaryLabel: "Monto seleccionado:",
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
       shareLinkedInBtn: "Share on LinkedIn",
       linkedinShareSuccessMsg: "Thank you for sharing Cintia.pro on LinkedIn!",
       donationModalTitle: "Voluntary Contribution for Cintia.pro",
-      donationModalSubtitle: "Your voluntary support directly helps cover our AI models and cloud server infrastructure.",
+      donationModalIntro: "Cintia.pro is free and open. Your voluntary contribution directly helps us cover server infrastructure and AI model costs.",
       donationPresetTitle: "Select or enter your contribution amount:",
       customDonationToggle: "Or enter a custom amount",
       donationSummaryLabel: "Selected amount:",
@@ -1022,8 +1022,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Donation Modal Translations
     const donationModalTitleEl = document.getElementById('donationModalTitle');
     if (donationModalTitleEl && t.donationModalTitle) donationModalTitleEl.textContent = t.donationModalTitle;
-    const donationModalSubtitleEl = document.getElementById('donationModalSubtitle');
-    if (donationModalSubtitleEl && t.donationModalSubtitle) donationModalSubtitleEl.textContent = t.donationModalSubtitle;
+    const donationModalIntroEl = document.getElementById('donationModalIntro');
+    if (donationModalIntroEl && t.donationModalIntro) donationModalIntroEl.textContent = t.donationModalIntro;
     const donationPresetTitleEl = document.getElementById('donationPresetLabel');
     if (donationPresetTitleEl && t.donationPresetTitle) donationPresetTitleEl.textContent = t.donationPresetTitle;
     const customAmountToggleBtnEl = document.getElementById('customAmountToggleBtn');
