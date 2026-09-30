@@ -289,7 +289,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch(url, {
           headers: { 'Authorization': adminToken }
         });
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonErr) {
+          data = { error: `Respuesta inválida del servidor (HTTP ${response.status})` };
+        }
 
         if (response.ok && data.success) {
           geminiTestOutput.style.background = '#d1fae5';
@@ -353,7 +358,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/api/admin/test-firestore', {
           headers: { 'Authorization': adminToken }
         });
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonErr) {
+          data = { error: `Respuesta inválida del servidor (HTTP ${response.status})` };
+        }
 
         if (response.ok && data.success) {
           if (firestoreTestOutput) {
@@ -383,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
           firestoreTestOutput.style.background = '#fee2e2';
           firestoreTestOutput.style.color = '#991b1b';
           firestoreTestOutput.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-          firestoreTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${err.message}`;
+          firestoreTestOutput.innerHTML = `✕ <strong>Error de red:</strong> ${escapeHtml(err.message)}`;
         }
       } finally {
         testFirestoreBtn.disabled = false;

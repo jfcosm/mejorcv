@@ -312,6 +312,7 @@ async function getAdminData(config) {
     }
   });
 
+  const totalRevenue = (paidAi * priceAi) + (paidCoverLetter * priceCoverLetter) + (paidHeadshots * priceHeadshots) + (paidExpert * priceExpert) + totalDonationUsd;
   const totalLinkedInShares = analysesList.filter(a => Boolean(a.sharedLinkedIn)).length;
 
   const documentLog = analysesList.map(a => {
@@ -3050,9 +3051,48 @@ app.post('/api/admin/logout', (req, res) => {
 
 // Admin stats
 app.get('/api/admin/stats', requireAdminAuth, async (req, res) => {
-  const config = await getConfigDoc();
-  const adminData = await getAdminData(config);
-  res.json(adminData);
+  try {
+    const config = await getConfigDoc();
+    const adminData = await getAdminData(config);
+    res.json(adminData);
+  } catch (err) {
+    console.error("Error in /api/admin/stats:", err);
+    res.status(500).json({ error: "Error al obtener estadísticas: " + err.message });
+  }
+});
+
+// Test Firestore Database connectivity
+app.get('/api/admin/test-firestore', requireAdminAuth, async (req, res) => {
+  try {
+    const dbFs = initFirebase();
+    if (!dbFs) {
+      return res.status(500).json({
+        success: false,
+        error: lastFirebaseError || "Firebase Firestore no está inicializado. Verifica la variable FIREBASE_SERVICE_ACCOUNT en Vercel."
+      });
+    }
+
+    const start = Date.now();
+    const testDocRef = dbFs.collection('app_stats').doc('health_check');
+    await testDocRef.set({ lastCheck: new Date().toISOString(), status: 'healthy' }, { merge: true });
+    const snap = await testDocRef.get();
+    const latencyMs = Date.now() - start;
+
+    res.json({
+      success: true,
+      message: "Conexión y permisos verificados exitosamente con Cloud Firestore.",
+      projectId: firebaseProjectId || 'cintia-pro',
+      latencyMs,
+      timestamp: snap.data()?.lastCheck
+    });
+  } catch (err) {
+    console.error("Error testing Firestore connection:", err);
+    res.status(500).json({
+      success: false,
+      error: `Error al conectar con Firestore: ${err.message}`,
+      projectId: firebaseProjectId || null
+    });
+  }
 });
 
 // Test Gemini API connectivity
