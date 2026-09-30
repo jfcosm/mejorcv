@@ -4135,8 +4135,10 @@ footer {
 .rating-comment-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 9px 12px;
-  font-size: 12.5px;
+  padding: 8px 11px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  min-height: 52px;
   border-radius: var(--radius-md, 8px);
   border: 1.5px solid var(--border-color, #cbd5e1);
   background: var(--bg-card, #ffffff);
@@ -4144,6 +4146,13 @@ footer {
   resize: none;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rating-comment-input::placeholder {
+  color: var(--text-muted, #64748b);
+  font-size: 11.5px;
+  line-height: 1.35;
+  opacity: 0.85;
 }
 
 .rating-comment-input:focus {
