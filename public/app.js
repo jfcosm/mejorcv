@@ -331,7 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
       donationSummaryLabel: "Monto seleccionado:",
       donationDisclaimer: "Este aporte es 100% voluntario y no condiciona el uso gratuito de las herramientas de Cintia. ¡Muchas gracias por tu apoyo!",
       mpDonationBtn: "Aportar con Mercado Pago",
-      simulateDonationBtn: "Simular Aporte (Modo Pruebas)",
       donationSuccessTitle: "¡Muchísimas gracias por tu aporte!",
       donationSuccessDesc: "Tu generosidad nos impulsa a seguir democratizando el acceso a herramientas de IA para la búsqueda laboral de calidad.",
       closeDonationModalBtn: "Cerrar"
@@ -525,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
       donationSummaryLabel: "Selected amount:",
       donationDisclaimer: "This contribution is 100% voluntary and never restricts free access to Cintia's core audit tools. Thank you so much for your support!",
       mpDonationBtn: "Contribute with Mercado Pago",
-      simulateDonationBtn: "Simulate Contribution (Test Mode)",
       donationSuccessTitle: "Thank you so much for your contribution!",
       donationSuccessDesc: "Your generosity fuels our mission to keep AI-powered career tools accessible to everyone.",
       closeDonationModalBtn: "Close"
@@ -1032,8 +1030,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (donationSummaryLabelEl && t.donationSummaryLabel) donationSummaryLabelEl.textContent = t.donationSummaryLabel;
     const mpDonationBtnTitleEl = document.getElementById('mpDonationBtnTitle');
     if (mpDonationBtnTitleEl && t.mpDonationBtn) mpDonationBtnTitleEl.textContent = t.mpDonationBtn;
-    const simulateDonationBtnTextEl = document.getElementById('simulateDonationBtnText');
-    if (simulateDonationBtnTextEl && t.simulateDonationBtn) simulateDonationBtnTextEl.textContent = t.simulateDonationBtn;
     const donationSuccessTitleEl = document.getElementById('donationSuccessTitle');
     if (donationSuccessTitleEl && t.donationSuccessTitle) donationSuccessTitleEl.textContent = t.donationSuccessTitle;
     const donationSuccessMessageEl = document.getElementById('donationSuccessMessage');
@@ -3641,7 +3637,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const mpDonationLoadingHint = document.getElementById('mpDonationLoadingHint');
   const paypalDonationButtonContainer = document.getElementById('paypalDonationButtonContainer');
   const paypalDonationLoadingHint = document.getElementById('paypalDonationLoadingHint');
-  const simulateDonationBtn = document.getElementById('simulateDonationBtn');
   const donationPaymentMethodsView = document.getElementById('donationPaymentMethodsView');
   const donationSuccessView = document.getElementById('donationSuccessView');
   const donationSuccessBadge = document.getElementById('donationSuccessBadge');
@@ -3919,51 +3914,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.warn('Could not render PayPal donation buttons:', e);
     }
-  }
-
-  // 6. Simulated Voluntary Contribution Button (Test Mode)
-  if (simulateDonationBtn) {
-    simulateDonationBtn.addEventListener('click', async () => {
-      if (!currentAnalysisId) {
-        if (donationInlineError) {
-          donationInlineError.textContent = currentLanguage === 'en' ? 'Missing analysis ID.' : 'Falta el ID del análisis.';
-          donationInlineError.style.display = 'block';
-        }
-        return;
-      }
-
-      simulateDonationBtn.disabled = true;
-      const origText = simulateDonationBtn.innerHTML;
-      simulateDonationBtn.innerHTML = `<span>${currentLanguage === 'en' ? 'Simulating...' : 'Simulando...'}</span>`;
-
-      try {
-        const resp = await fetch('/api/payment/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            analysisId: currentAnalysisId,
-            tier: 'donation',
-            donationAmount: currentDonationUsd,
-            donationCurrency: 'USD',
-            paymentMethod: 'simulated'
-          })
-        });
-
-        const result = await resp.json();
-        if (!resp.ok) throw new Error(result.error || 'Error al simular el aporte.');
-
-        if (donationPaymentMethodsView) donationPaymentMethodsView.style.display = 'none';
-        if (donationSuccessView) donationSuccessView.style.display = 'block';
-        if (donationSuccessBadge) donationSuccessBadge.style.display = 'flex';
-
-      } catch (err) {
-        simulateDonationBtn.disabled = false;
-        simulateDonationBtn.innerHTML = origText;
-        if (donationInlineError) {
-          donationInlineError.textContent = '❌ ' + err.message;
-          donationInlineError.style.display = 'block';
-        }
-      }
-    });
   }
 });
